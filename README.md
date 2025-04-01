@@ -276,6 +276,26 @@ public class AuthorService
         return tableManager.find(Author.class, id);
     }
 ```
+---
+
+## 📚 Advanced Features
+
+- **Composite Primary Keys** via `@IdClass`
+- **Join with Multiple Columns** using `@Join(columns = {...})`
+- **Enumerated Fields** with `@Enumerated(EnumType.STRING|ORDINAL)`
+- **Date/Time Mapping** via `@Temporal`
+- **Array Fields** using `@Array(type = ArrayType.Vector/Array)`
+- **Join without Referencial Integrity (No Foreign Key)** using `@Join(referencialIntegrity = false)`
+
+---
+
+## ✅ Supported ID Generation Strategies
+
+- `AUTO`
+- `IDENTITY`
+- `SEQUENCE`
+- `TABLE`
+- `UUID`
 
 ---
 
@@ -370,28 +390,6 @@ CREATE SCHEMA test5 AUTHORIZATION test
 cd norm4j-test
 mvn clean test
 ```
-
----
-
-## 📚 Advanced Features
-
-- **Composite Primary Keys** via `@IdClass`
-- **Join with Multiple Columns** using `@Join(columns = {...})`
-- **Enumerated Fields** with `@Enumerated(EnumType.STRING|ORDINAL)`
-- **Date/Time Mapping** via `@Temporal`
-- **Array Fields** using `@Array(type = ArrayType.Vector/Array)`
-- **Join without Referencial Integrity (No Foreign Key)** using `@Join(referencialIntegrity = false)`
-
----
-
-## ✅ Supported ID Generation Strategies
-
-- `AUTO`
-- `IDENTITY`
-- `SEQUENCE`
-- `TABLE`
-- `UUID`
-
 ---
 
 ## 💬 Need Help?
