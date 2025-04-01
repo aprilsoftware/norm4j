@@ -14,7 +14,7 @@
       norm4j (Not an ORM for Java) is a lightweight, SQL-centric alternative to JPA
   </description>
 
-  <url>https://www.norm4j.org</url>
+  <url>http://www.norm4j.org</url>
 
   <licenses>
     <license>
