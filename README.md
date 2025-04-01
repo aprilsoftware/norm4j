@@ -220,6 +220,67 @@ List<Book> books = query.getResultList(Book.class);
 
 ---
 
+## 🚀 Usage
+
+### Table Manager Factory
+
+```java
+@ApplicationScoped
+public class TableManagerFactory
+{
+    @Resource(name = "jdbc/norm_test")
+    private DataSource dataSource;
+    private TableManager tableManager;
+
+    public TableManagerFactory()
+    {
+    }
+
+    @PostConstruct
+    public void initialize()
+    {
+        MetadataManager metadataManager;
+
+        metadataManager = new MetadataManager();
+
+        metadataManager.registerTable(Book.class);
+        metadataManager.registerTable(Author.class);
+
+        metadataManager.createTables(dataSource);
+
+        tableManager = new TableManager(dataSource, metadataManager);
+    }
+
+    @Produces
+    public TableManager getTableManager()
+    {
+        return tableManager;
+    }
+}
+
+```
+
+### @Inject TableManager
+
+```java
+@Stateless
+public class AuthorService
+{
+    @Inject
+    private TableManager tableManager;
+
+    public AuthorService()
+    {
+    }
+
+    public Author findById(int id)
+    {
+        return tableManager.find(Author.class, id);
+    }
+```
+
+---
+
 ## 🧪 Running Tests
 
 ### Configure Test Database
