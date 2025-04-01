@@ -222,7 +222,7 @@ List<Book> books = query.getResultList(Book.class);
 
 ## ✨ Jakarta EE
 
-### Table Manager Factory
+### TableManagerFactory
 
 ```java
 @ApplicationScoped
