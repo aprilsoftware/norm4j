@@ -75,12 +75,46 @@ public class SelectQueryBuilder
 
     public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter)
     {
-        return count(fieldGetter, null);
+        return sum(fieldGetter, null);
     }
 
     public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter, String alias)
     {
         return this;
+    }
+
+    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter)
+    {
+        return avg(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter)
+    {
+        return min(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter)
+    {
+        return max(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        return this;
+    }
+
+    private void appendAggregateFunction()
+    {
     }
 
     public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter)
