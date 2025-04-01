@@ -58,6 +58,31 @@ public class SelectQueryBuilder
         groupByClause = new StringBuilder();
     }
 
+    public SelectQueryBuilder count()
+    {
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter)
+    {
+        return count(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter)
+    {
+        return count(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        return this;
+    }
+
     public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter)
     {
         return select(fieldGetter, null);
