@@ -93,11 +93,10 @@ Use annotations to define database tables and relationships.
 
 ### Author Entity
 ```java
-@Table(name = "author", schema = "test1")
+@Table(name = "author")
 public class Author {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    @TableGenerator(schema = "test1", table = "norm_sequences2", pkColumnName = "sequence", valueColumnName = "value")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false)
@@ -109,15 +108,14 @@ public class Author {
 
 ### Book Entity
 ```java
-@Table(name = "book", schema = "test1")
+@Table(name = "book")
 @Join(
     columns = "author_id", 
     reference = @Reference(table = Author.class, columns = "id")
 )
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    @TableGenerator(schema = "test1")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false)
