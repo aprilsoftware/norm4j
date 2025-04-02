@@ -50,11 +50,19 @@ public class Query
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<T> getResultList(Class<T> tableClass)
+    public <T> List<T> getResultList(Class<T> type)
     {
         List<Object[]> rows;
 
-        rows = getResultList(new Class[] { tableClass});
+        if (tableManager.getMetadataManager()
+                                .getMetadata(type) == null)
+        {
+            rows = getResultList();
+        }
+        else
+        {
+            rows = getResultList(new Class[] {type});
+        }
 
         if (rows.isEmpty())
         {
@@ -179,11 +187,25 @@ public class Query
         }
     }
 
-    public Object getSingleResult()
+    public Object[] getSingleResult(Class<?>... tableClasses)
     {
-        List<?> list;
+        List<Object[]> list;
 
-        list = getResultList();
+        list = getResultList(tableClasses);
+
+        if (list.isEmpty())
+        {
+            return null;
+        }
+
+        return list.get(0);
+    }
+
+    public <T> T getSingleResult(Class<T> type)
+    {
+        List<T> list;
+
+        list = getResultList(type);
 
         if (list.isEmpty())
         {
