@@ -58,12 +58,95 @@ public class SelectQueryBuilder
         groupByClause = new StringBuilder();
     }
 
-    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter)
+    public SelectQueryBuilder count()
     {
-        return select(fieldGetter, null);
+        if (!selectClause.isEmpty())
+        {
+            selectClause.append(", ");
+        }
+
+        selectClause.append("count(*)");
+
+        return this;
     }
 
-    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter, String alias)
+    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter)
+    {
+        return count(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        appendAggregateFunction(fieldGetter, alias, "count");
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder count(SelectQueryBuilder builder)
+    {
+        if (!selectClause.isEmpty())
+        {
+            selectClause.append(", ");
+        }
+
+        selectClause.append("count(");
+        selectClause.append(builder.build());
+        selectClause.append(")");
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter)
+    {
+        return sum(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        appendAggregateFunction(fieldGetter, alias, "sum");
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter)
+    {
+        return avg(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        appendAggregateFunction(fieldGetter, alias, "avg");
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter)
+    {
+        return min(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        appendAggregateFunction(fieldGetter, alias, "min");
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter)
+    {
+        return max(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        appendAggregateFunction(fieldGetter, alias, "max");
+
+        return this;
+    }
+
+    private <T, R> void appendAggregateFunction(FieldGetter<T, R> fieldGetter, 
+            String alias, 
+            String aggregateFunction)
     {
         ColumnMetadata column;
 
@@ -74,19 +157,27 @@ public class SelectQueryBuilder
             selectClause.append(", ");
         }
 
-        if (alias == null)
+        selectClause.append(aggregateFunction);
+        selectClause.append("(");
+
+        append(column, alias, selectClause);
+
+        selectClause.append(")");
+    }
+
+    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter)
+    {
+        return select(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        if (!selectClause.isEmpty())
         {
-            selectClause.append(tableManager.getDialect()
-                    .getTableName(column.getTable()));
-            selectClause.append(".");
-            selectClause.append(column.getColumnName());
+            selectClause.append(", ");
         }
-        else
-        {
-            selectClause.append(alias);
-            selectClause.append(".");
-            selectClause.append(column.getColumnName());
-        }
+
+        append(fieldGetter, alias, selectClause);
 
         return this;
     }
@@ -109,19 +200,7 @@ public class SelectQueryBuilder
                 selectClause.append(", ");
             }
 
-            if (alias == null)
-            {
-                selectClause.append(tableManager.getDialect()
-                        .getTableName(table));
-                selectClause.append(".");
-                selectClause.append(column.getColumnName());
-            }
-            else
-            {
-                selectClause.append(alias);
-                selectClause.append(".");
-                selectClause.append(column.getColumnName());
-            }
+            append(column, alias, selectClause);
         }
 
         return this;
@@ -507,7 +586,7 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        appendWhereClause(fieldGetter, alias);
+        append(fieldGetter, alias, whereClause);
 
         whereClause.append(" ");
         whereClause.append(operator);
@@ -549,7 +628,7 @@ public class SelectQueryBuilder
         whereClause.append(operator);
         whereClause.append(" ");
 
-        appendWhereClause(fieldGetter, alias);
+        append(fieldGetter, alias, whereClause);
 
         return this;
     }
@@ -580,13 +659,13 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        appendWhereClause(leftFieldGetter, leftAlias);
+        append(leftFieldGetter, leftAlias, whereClause);
 
         whereClause.append(" ");
         whereClause.append(operator);
         whereClause.append(" ");
 
-        appendWhereClause(rightFieldGetter, rightAlias);
+        append(rightFieldGetter, rightAlias, whereClause);
 
         return this;
     }
@@ -714,7 +793,7 @@ public class SelectQueryBuilder
         whereClause.append(operator);
         whereClause.append(" ");
 
-        appendWhereClause(fieldGetter, alias);
+        append(fieldGetter, alias, whereClause);
 
         return this;
     }
@@ -740,7 +819,7 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        appendWhereClause(fieldGetter, alias);
+        append(fieldGetter, alias, whereClause);
 
         whereClause.append(" ");
         whereClause.append(operator);
@@ -771,27 +850,6 @@ public class SelectQueryBuilder
         return this;
     }
 
-    private <T, R> void appendWhereClause(FieldGetter<T, R> fieldGetter, String alias)
-    {
-        ColumnMetadata column;
-
-        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
-
-        if (alias == null)
-        {
-            whereClause.append(tableManager.getDialect()
-                    .getTableName(column.getTable()));
-            whereClause.append(".");
-            whereClause.append(column.getColumnName());
-        }
-        else
-        {
-            whereClause.append(alias);
-            whereClause.append(".");
-            whereClause.append(column.getColumnName());
-        }
-    }
-
     public <T, R> SelectQueryBuilder orderBy(FieldGetter<T, R> fieldGetter)
     {
         return orderBy(fieldGetter, null);
@@ -799,28 +857,26 @@ public class SelectQueryBuilder
 
     public <T, R> SelectQueryBuilder orderBy(FieldGetter<T, R> fieldGetter, String alias)
     {
-        ColumnMetadata column;
-
         if (!orderByClause.isEmpty())
         {
             orderByClause.append(", ");
         }
 
-        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
+        append(fieldGetter, alias, orderByClause);
 
-        if (alias == null)
-        {
-            orderByClause.append(tableManager.getDialect()
-                    .getTableName(column.getTable()));
-            orderByClause.append(".");
-            orderByClause.append(column.getColumnName());
-        }
-        else
-        {
-            orderByClause.append(alias);
-            orderByClause.append(".");
-            orderByClause.append(column.getColumnName());
-        }
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder orderByDesc(FieldGetter<T, R> fieldGetter)
+    {
+        return orderByDesc(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder orderByDesc(FieldGetter<T, R> fieldGetter, String alias)
+    {
+        orderBy(fieldGetter, alias);
+
+        orderByClause.append(" DESC");
 
         return this;
     }
@@ -841,6 +897,15 @@ public class SelectQueryBuilder
         return this;
     }
 
+    public <T, R> SelectQueryBuilder orderByDesc(SelectQueryBuilder builder)
+    {
+        orderBy(builder);
+
+        orderByClause.append(" DESC");
+
+        return this;
+    }
+
     public SelectQueryBuilder orderBy(String expression)
     {
         if (!orderByClause.isEmpty())
@@ -849,6 +914,24 @@ public class SelectQueryBuilder
         }
 
         orderByClause.append(expression);
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder groupBy(FieldGetter<T, R> fieldGetter)
+    {
+        return groupBy(fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder groupBy(FieldGetter<T, R> fieldGetter, 
+            String alias)
+    {
+        if (!groupByClause.isEmpty())
+        {
+            groupByClause.append(", ");
+        }
+
+        append(fieldGetter, alias, groupByClause);
 
         return this;
     }
@@ -916,7 +999,7 @@ public class SelectQueryBuilder
         return statement.toString();
     }
 
-    public <T> List<T> getResultList(Class<T> tableClass)
+    public <T> List<T> getResultList(Class<T> type)
     {
         Query query;
 
@@ -927,7 +1010,7 @@ public class SelectQueryBuilder
             query.setParameter(i + 1, parameters.get(i));
         }
 
-        return query.getResultList(tableClass);
+        return query.getResultList(type);
     }
 
     public List<Object[]> getResultList(Class<?>... tableClasses)
@@ -942,6 +1025,62 @@ public class SelectQueryBuilder
         }
 
         return query.getResultList(tableClasses);
+    }
+
+    public <T> T getSingleResult(Class<T> type)
+    {
+        Query query;
+
+        query = tableManager.createQuery(build());
+
+        for (int i = 0; i < parameters.size(); i++)
+        {
+            query.setParameter(i + 1, parameters.get(i));
+        }
+
+        return query.getSingleResult(type);
+    }
+
+    public Object[] getSingleResult(Class<?>... tableClasses)
+    {
+        Query query;
+
+        query = tableManager.createQuery(build());
+
+        for (int i = 0; i < parameters.size(); i++)
+        {
+            query.setParameter(i + 1, parameters.get(i));
+        }
+
+        return query.getSingleResult(tableClasses);
+    }
+
+    private <T, R> void append(FieldGetter<T, R> fieldGetter, 
+            String alias, 
+            StringBuilder sb)
+    {
+        append(tableManager.getMetadataManager().getMetadata(fieldGetter), 
+                alias, 
+                sb);
+    }
+
+    private <T, R> void append(ColumnMetadata column, 
+            String alias, 
+            StringBuilder sb)
+    {
+        if (alias == null)
+        {
+            sb.append(tableManager.getDialect()
+                    .getTableName(column.getTable()));
+            sb.append(".");
+            sb.append(column.getColumnName());
+        }
+        else
+        {
+            sb.append(alias);
+            sb.append(".");
+            sb.append(column.getColumnName());
+        }
     }
 
     private TableMetadata getTable(Class<?> tableClass)

@@ -91,7 +91,14 @@ public class MetadataManager
 
         tableAnnotation = tableClass.getAnnotation(Table.class);
 
-        tableName = tableAnnotation.name();
+        if (tableAnnotation.name().isEmpty())
+        {
+            tableName = tableClass.getSimpleName().toLowerCase();
+        }
+        else
+        {
+            tableName = tableAnnotation.name();
+        }
 
         schema = tableAnnotation.schema();
 
