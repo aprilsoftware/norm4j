@@ -836,6 +836,11 @@ public class SelectQueryBuilder
 
     public SelectQueryBuilder where(String expression)
     {
+        return where(expression, null);
+    }
+
+    public SelectQueryBuilder where(String expression, List<Object> parameters)
+    {
         if (whereClause.isEmpty())
         {
             whereClause.append(" WHERE ");
@@ -846,6 +851,11 @@ public class SelectQueryBuilder
         }
 
         whereClause.append(expression);
+
+        if (parameters != null)
+        {
+            this.parameters.addAll(parameters);
+        }
 
         return this;
     }
