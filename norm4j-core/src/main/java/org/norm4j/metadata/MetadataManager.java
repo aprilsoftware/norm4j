@@ -93,7 +93,7 @@ public class MetadataManager
 
         if (tableAnnotation.name().isEmpty())
         {
-            tableName = tableClass.getSimpleName();
+            tableName = tableClass.getSimpleName().toLowerCase();
         }
         else
         {

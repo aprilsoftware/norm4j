@@ -23,11 +23,11 @@ package org.norm4j.tests.test9;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import org.norm4j.TableManager;
+import org.norm4j.dialects.SQLServerDialect;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
@@ -96,22 +96,44 @@ public class Test9 extends BaseTest
 
         tableManager.persist(book2);
 
-        count = tableManager.createSelectQueryBuilder()
-                .count()
-                .from(Book.class)
-            .getSingleResult(long.class);
+        if (getDialect() instanceof SQLServerDialect)
+        {
+            count = tableManager.createSelectQueryBuilder()
+                    .count()
+                    .from(Book.class)
+                .getSingleResult(int.class);
 
-        assertEquals(count, 2);
+            assertEquals(count, 2);
 
-        count = tableManager.createSelectQueryBuilder()
-                .count(Author::getId)
-                .from(Book.class)
-                .innerJoin(Author.class)
-                .where(Book::getTenantId, "=", book1.getTenantId())
-                .where(Book::getId, "=", book1.getId())
-            .getSingleResult(long.class);
+            count = tableManager.createSelectQueryBuilder()
+                    .count(Author::getId)
+                    .from(Book.class)
+                    .innerJoin(Author.class)
+                    .where(Book::getTenantId, "=", book1.getTenantId())
+                    .where(Book::getId, "=", book1.getId())
+                .getSingleResult(int.class);
 
-        assertEquals(count, 1);
+            assertEquals(count, 1);
+        }
+        else
+        {
+            count = tableManager.createSelectQueryBuilder()
+                    .count()
+                    .from(Book.class)
+                .getSingleResult(long.class);
+
+            assertEquals(count, 2);
+
+            count = tableManager.createSelectQueryBuilder()
+                    .count(Author::getId)
+                    .from(Book.class)
+                    .innerJoin(Author.class)
+                    .where(Book::getTenantId, "=", book1.getTenantId())
+                    .where(Book::getId, "=", book1.getId())
+                .getSingleResult(long.class);
+
+            assertEquals(count, 1);
+        }
 
         value = tableManager.createSelectQueryBuilder()
                 .sum(Book::getPrice)

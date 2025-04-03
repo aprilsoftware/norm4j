@@ -75,6 +75,18 @@ public abstract class BaseTest
         dataSource.setMinIdle(1);
     }
 
+    protected SQLDialect getDialect()
+    {
+        try (Connection connection = dataSource.getConnection())
+        {
+            return SQLDialect.detectDialect(connection);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected boolean isArraySupported()
     {
         try (Connection connection = dataSource.getConnection())

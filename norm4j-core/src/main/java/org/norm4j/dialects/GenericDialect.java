@@ -114,7 +114,8 @@ public abstract class GenericDialect implements SQLDialect
     {
         if (foreignKey.name().isEmpty())
         {
-            return table.getTableName()
+            return "fk_"
+                    + table.getTableName()
                     + "_"
                     + referenceTable.getTableName();
         }
