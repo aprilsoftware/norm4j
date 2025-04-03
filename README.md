@@ -28,7 +28,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-core</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-postgresql</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 <dependency>
     <groupId>org.postgresql</groupId>
@@ -53,7 +53,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-mariadb</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 <dependency>
     <groupId>org.mariadb.jdbc</groupId>
@@ -67,7 +67,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-sqlserver</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
@@ -81,7 +81,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-oracle</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 
@@ -205,6 +205,17 @@ List<Book> books = tableManager.createSelectQueryBuilder()
     .innerJoin(Author.class)
     .where(Book::getAuthorId, "=", author.getId())
     .orderBy(Book::getName)
+    .getResultList(Book.class);
+```
+
+```java
+List<Book> books = tableManager.createSelectQueryBuilder()
+    .select(Book.class)
+    .from(Book.class)
+    .where(q -> q.condition(Book::getId, "=", 1)
+            .or(Book::getId, "=", 2))
+    .and(Book::getAuthorId, "=", author.getId())
+    .orderByDesc(Book::getName)
     .getResultList(Book.class);
 ```
 
