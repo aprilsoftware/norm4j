@@ -20,15 +20,13 @@
  */
 package org.norm4j.metadata;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.sql.DataSource;
@@ -52,6 +50,16 @@ public class MetadataManager
 {
     private final Map<Class<?>, TableMetadata> metadataMap;
     private SQLDialect dialect;
+    List<Class<? extends Annotation>> annotationTypes = List.of(
+            Column.class,
+            Array.class,
+            Id.class,
+            GeneratedValue.class,
+            SequenceGenerator.class,
+            TableGenerator.class,
+            Temporal.class,
+            Enumerated.class
+    );
 
     public MetadataManager()
     {
@@ -134,59 +142,13 @@ public class MetadataManager
                 idClass,
                 joins);
 
-        for (Field field : tableClass.getDeclaredFields())
-        {
-            Map<Class<?>, Object> annotations;
+        for (Field field : tableClass.getDeclaredFields()) {
+            Map<Class<?>, Object> annotations = new HashMap<>();
 
-            annotations = new HashMap<>();
-
-            if (field.isAnnotationPresent(Column.class))
-            {
-                Column column;
-
-                column = field.getAnnotation(Column.class);
-
-                annotations.put(Column.class, column);
-            }
-
-            if (field.isAnnotationPresent(Array.class))
-            {
-                annotations.put(Array.class, field.getAnnotation(Array.class));
-            }
-
-            if (field.isAnnotationPresent(Id.class))
-            {
-                annotations.put(Id.class, field.getAnnotation(Id.class));
-            }
-
-            if (field.isAnnotationPresent(GeneratedValue.class))
-            {
-                annotations.put(GeneratedValue.class, field.getAnnotation(GeneratedValue.class));
-            }
-
-            if (field.isAnnotationPresent(SequenceGenerator.class))
-            {
-                annotations.put(SequenceGenerator.class, field.getAnnotation(SequenceGenerator.class));
-            }
-
-            if (field.isAnnotationPresent(TableGenerator.class))
-            {
-                annotations.put(TableGenerator.class, field.getAnnotation(TableGenerator.class));
-            }
-
-            if (field.isAnnotationPresent(Temporal.class))
-            {
-                annotations.put(Temporal.class, field.getAnnotation(Temporal.class));
-            }
-
-            if (field.isAnnotationPresent(Array.class))
-            {
-                annotations.put(Array.class, field.getAnnotation(Array.class));
-            }
-
-            if (field.isAnnotationPresent(Enumerated.class))
-            {
-                annotations.put(Enumerated.class, field.getAnnotation(Enumerated.class));
+            for (Class<? extends Annotation> annotationType : annotationTypes) {
+                if (field.isAnnotationPresent(annotationType)) {
+                    annotations.put(annotationType, field.getAnnotation(annotationType));
+                }
             }
 
             table.getColumns().add(new ColumnMetadata(table, annotations, field));
@@ -214,7 +176,8 @@ public class MetadataManager
 
         return tableMetadata.getColumns().stream()
                 .filter(c -> c.getColumnName().equals(columnName))
-                .findFirst().get();
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Column not found: " + columnName));
     }
 
     public List<ColumnMetadata> getMetadata(Class<?> tableClass, String[] columnNames)
@@ -248,7 +211,8 @@ public class MetadataManager
 
         return tableMetadata.getColumns().stream()
                 .filter(c -> c.getField().getName().equals(fieldGetterMetadata.getFieldName()))
-                .findFirst().get();
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Field not found: " + fieldGetterMetadata.getFieldName()));
     }
 
     public void createTables(DataSource dataSource)
@@ -330,8 +294,8 @@ public class MetadataManager
 
                 tableMetadata = entry.getValue();
 
-                if (!existingTables.stream()
-                        .anyMatch(t -> t.getSchema().equals(tableMetadata.getSchema()) &&
+                if (existingTables.stream()
+                        .noneMatch(t -> t.getSchema().equals(tableMetadata.getSchema()) &&
                                 t.getTableName().equals(tableMetadata.getTableName())))
                 {
                     for (ColumnMetadata column : tableMetadata.getColumns())
@@ -393,8 +357,8 @@ public class MetadataManager
 
                 tableMetadata = metadataMap.get(tableClass);
 
-                if (!existingTables.stream()
-                        .anyMatch(t -> t.getSchema().equals(tableMetadata.getSchema()) &&
+                if (existingTables.stream()
+                        .noneMatch(t -> t.getSchema().equals(tableMetadata.getSchema()) &&
                                 t.getTableName().equals(tableMetadata.getTableName())))
                 {
                     for (Join join : entry.getValue().getJoins())
@@ -460,13 +424,13 @@ public class MetadataManager
 
             if (methodName.startsWith("get") && methodName.length() > 3)
             {
-                return new FieldGetterMetadata(Class.forName(className), 
+                return new FieldGetterMetadata(Class.forName(className),
                         Character.toLowerCase(methodName.charAt(3))
                                 + methodName.substring(4));
             }
             else if (methodName.startsWith("is") && methodName.length() > 2)
             {
-                return new FieldGetterMetadata(Class.forName(className), 
+                return new FieldGetterMetadata(Class.forName(className),
                         Character.toLowerCase(methodName.charAt(2))
                                 + methodName.substring(3));
             }
@@ -479,7 +443,7 @@ public class MetadataManager
         }
     }
 
-    private class FieldGetterMetadata
+    private static class FieldGetterMetadata
     {
         private final Class<?> tableClass;
         private final String fieldName;
