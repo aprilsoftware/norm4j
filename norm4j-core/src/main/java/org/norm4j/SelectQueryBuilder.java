@@ -22,28 +22,25 @@ package org.norm4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public class SelectQueryBuilder
+public class SelectQueryBuilder extends QueryBuilder
 {
     private final List<FromClauseTable> fromClauseTables;
-    private final TableManager tableManager;
     private final StringBuilder selectClause;
     private final StringBuilder fromClause;
     private final StringBuilder whereClause;
     private final StringBuilder orderByClause;
     private final StringBuilder groupByClause;
-    private final List<Object> parameters;
     private int offset;
     private int limit;
 
     public SelectQueryBuilder(TableManager tableManager)
     {
-        this.tableManager = tableManager;
-
-        parameters = new ArrayList<>();
+        super(tableManager);
 
         fromClauseTables = new ArrayList<>();
 
@@ -150,7 +147,8 @@ public class SelectQueryBuilder
     {
         ColumnMetadata column;
 
-        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
+        column = getTableManager().getMetadataManager()
+                .getMetadata(fieldGetter);
 
         if (!selectClause.isEmpty())
         {
@@ -217,7 +215,7 @@ public class SelectQueryBuilder
         selectClause.append(builder.build());
         selectClause.append(")");
 
-        parameters.addAll(builder.parameters);
+        getParameters().addAll(builder.getParameters());
 
         return this;
     }
@@ -250,7 +248,7 @@ public class SelectQueryBuilder
 
         table = getTable(tableClass);
 
-        fromClause.append(tableManager.getDialect()
+        fromClause.append(getTableManager().getDialect()
                 .getTableName(table));
 
         if (alias != null)
@@ -277,7 +275,7 @@ public class SelectQueryBuilder
         fromClause.append(" AS ");
         fromClause.append(alias);
 
-        parameters.addAll(builder.parameters);
+        getParameters().addAll(builder.getParameters());
 
         return this;
     }
@@ -384,7 +382,7 @@ public class SelectQueryBuilder
         fromClause.append(" ");
         fromClause.append(joinType);
         fromClause.append(" ");
-        fromClause.append(tableManager.getDialect()
+        fromClause.append(getTableManager().getDialect()
                 .getTableName(table));
 
         if (alias != null)
@@ -438,7 +436,7 @@ public class SelectQueryBuilder
 
                         if (alias == null)
                         {
-                            expression.append(tableManager.getDialect()
+                            expression.append(getTableManager().getDialect()
                                     .getTableName(table));
                             expression.append(".");
                             expression.append(leftColumn.getColumnName());
@@ -454,7 +452,7 @@ public class SelectQueryBuilder
 
                         if (fromClauseTable.alias == null)
                         {
-                            expression.append(tableManager.getDialect()
+                            expression.append(getTableManager().getDialect()
                                     .getTableName(fromClauseTable.table));
                             expression.append(".");
                             expression.append(rightColumn.getColumnName());
@@ -509,7 +507,7 @@ public class SelectQueryBuilder
 
                         if (alias == null)
                         {
-                            expression.append(tableManager.getDialect()
+                            expression.append(getTableManager().getDialect()
                                     .getTableName(table));
                             expression.append(".");
                             expression.append(leftColumn.getColumnName());
@@ -525,7 +523,7 @@ public class SelectQueryBuilder
 
                         if (fromClauseTable.alias == null)
                         {
-                            expression.append(tableManager.getDialect()
+                            expression.append(getTableManager().getDialect()
                                     .getTableName(fromClauseTable.table));
                             expression.append(".");
                             expression.append(rightColumn.getColumnName());
@@ -562,7 +560,7 @@ public class SelectQueryBuilder
         fromClause.append(" ON ");
         fromClause.append(joinExpression);
 
-        parameters.addAll(builder.parameters);
+        getParameters().addAll(builder.getParameters());
     }
 
     public <T, R> SelectQueryBuilder where(FieldGetter<T, R> fieldGetter, 
@@ -586,15 +584,12 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        append(fieldGetter, alias, whereClause);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        whereClause.append("?");
-
-        parameters.add(value);
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -620,15 +615,12 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        whereClause.append("?");
-
-        parameters.add(value);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        append(fieldGetter, alias, whereClause);
+        appendCondition(value, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -659,13 +651,13 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        append(leftFieldGetter, leftAlias, whereClause);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        append(rightFieldGetter, rightAlias, whereClause);
+        appendCondition(leftFieldGetter, 
+                leftAlias, 
+                operator, 
+                rightFieldGetter, 
+                rightAlias, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -683,21 +675,11 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        whereClause.append("(");
-        whereClause.append(leftBuilder.build());
-        whereClause.append(")");
-
-        parameters.addAll(leftBuilder.parameters);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        whereClause.append("(");
-        whereClause.append(rightBuilder.build());
-        whereClause.append(")");
-
-        parameters.addAll(rightBuilder.parameters);
+        appendCondition(leftBuilder, 
+                operator, 
+                rightBuilder, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -715,19 +697,11 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        whereClause.append("(");
-        whereClause.append(builder.build());
-        whereClause.append(")");
-
-        parameters.addAll(builder.parameters);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        whereClause.append("?");
-
-        parameters.add(value);
+        appendCondition(builder, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -745,19 +719,11 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        whereClause.append("?");
-
-        parameters.add(value);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        whereClause.append("(");
-        whereClause.append(builder.build());
-        whereClause.append(")");
-
-        parameters.addAll(builder.parameters);
+        appendCondition(value, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -783,17 +749,12 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        whereClause.append("(");
-        whereClause.append(builder.build());
-        whereClause.append(")");
-
-        parameters.addAll(builder.parameters);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        append(fieldGetter, alias, whereClause);
+        appendCondition(builder, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -819,22 +780,19 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        append(fieldGetter, alias, whereClause);
-
-        whereClause.append(" ");
-        whereClause.append(operator);
-        whereClause.append(" ");
-
-        whereClause.append("(");
-        whereClause.append(builder.build());
-        whereClause.append(")");
-
-        parameters.addAll(builder.parameters);
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
 
-    public SelectQueryBuilder where(String expression)
+    public SelectQueryBuilder where(Expression expression,
+            String operator, 
+            Object value)
     {
         if (whereClause.isEmpty())
         {
@@ -845,7 +803,465 @@ public class SelectQueryBuilder
             whereClause.append(" AND ");
         }
 
-        whereClause.append(expression);
+        appendCondition(expression, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder where(String expression)
+    {
+        return where(expression, null);
+    }
+
+    public SelectQueryBuilder where(String expression, List<Object> parameters)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" AND ");
+        }
+
+        appendCondition(expression, 
+                parameters, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder where(Consumer<ConditionBuilder> consumer)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" AND ");
+        }
+
+        appendCondition(consumer, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder and(FieldGetter<T, R> fieldGetter, 
+            String operator, 
+            Object value)
+    {
+        return where(fieldGetter, operator, value);
+    }
+
+    public <T, R> SelectQueryBuilder and(FieldGetter<T, R> fieldGetter, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        return where(fieldGetter, alias, operator, value);
+    }
+
+    public <T, R> SelectQueryBuilder and(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return where(value, operator, fieldGetter);
+    }
+
+    public <T, R> SelectQueryBuilder and(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter, 
+            String alias)
+    {
+        return where(value, operator, fieldGetter, alias);
+    }
+
+    public <T, R> SelectQueryBuilder and(FieldGetter<T, R> leftFieldGetter, 
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter)
+    {
+        return where(leftFieldGetter, 
+                operator, 
+                rightFieldGetter);
+    }
+
+    public <T, R> SelectQueryBuilder and(FieldGetter<T, R> leftFieldGetter, 
+            String leftAlias,
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter,
+            String rightAlias)
+    {
+        return where(leftFieldGetter, leftAlias, operator, rightFieldGetter, rightAlias);
+    }
+
+    public SelectQueryBuilder and(SelectQueryBuilder leftBuilder,
+            String operator, 
+            SelectQueryBuilder rightBuilder)
+    {
+        return where(leftBuilder, operator, rightBuilder);
+    }
+
+    public SelectQueryBuilder and(SelectQueryBuilder builder,
+            String operator, 
+            Object value)
+    {
+        return where(builder, operator, value);
+    }
+
+    public SelectQueryBuilder and(Object value,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(value, operator, builder);
+    }
+
+    public <T, R> SelectQueryBuilder and(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return where(builder, operator, fieldGetter);
+    }
+
+    public <T, R> SelectQueryBuilder and(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter,
+            String alias)
+    {
+        return where(builder, operator, fieldGetter, alias);
+    }
+
+    public <T, R> SelectQueryBuilder and(FieldGetter<T, R> fieldGetter,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(fieldGetter, operator, builder);
+    }
+
+    public <T, R> SelectQueryBuilder and(FieldGetter<T, R> fieldGetter,
+            String alias,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(fieldGetter, alias, operator, builder);
+    }
+
+    public SelectQueryBuilder and(Expression expression,
+            String operator, 
+            Object value)
+    {
+        return where(expression, operator, value);
+    }
+
+    public SelectQueryBuilder and(String expression)
+    {
+        return where(expression);
+    }
+
+    public SelectQueryBuilder and(String expression, List<Object> parameters)
+    {
+        return where(expression, parameters);
+    }
+
+    public SelectQueryBuilder and(Consumer<ConditionBuilder> consumer)
+    {
+        return where(consumer);
+    }
+
+    public <T, R> SelectQueryBuilder or(FieldGetter<T, R> fieldGetter, 
+            String operator, 
+            Object value)
+    {
+        return or(fieldGetter, null, operator, value);
+    }
+
+    public <T, R> SelectQueryBuilder or(FieldGetter<T, R> fieldGetter, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder or(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return or(value, operator, fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder or(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter, 
+            String alias)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(value, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder or(FieldGetter<T, R> leftFieldGetter, 
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter)
+    {
+        return or(leftFieldGetter, 
+                null, 
+                operator, 
+                rightFieldGetter, 
+                null);
+    }
+
+    public <T, R> SelectQueryBuilder or(FieldGetter<T, R> leftFieldGetter, 
+            String leftAlias,
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter,
+            String rightAlias)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(leftFieldGetter, 
+                leftAlias, 
+                operator, 
+                rightFieldGetter, 
+                rightAlias, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder or(SelectQueryBuilder leftBuilder,
+            String operator, 
+            SelectQueryBuilder rightBuilder)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(leftBuilder, 
+                operator, 
+                rightBuilder, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder or(SelectQueryBuilder builder,
+            String operator, 
+            Object value)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(builder, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder or(Object value,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(value, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder or(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return or(builder, operator, fieldGetter, null);
+    }
+
+    public <T, R> SelectQueryBuilder or(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter,
+            String alias)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(builder, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public <T, R> SelectQueryBuilder or(FieldGetter<T, R> fieldGetter,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return or(fieldGetter, null, operator, builder);
+    }
+
+    public <T, R> SelectQueryBuilder or(FieldGetter<T, R> fieldGetter,
+            String alias,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder or(Expression expression,
+            String operator, 
+            Object value)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(expression, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder or(String expression)
+    {
+        return or(expression, null);
+    }
+
+    public SelectQueryBuilder or(String expression, List<Object> parameters)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(expression, 
+                parameters, 
+                whereClause, 
+                getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder or(Consumer<ConditionBuilder> consumer)
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
+        }
+
+        appendCondition(consumer, 
+                whereClause, 
+                getParameters());
 
         return this;
     }
@@ -892,7 +1308,7 @@ public class SelectQueryBuilder
         orderByClause.append(builder.build());
         orderByClause.append(")");
 
-        parameters.addAll(builder.parameters);
+        getParameters().addAll(builder.getParameters());
 
         return this;
     }
@@ -993,7 +1409,8 @@ public class SelectQueryBuilder
         if (limit > 0)
         {
             statement.append(" ");
-            statement.append(tableManager.getDialect().limitSelect(offset, limit));
+            statement.append(getTableManager().getDialect()
+                    .limitSelect(offset, limit));
         }
 
         return statement.toString();
@@ -1003,11 +1420,11 @@ public class SelectQueryBuilder
     {
         Query query;
 
-        query = tableManager.createQuery(build());
+        query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < parameters.size(); i++)
+        for (int i = 0; i < getParameters().size(); i++)
         {
-            query.setParameter(i + 1, parameters.get(i));
+            query.setParameter(i + 1, getParameters().get(i));
         }
 
         return query.getResultList(type);
@@ -1017,11 +1434,11 @@ public class SelectQueryBuilder
     {
         Query query;
 
-        query = tableManager.createQuery(build());
+        query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < parameters.size(); i++)
+        for (int i = 0; i < getParameters().size(); i++)
         {
-            query.setParameter(i + 1, parameters.get(i));
+            query.setParameter(i + 1, getParameters().get(i));
         }
 
         return query.getResultList(tableClasses);
@@ -1031,11 +1448,11 @@ public class SelectQueryBuilder
     {
         Query query;
 
-        query = tableManager.createQuery(build());
+        query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < parameters.size(); i++)
+        for (int i = 0; i < getParameters().size(); i++)
         {
-            query.setParameter(i + 1, parameters.get(i));
+            query.setParameter(i + 1, getParameters().get(i));
         }
 
         return query.getSingleResult(type);
@@ -1045,59 +1462,14 @@ public class SelectQueryBuilder
     {
         Query query;
 
-        query = tableManager.createQuery(build());
+        query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < parameters.size(); i++)
+        for (int i = 0; i < getParameters().size(); i++)
         {
-            query.setParameter(i + 1, parameters.get(i));
+            query.setParameter(i + 1, getParameters().get(i));
         }
 
         return query.getSingleResult(tableClasses);
-    }
-
-    private <T, R> void append(FieldGetter<T, R> fieldGetter, 
-            String alias, 
-            StringBuilder sb)
-    {
-        append(tableManager.getMetadataManager().getMetadata(fieldGetter), 
-                alias, 
-                sb);
-    }
-
-    private <T, R> void append(ColumnMetadata column, 
-            String alias, 
-            StringBuilder sb)
-    {
-        if (alias == null)
-        {
-            sb.append(tableManager.getDialect()
-                    .getTableName(column.getTable()));
-            sb.append(".");
-            sb.append(column.getColumnName());
-        }
-        else
-        {
-            sb.append(alias);
-            sb.append(".");
-            sb.append(column.getColumnName());
-        }
-    }
-
-    private TableMetadata getTable(Class<?> tableClass)
-    {
-        TableMetadata table;
-
-        table = tableManager.getMetadataManager().getMetadata(tableClass);
-
-        if (table == null)
-        {
-            throw new IllegalArgumentException("No metadata found for class " 
-                    + tableClass.getName());
-        }
-        else
-        {
-            return table;
-        }
     }
 
     private class FromClauseTable
