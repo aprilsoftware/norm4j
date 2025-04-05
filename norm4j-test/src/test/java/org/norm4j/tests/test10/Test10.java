@@ -138,6 +138,18 @@ public class Test10 extends BaseTest
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
+        assertEquals(books.size(), 0);
+
+        books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+                .innerJoin(Author.class)
+                .where(Book::getBookType, "=", book2.getBookType())
+                .orderByDesc(Book::getName)
+            .getResultList(Book.class);
+
+        assertEquals(books.size(), 1);
+
         tableManager.remove(book1);
         tableManager.remove(book2);
         tableManager.remove(Author.class, 

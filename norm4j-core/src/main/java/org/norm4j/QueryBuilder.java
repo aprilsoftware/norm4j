@@ -36,22 +36,17 @@ public abstract class QueryBuilder
             StringBuilder condition, 
             List<Object> parameters)
     {
-        append(fieldGetter, alias, condition);
+        ColumnMetadata column;
+
+        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
+
+        append(column, alias, condition);
 
         condition.append(" ");
         condition.append(operator);
         condition.append(" ");
 
-        if (value == null)
-        {
-            condition.append("NULL");
-        }
-        else
-        {
-            condition.append("?");
-
-            getParameters().add(value);
-        }
+        appendValue(value, condition, column);
     }
 
     protected <T, R> void appendCondition(Object value, 
@@ -61,22 +56,17 @@ public abstract class QueryBuilder
             StringBuilder condition, 
             List<Object> parameters)
     {
-        if (value == null)
-        {
-            condition.append("NULL");
-        }
-        else
-        {
-            condition.append("?");
+        ColumnMetadata column;
 
-            getParameters().add(value);
-        }
+        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
+
+        appendValue(value, condition, column);
 
         condition.append(" ");
         condition.append(operator);
         condition.append(" ");
 
-        append(fieldGetter, alias, condition);
+        append(column, alias, condition);
     }
 
     protected <T, R> void appendCondition(FieldGetter<T, R> leftFieldGetter, 
@@ -135,16 +125,7 @@ public abstract class QueryBuilder
         condition.append(operator);
         condition.append(" ");
 
-        if (value == null)
-        {
-            condition.append("NULL");
-        }
-        else
-        {
-            condition.append("?");
-
-            getParameters().add(value);
-        }
+        appendValue(value, condition, null);
     }
 
     protected void appendCondition(Object value,
@@ -153,16 +134,7 @@ public abstract class QueryBuilder
             StringBuilder condition, 
             List<Object> parameters)
     {
-        if (value == null)
-        {
-            condition.append("NULL");
-        }
-        else
-        {
-            condition.append("?");
-
-            getParameters().add(value);
-        }
+        appendValue(value, condition, null);
 
         condition.append(" ");
         condition.append(operator);
@@ -227,16 +199,7 @@ public abstract class QueryBuilder
         condition.append(operator);
         condition.append(" ");
 
-        if (value == null)
-        {
-            condition.append("NULL");
-        }
-        else
-        {
-            condition.append("?");
-
-            getParameters().add(value);
-        }
+        appendValue(value, condition, null);
     }
 
     protected void appendCondition(String expression, 
@@ -311,6 +274,46 @@ public abstract class QueryBuilder
         else
         {
             return table;
+        }
+    }
+
+    private void appendValue(Object value, 
+            StringBuilder condition, 
+            ColumnMetadata column)
+    {
+        if (value == null)
+        {
+            condition.append("NULL");
+        }
+        else
+        {
+            condition.append("?");
+
+            if (value.getClass().isEnum())
+            {
+                if (column == null)
+                {
+                    value = ((Enum<?>)value).ordinal();
+                }
+                else
+                {
+                    Enumerated enumerated;
+                
+                    enumerated = (Enumerated)column.getAnnotations().get(Enumerated.class);
+    
+                    if (enumerated == null ||
+                            enumerated.value() == EnumType.ORDINAL)
+                    {
+                        value = ((Enum<?>)value).ordinal();
+                    }
+                    else
+                    {
+                        value = ((Enum<?>)value).name();
+                    }
+                }
+            }
+
+            getParameters().add(value);
         }
     }
 }
