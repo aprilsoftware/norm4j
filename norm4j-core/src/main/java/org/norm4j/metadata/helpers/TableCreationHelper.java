@@ -108,19 +108,19 @@ public class TableCreationHelper {
                 continue;
             }
 
-            SequenceInfo sequenceInfo = getSequenceInfo(column, dialect, tableMetadata);
+            SequenceMetadata sequenceMetadata = getSequenceMetadataInfo(column, dialect, tableMetadata);
 
-            if (!dialect.sequenceExists(connection, sequenceInfo.schema, sequenceInfo.name)) {
+            if (!dialect.sequenceExists(connection, sequenceMetadata.schema, sequenceMetadata.name)) {
                 sqlExecutor.execute(connection, dialect.createSequence(
-                        sequenceInfo.schema,
-                        sequenceInfo.name,
-                        sequenceInfo.initialValue
+                        sequenceMetadata.schema,
+                        sequenceMetadata.name,
+                        sequenceMetadata.initialValue
                 ));
             }
         }
     }
 
-    public SequenceInfo getSequenceInfo(ColumnMetadata column, SQLDialect dialect, TableMetadata tableMetadata) {
+    private SequenceMetadata getSequenceMetadataInfo(ColumnMetadata column, SQLDialect dialect, TableMetadata tableMetadata) {
         String schema = "";
         String sequenceName = "";
         int initialValue = 1;
@@ -138,7 +138,7 @@ public class TableCreationHelper {
             sequenceName = dialect.createSequenceName(tableMetadata, column);
         }
 
-        return new SequenceInfo(schema, sequenceName, initialValue);
+        return new SequenceMetadata(schema, sequenceName, initialValue);
     }
 
     public void addForeignKeyConstraints(Connection connection, SQLDialect dialect,
@@ -163,7 +163,7 @@ public class TableCreationHelper {
     }
 
     // Helper record to simplify sequence information handling
-    public record SequenceInfo(String schema,
-                                      String name,
-                                      int initialValue) {}
+    private record SequenceMetadata(String schema,
+                                    String name,
+                                    int initialValue) {}
 }
