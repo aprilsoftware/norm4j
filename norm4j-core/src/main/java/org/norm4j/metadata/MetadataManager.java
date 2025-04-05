@@ -20,31 +20,33 @@
  */
 package org.norm4j.metadata;
 
+import org.norm4j.Array;
+import org.norm4j.Column;
+import org.norm4j.Enumerated;
+import org.norm4j.FieldGetter;
+import org.norm4j.GeneratedValue;
+import org.norm4j.Id;
+import org.norm4j.IdClass;
+import org.norm4j.Join;
+import org.norm4j.SequenceGenerator;
+import org.norm4j.Table;
+import org.norm4j.TableGenerator;
+import org.norm4j.Temporal;
+import org.norm4j.dialects.SQLDialect;
+import org.norm4j.metadata.helpers.TableCreationHelper;
+
+import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
-import java.util.Map.Entry;
-
-import javax.sql.DataSource;
-
-import org.norm4j.Array;
-import org.norm4j.Column;
-import org.norm4j.Enumerated;
-import org.norm4j.FieldGetter;
-import org.norm4j.Join;
-import org.norm4j.GeneratedValue;
-import org.norm4j.GenerationType;
-import org.norm4j.Id;
-import org.norm4j.IdClass;
-import org.norm4j.SequenceGenerator;
-import org.norm4j.Table;
-import org.norm4j.TableGenerator;
-import org.norm4j.Temporal;
-import org.norm4j.dialects.SQLDialect;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class MetadataManager
 {
@@ -217,165 +219,22 @@ public class MetadataManager
 
     public void createTables(DataSource dataSource)
     {
-        try (Connection connection = dataSource.getConnection())
-        {
-            List<String> existingTableGenerators;
-            List<TableMetadata> existingTables;
-            SQLDialect dialect;
+        try (Connection connection = dataSource.getConnection()) {
+            SQLDialect dialect = getDialect(connection);
+            TableCreationHelper helper = new TableCreationHelper(metadataMap, this::executeUpdate);
 
-            dialect = getDialect(connection);
+            // Create sequence tables for table generators
+            helper.createSequenceTables(connection, dialect);
 
-            existingTableGenerators = new ArrayList<>();
+            // Identify existing tables
+            List<TableMetadata> existingTables = helper.getExistingTables(connection, dialect);
 
-            for (Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet())
-            {
-                TableMetadata tableMetadata;
+            // Create tables and sequences
+            helper.createTablesAndSequences(connection, dialect, existingTables);
 
-                tableMetadata = entry.getValue();
-
-                for (ColumnMetadata column : tableMetadata.getColumns())
-                {
-                    if (column.getAnnotations().containsKey(GeneratedValue.class))
-                    {
-                        GeneratedValue generatedValue;
-
-                        generatedValue = (GeneratedValue)column.getAnnotations().get(GeneratedValue.class);
-
-                        if (generatedValue.strategy() == GenerationType.TABLE)
-                        {
-                            String generatorTableName;
-                            TableIdGenerator idGenerator;
-
-                            idGenerator = new TableIdGenerator((TableGenerator)column
-                                    .getAnnotations().get(TableGenerator.class));
-
-                            generatorTableName = dialect.getTableName(idGenerator.getSchema(), 
-                                    idGenerator.getTable());
-
-                            if (!existingTableGenerators.contains(generatorTableName))
-                            {
-                                if (!dialect.tableExists(connection, 
-                                        idGenerator.getSchema(),
-                                        idGenerator.getTable()))
-                                {
-                                    executeUpdate(connection, 
-                                            dialect.createSequenceTable(idGenerator.getSchema(), 
-                                                    idGenerator.getTable(), 
-                                                    idGenerator.getPkColumnName(), 
-                                                    idGenerator.getValueColumnName()));
-                                }
-
-                                existingTableGenerators.add(generatorTableName);
-                            }
-                        }
-                    }
-                }
-            }
-
-            existingTables = new ArrayList<>();
-
-            for (Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet())
-            {
-                TableMetadata tableMetadata;
-
-                tableMetadata = entry.getValue();
-
-                if (dialect.tableExists(connection, 
-                        tableMetadata.getSchema(),
-                        tableMetadata.getTableName()))
-                {
-                    existingTables.add(tableMetadata);
-                }
-            }
-
-            for (Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet())
-            {
-                TableMetadata tableMetadata;
-
-                tableMetadata = entry.getValue();
-
-                if (existingTables.stream()
-                        .noneMatch(t -> t.getSchema().equals(tableMetadata.getSchema()) &&
-                                t.getTableName().equals(tableMetadata.getTableName())))
-                {
-                    for (ColumnMetadata column : tableMetadata.getColumns())
-                    {
-                        if (column.getAnnotations().containsKey(GeneratedValue.class))
-                        {
-                            GeneratedValue generatedValue;
-    
-                            generatedValue = (GeneratedValue)column.getAnnotations().get(GeneratedValue.class);
-    
-                            if (generatedValue.strategy() == GenerationType.SEQUENCE)
-                            {
-                                String schema = "";
-                                String sequenceName = "";
-                                int initialValue = 1;
-
-                                if (column.getAnnotations().containsKey(SequenceGenerator.class))
-                                {
-                                    SequenceGenerator sequenceGenerator;
-        
-                                    sequenceGenerator = (SequenceGenerator)column.getAnnotations()
-                                            .get(SequenceGenerator.class);
-        
-                                    schema = sequenceGenerator.schema();
-
-                                    sequenceName = sequenceGenerator.sequenceName();
-
-                                    initialValue = sequenceGenerator.initialValue();
-                                }
-
-                                if (sequenceName.isEmpty())
-                                {
-                                    sequenceName = dialect.createSequenceName(tableMetadata, column);
-                                }
-
-                                if (!dialect.sequenceExists(connection, 
-                                        schema,
-                                        sequenceName))
-                                {
-                                    executeUpdate(connection, 
-                                            dialect.createSequence(schema, 
-                                                    sequenceName, 
-                                                    initialValue));
-                                }
-                            }
-                        }
-                    }
-
-                    executeUpdate(connection, dialect.createTable(tableMetadata));
-                }
-            }
-
-            for (Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet())
-            {
-                TableMetadata tableMetadata;
-                Class<?> tableClass;
-
-                tableClass = entry.getKey();
-
-                tableMetadata = metadataMap.get(tableClass);
-
-                if (existingTables.stream()
-                        .noneMatch(t -> t.getSchema().equals(tableMetadata.getSchema()) &&
-                                t.getTableName().equals(tableMetadata.getTableName())))
-                {
-                    for (Join join : entry.getValue().getJoins())
-                    {
-                        if (join.referencialIntegrity())
-                        {
-                            executeUpdate(connection, 
-                                    dialect.alterTable(tableMetadata, 
-                                            metadataMap.get(join.reference().table()),
-                                            join));
-                        }
-                    }
-                }
-            }
-        }
-        catch (SQLException e)
-        {
+            // Add foreign key constraints
+            helper.addForeignKeyConstraints(connection, dialect, existingTables);
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
