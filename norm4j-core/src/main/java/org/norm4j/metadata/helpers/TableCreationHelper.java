@@ -182,6 +182,22 @@ public class TableCreationHelper {
         }
     }
 
+    public static void validateJoins(Join[] joins) {
+        for (Join join : joins) {
+            if (join.columns().length == 0 || join.reference().columns().length == 0) {
+                throw new IllegalArgumentException("Missing column(s) in join.");
+            }
+            if (join.columns().length != join.reference().columns().length) {
+                throw new IllegalArgumentException("Mismatched number of columns in join.");
+            }
+        }
+    }
+
+    public static String decapitalize(String name) {
+        if (name == null || name.isEmpty()) return name;
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+    }
+
     // Helper record to simplify sequence information handling
     private record SequenceMetadata(String schema,
                                     String name,

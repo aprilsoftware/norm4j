@@ -92,9 +92,6 @@ public class Author
 
         Author other = (Author) obj;
 
-        if (id != other.id)
-            return false;
-
-        return true;
+        return id == other.id;
     }
 }
