@@ -22,6 +22,7 @@ package org.norm4j.tests.test10;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -163,6 +164,24 @@ public class Test10 extends BaseTest
             .getSingleResult(BookType.class));
 
         assertEquals(book1.getBookType(), BookType.Documentation);
+
+        books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+                .where(Book::getBookType, "in", BookType.values())
+                .orderByDesc(Book::getName)
+            .getResultList(Book.class);
+
+        assertEquals(books.size(), 2);
+
+        books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+                .where(Book::getBookType, "in", Arrays.asList(BookType.Documentation))
+                .orderByDesc(Book::getName)
+            .getResultList(Book.class);
+
+        assertEquals(books.size(), 1);
 
         tableManager.createDeleteQueryBuilder()
                 .from(Book.class)

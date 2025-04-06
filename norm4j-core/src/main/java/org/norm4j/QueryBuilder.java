@@ -21,6 +21,8 @@
 package org.norm4j;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -868,33 +870,76 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         }
         else
         {
-            clause.append("?");
-
-            if (value.getClass().isEnum())
+            if (value instanceof Iterable)
             {
-                if (column == null)
+                int i = 0;
+
+                clause.append("(");
+
+                for (Object element : (Iterable)value)
                 {
-                    value = ((Enum<?>)value).ordinal();
+                    if (i > 0)
+                    {
+                        clause.append(", ");
+                    }
+
+                    appendValue(element, clause, column);
+
+                    i++;
                 }
-                else
+
+                clause.append(")");
+            }
+            else if (value.getClass().isArray())
+            {
+                Object[] elements;
+
+                elements = (Object[])value;
+
+                clause.append("(");
+
+                for (int i = 0; i < elements.length; i++)
                 {
-                    Enumerated enumerated;
-                
-                    enumerated = (Enumerated)column.getAnnotations().get(Enumerated.class);
-    
-                    if (enumerated == null ||
-                            enumerated.value() == EnumType.ORDINAL)
+                    if (i > 0)
+                    {
+                        clause.append(", ");
+                    }
+
+                    appendValue(elements[i], clause, column);
+                }
+
+                clause.append(")");
+            }
+            else
+            {
+                clause.append("?");
+
+                if (value.getClass().isEnum())
+                {
+                    if (column == null)
                     {
                         value = ((Enum<?>)value).ordinal();
                     }
                     else
                     {
-                        value = ((Enum<?>)value).name();
+                        Enumerated enumerated;
+                    
+                        enumerated = (Enumerated)column.getAnnotations().get(Enumerated.class);
+        
+                        if (enumerated == null ||
+                                enumerated.value() == EnumType.ORDINAL)
+                        {
+                            value = ((Enum<?>)value).ordinal();
+                        }
+                        else
+                        {
+                            value = ((Enum<?>)value).name();
+                        }
                     }
                 }
+    
+                getParameters().add(value);
             }
-
-            getParameters().add(value);
         }
     }
 
