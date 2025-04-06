@@ -20,17 +20,16 @@
  */
 package org.norm4j.tests.test10;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.norm4j.Functions;
 import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
+
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Test10 extends BaseTest
 {
@@ -106,18 +105,18 @@ public class Test10 extends BaseTest
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 2);
+        assertEquals(2, books.size());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class)
-                .where(Functions.coalesce((Object)null, "Roman"), 
+                .where(Functions.coalesce(null, "Roman"),
                         "=", "Roman")
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 2);
+        assertEquals(2, books.size());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
@@ -128,7 +127,7 @@ public class Test10 extends BaseTest
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 0);
+        assertEquals(0, books.size());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
@@ -139,7 +138,7 @@ public class Test10 extends BaseTest
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 0);
+        assertEquals(0, books.size());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
@@ -149,7 +148,7 @@ public class Test10 extends BaseTest
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         tableManager.createUpdateQueryBuilder()
                 .update(Book.class)
@@ -163,7 +162,7 @@ public class Test10 extends BaseTest
                 .where(Book::getId, "=", book1.getId())
             .getSingleResult(BookType.class));
 
-        assertEquals(book1.getBookType(), BookType.Documentation);
+        assertEquals(BookType.Documentation, book1.getBookType());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
@@ -172,16 +171,16 @@ public class Test10 extends BaseTest
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 2);
+        assertEquals(2, books.size());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
-                .where(Book::getBookType, "in", Arrays.asList(BookType.Documentation))
+                .where(Book::getBookType, "in", List.of(BookType.Documentation))
                 .orderByDesc(Book::getName)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         tableManager.createDeleteQueryBuilder()
                 .from(Book.class)
@@ -193,7 +192,7 @@ public class Test10 extends BaseTest
                 .from(Book.class)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         tableManager.remove(book2);
         tableManager.remove(Author.class, 

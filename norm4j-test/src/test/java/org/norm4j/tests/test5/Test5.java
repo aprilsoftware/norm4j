@@ -20,16 +20,15 @@
  */
 package org.norm4j.tests.test5;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
-
 import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class Test5 extends BaseTest
 {
@@ -78,7 +77,7 @@ public class Test5 extends BaseTest
         author = tableManager.find(Author.class, 
                 new RowId(author.getTenantId(), author.getId()));
 
-        assertNotEquals(author, null);
+        assertNotEquals(null, author);
 
         book1 = new Book();
 
@@ -94,11 +93,11 @@ public class Test5 extends BaseTest
 
         author = tableManager.joinOne(book1, Author.class);
 
-        assertNotEquals(author, null);
+        assertNotEquals(null, author);
 
         books = tableManager.joinMany(author, Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         book2 = new Book();
 
@@ -110,7 +109,7 @@ public class Test5 extends BaseTest
 
         books = tableManager.joinMany(author, Book.class);
 
-        assertEquals(books.size(), 2);
+        assertEquals(2, books.size());
 
         books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
@@ -123,7 +122,7 @@ public class Test5 extends BaseTest
                 .limit(1)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         tableManager.remove(book1);
         tableManager.remove(book2);
