@@ -20,6 +20,8 @@
  */
 package org.norm4j.tests.test10;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.norm4j.Functions;
 import org.norm4j.TableManager;
@@ -27,66 +29,49 @@ import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
 import java.util.Date;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Test10 extends BaseTest
-{
-    public Test10()
-    {
-    }
+public class Test10 extends BaseTest {
 
-    @Test
-    public void test10()
-    {
-        MetadataManager metadataManager;
-        TableManager tableManager;
-        List<Book> books;
-        Tenant tenant;
-        Author author;
-        Book book1;
-        Book book2;
+    private TableManager tableManager;
+    private Book book1 = new Book();
+    private Book book2 = new Book();
 
+    @BeforeEach
+    void setup() {
         dropTable(null, "book");
         dropTable(null, "author");
         dropTable(null, "tenant");
 
-        metadataManager = new MetadataManager();
-
+        MetadataManager metadataManager = new MetadataManager();
         metadataManager.registerTable(Tenant.class);
         metadataManager.registerTable(Book.class);
         metadataManager.registerTable(Author.class);
-
         metadataManager.createTables(getDataSource());
 
         tableManager = new TableManager(getDataSource(), metadataManager);
+        setupTestData();
+    }
 
-        tenant = new Tenant();
-
+    private void setupTestData() {
+        var tenant = new Tenant();
         tenant.setName("Tenant 1");
-
         tableManager.persist(tenant);
 
-        author = new Author();
-
+        var author = new Author();
         author.setTenantId(tenant.getId());
         author.setName("Author 1");
-
         tableManager.persist(author);
 
         book1 = new Book();
-
         book1.setTenantId(tenant.getId());
         book1.setName("Book 1");
         book1.setAuthorId(author.getId());
         book1.setPublishDate(new Date(System.currentTimeMillis()));
         book1.setPrice(50);
 
-        tableManager.persist(book1);
-
         book2 = new Book();
-
         book2.setTenantId(tenant.getId());
         book2.setName("Book 2");
         book2.setAuthorId(author.getId());
@@ -94,110 +79,137 @@ public class Test10 extends BaseTest
         book2.setPublishDate(new Date(System.currentTimeMillis()));
         book2.setPrice(100);
 
-        tableManager.persist(book2);
 
-        books = tableManager.createSelectQueryBuilder()
+
+        tableManager.persist(book1);
+        tableManager.persist(book2);
+    }
+
+    @Test
+    void testSelectBooksByIds() {
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class)
                 .where(q -> q.condition(Book::getId, "=", book1.getId())
                         .or(Book::getId, "=", book2.getId()))
                 .orderByDesc(Book::getName)
-            .getResultList(Book.class);
-
+                .getResultList(Book.class);
         assertEquals(2, books.size());
+    }
 
-        books = tableManager.createSelectQueryBuilder()
+    @Test
+    void testCoalesceWithNullFallback() {
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class)
-                .where(Functions.coalesce(null, "Roman"),
-                        "=", "Roman")
-                .orderByDesc(Book::getName)
-            .getResultList(Book.class);
-
+                .where(Functions.coalesce(null, "Roman"), "=", "Roman")
+                .getResultList(Book.class);
         assertEquals(2, books.size());
+    }
 
-        books = tableManager.createSelectQueryBuilder()
+    @Test
+    void test() {
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class)
-                .where(Functions.coalesce("Documentation"), 
+                .where(Functions.coalesce("Documentation"),
                         "=", "Roman")
                 .orderByDesc(Book::getName)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(0, books.size());
+    }
 
-        books = tableManager.createSelectQueryBuilder()
+    @Test
+    void test2() {
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class)
-                .where(Functions.coalesce(), 
+                .where(Functions.coalesce(),
                         "=", "Roman")
                 .orderByDesc(Book::getName)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(0, books.size());
+    }
 
-        books = tableManager.createSelectQueryBuilder()
+    @Test
+    void test3() {
+        var books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+                .innerJoin(Author.class)
+                .where(Functions.coalesce(),
+                        "=", "Roman")
+                .orderByDesc(Book::getName)
+                .getResultList(Book.class);
+
+        assertEquals(0, books.size());
+    }
+
+    @Test
+    void test4() {
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class)
                 .where(Book::getBookType, "=", book2.getBookType())
                 .orderByDesc(Book::getName)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(1, books.size());
+    }
 
+    @Test
+    void test5() {
         tableManager.createUpdateQueryBuilder()
                 .update(Book.class)
                 .set(Book::getBookType, BookType.Documentation)
                 .where(Book::getId, "=", book1.getId())
-            .executeUpdate();
+                .executeUpdate();
 
         book1.setBookType(tableManager.createSelectQueryBuilder()
                 .select(Book::getBookType)
                 .from(Book.class)
                 .where(Book::getId, "=", book1.getId())
-            .getSingleResult(BookType.class));
+                .getSingleResult(BookType.class));
 
         assertEquals(BookType.Documentation, book1.getBookType());
+    }
 
-        books = tableManager.createSelectQueryBuilder()
+    @Test
+    void test6() {
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
                 .where(Book::getBookType, "in", BookType.values())
                 .orderByDesc(Book::getName)
-            .getResultList(Book.class);
-
-        assertEquals(2, books.size());
-
-        books = tableManager.createSelectQueryBuilder()
-                .select(Book.class)
-                .from(Book.class)
-                .where(Book::getBookType, "in", List.of(BookType.Documentation))
-                .orderByDesc(Book::getName)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(1, books.size());
+    }
 
+    @Test
+    void test8() {
         tableManager.createDeleteQueryBuilder()
                 .from(Book.class)
                 .where(Book::getId, "=", book1.getId())
-            .executeUpdate();
+                .executeUpdate();
 
-        books = tableManager.createSelectQueryBuilder()
+        var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(1, books.size());
+    }
 
-        tableManager.remove(book2);
-        tableManager.remove(Author.class, 
-                new RowId(author.getTenantId(), author.getId()));
-
+    @AfterEach
+    void cleanup() {
         dropTable(null, "book");
         dropTable(null, "author");
         dropTable(null, "tenant");

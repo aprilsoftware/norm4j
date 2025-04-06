@@ -20,13 +20,9 @@
  */
 package org.norm4j.tests.test10;
 
-import java.util.UUID;
+import org.norm4j.*;
 
-import org.norm4j.Column;
-import org.norm4j.GeneratedValue;
-import org.norm4j.GenerationType;
-import org.norm4j.Id;
-import org.norm4j.Table;
+import java.util.UUID;
 
 @Table
 public class Tenant
@@ -90,12 +86,8 @@ public class Tenant
 
         if (id == null)
         {
-            if (other.id != null)
-                return false;
+            return other.id == null;
         }
-        else if (!id.equals(other.id))
-            return false;
-
-        return true;
+        else return id.equals(other.id);
     }
 }

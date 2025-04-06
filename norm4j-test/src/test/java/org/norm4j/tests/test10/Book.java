@@ -20,21 +20,10 @@
  */
 package org.norm4j.tests.test10;
 
+import org.norm4j.*;
+
 import java.util.Date;
 import java.util.UUID;
-
-import org.norm4j.Column;
-import org.norm4j.EnumType;
-import org.norm4j.Enumerated;
-import org.norm4j.Join;
-import org.norm4j.GeneratedValue;
-import org.norm4j.GenerationType;
-import org.norm4j.Id;
-import org.norm4j.IdClass;
-import org.norm4j.Reference;
-import org.norm4j.Table;
-import org.norm4j.Temporal;
-import org.norm4j.TemporalType;
 
 @Table
 @Join
@@ -188,12 +177,8 @@ public class Book
 
         if (id == null)
         {
-            if (other.id != null)
-                return false;
+            return other.id == null;
         }
-        else if (!id.equals(other.id))
-            return false;
-
-        return true;
+        else return id.equals(other.id);
     }
 }
