@@ -150,7 +150,32 @@ public class Test10 extends BaseTest
 
         assertEquals(books.size(), 1);
 
-        tableManager.remove(book1);
+        tableManager.createUpdateQueryBuilder()
+                .update(Book.class)
+                .set(Book::getBookType, BookType.Documentation)
+                .where(Book::getId, "=", book1.getId())
+            .executeUpdate();
+
+        book1.setBookType(tableManager.createSelectQueryBuilder()
+                .select(Book::getBookType)
+                .from(Book.class)
+                .where(Book::getId, "=", book1.getId())
+            .getSingleResult(BookType.class));
+
+        assertEquals(book1.getBookType(), BookType.Documentation);
+
+        tableManager.createDeleteQueryBuilder()
+                .from(Book.class)
+                .where(Book::getId, "=", book1.getId())
+            .executeUpdate();
+
+        books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+            .getResultList(Book.class);
+
+        assertEquals(books.size(), 1);
+
         tableManager.remove(book2);
         tableManager.remove(Author.class, 
                 new RowId(author.getTenantId(), author.getId()));

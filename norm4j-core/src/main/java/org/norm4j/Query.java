@@ -49,7 +49,6 @@ public class Query
         parameters = new HashMap<>();
     }
 
-    @SuppressWarnings("unchecked")
     public <T> List<T> getResultList(Class<T> type)
     {
         List<Object[]> rows;
@@ -76,7 +75,39 @@ public class Query
 
             for (Object[] row : rows)
             {
-                objects.add((T)row[0]);
+                T value;
+
+                value = (T)row[0];
+
+                if (value != null &&
+                    type.isEnum())
+                {
+                    if (value instanceof Number)
+                    {
+                        T[] constants;
+                        int ordinal;
+
+                        ordinal = ((Number)value).intValue();
+
+                        constants = type.getEnumConstants();
+
+                        if (ordinal < 0 || ordinal >= constants.length)
+                        {
+                            throw new IllegalArgumentException("Invalid ordinal ("
+                                    + ordinal
+                                    + ") for enum "
+                                    + type.getName());
+                        }
+
+                        objects.add(constants[ordinal]);
+                    }
+                    else
+                    {
+                        value = (T)Enum.valueOf((Class<? extends Enum>)type, value.toString());
+                    }
+                }
+
+                objects.add(value);
             }
 
             return objects;

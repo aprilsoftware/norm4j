@@ -895,6 +895,16 @@ public class TableManager
         return new SelectQueryBuilder(this);
     }
 
+    public UpdateQueryBuilder createUpdateQueryBuilder()
+    {
+        return new UpdateQueryBuilder(this);
+    }
+
+    public DeleteQueryBuilder createDeleteQueryBuilder()
+    {
+        return new DeleteQueryBuilder(this);
+    }
+
     private void setRecordValue(Object record, 
             ColumnMetadata column, 
             Object value)

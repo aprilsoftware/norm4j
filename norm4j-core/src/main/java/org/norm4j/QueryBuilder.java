@@ -1,3 +1,23 @@
+/*
+ * Copyright 2025 April Software
+ * 
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.norm4j;
 
 import java.util.ArrayList;
@@ -7,17 +27,22 @@ import java.util.function.Consumer;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public abstract class QueryBuilder
+public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
 {
     private final TableManager tableManager;
     private final List<Object> parameters;
+    private final StringBuilder whereClause;
 
     public QueryBuilder(TableManager tableManager)
     {
         this.tableManager = tableManager;
 
         parameters = new ArrayList<>();
+
+        whereClause = new StringBuilder();
     }
+
+    public abstract String build();
 
     protected TableManager getTableManager()
     {
@@ -27,6 +52,562 @@ public abstract class QueryBuilder
     protected List<Object> getParameters()
     {
         return parameters;
+    }
+
+    protected abstract Q self();
+
+    protected StringBuilder getWhereClause()
+    {
+        return whereClause;
+    }
+
+    public <T, R> Q where(FieldGetter<T, R> fieldGetter, 
+            String operator, 
+            Object value)
+    {
+        return where(fieldGetter, null, operator, value);
+    }
+
+    public <T, R> Q where(FieldGetter<T, R> fieldGetter, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        appendWhere();
+
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q where(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return where(value, operator, fieldGetter, null);
+    }
+
+    public <T, R> Q where(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter, 
+            String alias)
+    {
+        appendWhere();
+
+        appendCondition(value, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q where(FieldGetter<T, R> leftFieldGetter, 
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter)
+    {
+        return where(leftFieldGetter, 
+                null, 
+                operator, 
+                rightFieldGetter, 
+                null);
+    }
+
+    public <T, R> Q where(FieldGetter<T, R> leftFieldGetter, 
+            String leftAlias,
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter,
+            String rightAlias)
+    {
+        appendWhere();
+
+        appendCondition(leftFieldGetter, 
+                leftAlias, 
+                operator, 
+                rightFieldGetter, 
+                rightAlias, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q where(SelectQueryBuilder leftBuilder,
+            String operator, 
+            SelectQueryBuilder rightBuilder)
+    {
+        appendWhere();
+
+        appendCondition(leftBuilder, 
+                operator, 
+                rightBuilder, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q where(SelectQueryBuilder builder,
+            String operator, 
+            Object value)
+    {
+        appendWhere();
+
+        appendCondition(builder, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q where(Object value,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        appendWhere();
+
+        appendCondition(value, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q where(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return where(builder, operator, fieldGetter, null);
+    }
+
+    public <T, R> Q where(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter,
+            String alias)
+    {
+        appendWhere();
+
+        appendCondition(builder, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q where(FieldGetter<T, R> fieldGetter,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(fieldGetter, null, operator, builder);
+    }
+
+    public <T, R> Q where(FieldGetter<T, R> fieldGetter,
+            String alias,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        appendWhere();
+
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q where(Expression expression,
+            String operator, 
+            Object value)
+    {
+        appendWhere();
+
+        appendCondition(expression, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q where(String expression)
+    {
+        return where(expression, null);
+    }
+
+    public Q where(String expression, List<Object> parameters)
+    {
+        appendWhere();
+
+        appendCondition(expression, 
+                parameters, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q where(Consumer<ConditionBuilder> consumer)
+    {
+        appendWhere();
+
+        appendCondition(consumer, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q and(FieldGetter<T, R> fieldGetter, 
+            String operator, 
+            Object value)
+    {
+        return where(fieldGetter, operator, value);
+    }
+
+    public <T, R> Q and(FieldGetter<T, R> fieldGetter, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        return where(fieldGetter, alias, operator, value);
+    }
+
+    public <T, R> Q and(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return where(value, operator, fieldGetter);
+    }
+
+    public <T, R> Q and(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter, 
+            String alias)
+    {
+        return where(value, operator, fieldGetter, alias);
+    }
+
+    public <T, R> Q and(FieldGetter<T, R> leftFieldGetter, 
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter)
+    {
+        return where(leftFieldGetter, 
+                operator, 
+                rightFieldGetter);
+    }
+
+    public <T, R> Q and(FieldGetter<T, R> leftFieldGetter, 
+            String leftAlias,
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter,
+            String rightAlias)
+    {
+        return where(leftFieldGetter, leftAlias, operator, rightFieldGetter, rightAlias);
+    }
+
+    public Q and(SelectQueryBuilder leftBuilder,
+            String operator, 
+            SelectQueryBuilder rightBuilder)
+    {
+        return where(leftBuilder, operator, rightBuilder);
+    }
+
+    public Q and(SelectQueryBuilder builder,
+            String operator, 
+            Object value)
+    {
+        return where(builder, operator, value);
+    }
+
+    public Q and(Object value,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(value, operator, builder);
+    }
+
+    public <T, R> Q and(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return where(builder, operator, fieldGetter);
+    }
+
+    public <T, R> Q and(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter,
+            String alias)
+    {
+        return where(builder, operator, fieldGetter, alias);
+    }
+
+    public <T, R> Q and(FieldGetter<T, R> fieldGetter,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(fieldGetter, operator, builder);
+    }
+
+    public <T, R> Q and(FieldGetter<T, R> fieldGetter,
+            String alias,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return where(fieldGetter, alias, operator, builder);
+    }
+
+    public Q and(Expression expression,
+            String operator, 
+            Object value)
+    {
+        return where(expression, operator, value);
+    }
+
+    public Q and(String expression)
+    {
+        return where(expression);
+    }
+
+    public Q and(String expression, List<Object> parameters)
+    {
+        return where(expression, parameters);
+    }
+
+    public Q and(Consumer<ConditionBuilder> consumer)
+    {
+        return where(consumer);
+    }
+
+    public <T, R> Q or(FieldGetter<T, R> fieldGetter, 
+            String operator, 
+            Object value)
+    {
+        return or(fieldGetter, null, operator, value);
+    }
+
+    public <T, R> Q or(FieldGetter<T, R> fieldGetter, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        appendOr();
+
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q or(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return or(value, operator, fieldGetter, null);
+    }
+
+    public <T, R> Q or(Object value, 
+            String operator, 
+            FieldGetter<T, R> fieldGetter, 
+            String alias)
+    {
+        appendOr();
+
+        appendCondition(value, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q or(FieldGetter<T, R> leftFieldGetter, 
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter)
+    {
+        return or(leftFieldGetter, 
+                null, 
+                operator, 
+                rightFieldGetter, 
+                null);
+    }
+
+    public <T, R> Q or(FieldGetter<T, R> leftFieldGetter, 
+            String leftAlias,
+            String operator, 
+            FieldGetter<T, R> rightFieldGetter,
+            String rightAlias)
+    {
+        appendOr();
+
+        appendCondition(leftFieldGetter, 
+                leftAlias, 
+                operator, 
+                rightFieldGetter, 
+                rightAlias, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(SelectQueryBuilder leftBuilder,
+            String operator, 
+            SelectQueryBuilder rightBuilder)
+    {
+        appendOr();
+
+        appendCondition(leftBuilder, 
+                operator, 
+                rightBuilder, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(SelectQueryBuilder builder,
+            String operator, 
+            Object value)
+    {
+        appendOr();
+
+        appendCondition(builder, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(Object value,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        appendOr();
+
+        appendCondition(value, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q or(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter)
+    {
+        return or(builder, operator, fieldGetter, null);
+    }
+
+    public <T, R> Q or(SelectQueryBuilder builder,
+            String operator, 
+            FieldGetter<T, R> fieldGetter,
+            String alias)
+    {
+        appendOr();
+
+        appendCondition(builder, 
+                operator, 
+                fieldGetter, 
+                alias, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public <T, R> Q or(FieldGetter<T, R> fieldGetter,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        return or(fieldGetter, null, operator, builder);
+    }
+
+    public <T, R> Q or(FieldGetter<T, R> fieldGetter,
+            String alias,
+            String operator, 
+            SelectQueryBuilder builder)
+    {
+        appendOr();
+
+        appendCondition(fieldGetter, 
+                alias, 
+                operator, 
+                builder, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(Expression expression,
+            String operator, 
+            Object value)
+    {
+        appendOr();
+
+        appendCondition(expression, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(String expression)
+    {
+        return or(expression, null);
+    }
+
+    public Q or(String expression, List<Object> parameters)
+    {
+        appendOr();
+
+        appendCondition(expression, 
+                parameters, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(Consumer<ConditionBuilder> consumer)
+    {
+        appendOr();
+
+        appendCondition(consumer, 
+                whereClause, 
+                getParameters());
+
+        return self();
     }
 
     protected <T, R> void appendCondition(FieldGetter<T, R> fieldGetter, 
@@ -277,17 +858,17 @@ public abstract class QueryBuilder
         }
     }
 
-    private void appendValue(Object value, 
-            StringBuilder condition, 
+    protected void appendValue(Object value, 
+            StringBuilder clause, 
             ColumnMetadata column)
     {
         if (value == null)
         {
-            condition.append("NULL");
+            clause.append("NULL");
         }
         else
         {
-            condition.append("?");
+            clause.append("?");
 
             if (value.getClass().isEnum())
             {
@@ -314,6 +895,30 @@ public abstract class QueryBuilder
             }
 
             getParameters().add(value);
+        }
+    }
+
+    private void appendWhere()
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" AND ");
+        }
+    }
+
+    private void appendOr()
+    {
+        if (whereClause.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+        }
+        else
+        {
+            whereClause.append(" OR ");
         }
     }
 }

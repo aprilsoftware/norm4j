@@ -1,3 +1,23 @@
+/*
+ * Copyright 2025 April Software
+ * 
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.norm4j;
 
 import java.util.ArrayList;
@@ -36,10 +56,7 @@ public class ConditionBuilder
             String operator, 
             Object value)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
         
         queryBuilder.appendCondition(fieldGetter, 
                 alias, 
@@ -63,10 +80,7 @@ public class ConditionBuilder
             FieldGetter<T, R> fieldGetter, 
             String alias)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(value, 
                 operator, 
@@ -95,10 +109,7 @@ public class ConditionBuilder
             FieldGetter<T, R> rightFieldGetter,
             String rightAlias)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(leftFieldGetter, 
                 leftAlias, 
@@ -115,10 +126,7 @@ public class ConditionBuilder
             String operator, 
             SelectQueryBuilder rightBuilder)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(leftBuilder, 
                 operator, 
@@ -133,10 +141,7 @@ public class ConditionBuilder
             String operator, 
             Object value)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(builder, 
                 operator, 
@@ -151,10 +156,7 @@ public class ConditionBuilder
             String operator, 
             SelectQueryBuilder builder)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(value, 
                 operator, 
@@ -177,10 +179,7 @@ public class ConditionBuilder
             FieldGetter<T, R> fieldGetter,
             String alias)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(builder, 
                 operator, 
@@ -204,10 +203,7 @@ public class ConditionBuilder
             String operator, 
             SelectQueryBuilder builder)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(fieldGetter, 
                 alias, 
@@ -223,10 +219,7 @@ public class ConditionBuilder
             String operator, 
             Object value)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(expression,
                 operator, 
@@ -244,10 +237,7 @@ public class ConditionBuilder
 
     public ConditionBuilder condition(String expression, List<Object> parameters)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(expression, 
                 parameters, 
@@ -259,10 +249,7 @@ public class ConditionBuilder
 
     public ConditionBuilder condition(Consumer<ConditionBuilder> consumer)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendCondition();
 
         queryBuilder.appendCondition(consumer, 
                 condition, 
@@ -404,10 +391,7 @@ public class ConditionBuilder
             String operator, 
             Object value)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
         
         queryBuilder.appendCondition(fieldGetter, 
                 alias, 
@@ -431,10 +415,7 @@ public class ConditionBuilder
             FieldGetter<T, R> fieldGetter, 
             String alias)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(value, 
                 operator, 
@@ -463,10 +444,7 @@ public class ConditionBuilder
             FieldGetter<T, R> rightFieldGetter,
             String rightAlias)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(leftFieldGetter, 
                 leftAlias, 
@@ -483,10 +461,7 @@ public class ConditionBuilder
             String operator, 
             SelectQueryBuilder rightBuilder)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(leftBuilder, 
                 operator, 
@@ -501,10 +476,7 @@ public class ConditionBuilder
             String operator, 
             Object value)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(builder, 
                 operator, 
@@ -519,10 +491,7 @@ public class ConditionBuilder
             String operator, 
             SelectQueryBuilder builder)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" AND ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(value, 
                 operator, 
@@ -545,10 +514,7 @@ public class ConditionBuilder
             FieldGetter<T, R> fieldGetter,
             String alias)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(builder, 
                 operator, 
@@ -572,10 +538,7 @@ public class ConditionBuilder
             String operator, 
             SelectQueryBuilder builder)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(fieldGetter, 
                 alias, 
@@ -591,10 +554,7 @@ public class ConditionBuilder
             String operator, 
             Object value)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(expression,
                 operator, 
@@ -612,10 +572,7 @@ public class ConditionBuilder
 
     public ConditionBuilder or(String expression, List<Object> parameters)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(expression, 
                 parameters, 
@@ -627,10 +584,7 @@ public class ConditionBuilder
 
     public ConditionBuilder or(Consumer<ConditionBuilder> consumer)
     {
-        if (!condition.isEmpty())
-        {
-            condition.append(" OR ");
-        }
+        appendOr();
 
         queryBuilder.appendCondition(consumer, 
                 condition, 
@@ -642,5 +596,21 @@ public class ConditionBuilder
     public String build()
     {
         return condition.toString();
+    }
+
+    private void appendCondition()
+    {
+        if (!condition.isEmpty())
+        {
+            condition.append(" AND ");
+        }
+    }
+
+    private void appendOr()
+    {
+        if (!condition.isEmpty())
+        {
+            condition.append(" OR ");
+        }
     }
 }
