@@ -20,11 +20,11 @@
  */
 package org.norm4j.metadata;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-
 import org.norm4j.Column;
 import org.norm4j.Id;
+
+import java.lang.reflect.Field;
+import java.util.Map;
 
 public class ColumnMetadata
 {
@@ -75,13 +75,6 @@ public class ColumnMetadata
 
     public boolean isPrimaryKey()
     {
-        if (annotations.containsKey(Id.class))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return annotations.containsKey(Id.class);
     }
 }
