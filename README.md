@@ -219,6 +219,21 @@ List<Book> books = tableManager.createSelectQueryBuilder()
     .getResultList(Book.class);
 ```
 
+```java
+tableManager.createUpdateQueryBuilder()
+        .update(Book.class)
+        .set(Book::getBookType, BookType.Documentation)
+        .where(Book::getId, "=", book1.getId())
+    .executeUpdate();
+```
+
+```java
+tableManager.createDeleteQueryBuilder()
+        .from(Book.class)
+        .where(Book::getId, "=", book1.getId())
+    .executeUpdate();
+```
+
 ### Native SQL Queries
 ```java
 Query query = tableManager.createQuery("SELECT * FROM book WHERE id = ?");
