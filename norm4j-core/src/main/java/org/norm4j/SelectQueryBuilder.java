@@ -661,6 +661,31 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
+    public <T, R> SelectQueryBuilder groupBy(Class<T> tableClass)
+    {
+        return groupBy(tableClass, null);
+    }
+
+    public <T, R> SelectQueryBuilder groupBy(Class<T> tableClass, 
+            String alias)
+    {
+        TableMetadata table;
+
+        table = getTable(tableClass);
+
+        for (ColumnMetadata column : table.getColumns())
+        {
+            if (!groupByClause.isEmpty())
+            {
+                groupByClause.append(", ");
+            }
+
+            append(column, alias, groupByClause);
+        }
+
+        return this;
+    }
+
     public SelectQueryBuilder groupBy(String expression)
     {
         return groupBy(expression, null);
