@@ -622,12 +622,23 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
     public SelectQueryBuilder orderBy(String expression)
     {
+        return orderBy(expression, null);
+    }
+
+    public SelectQueryBuilder orderBy(String expression, 
+            List<Object> expressionParameters)
+    {
         if (!orderByClause.isEmpty())
         {
             orderByClause.append(", ");
         }
 
         orderByClause.append(expression);
+
+        if (expressionParameters != null)
+        {
+            getParameters().addAll(expressionParameters);
+        }
 
         return this;
     }
@@ -652,12 +663,23 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
     public SelectQueryBuilder groupBy(String expression)
     {
+        return groupBy(expression, null);
+    }
+
+    public SelectQueryBuilder groupBy(String expression, 
+            List<Object> expressionParameters)
+    {
         if (!groupByClause.isEmpty())
         {
             groupByClause.append(", ");
         }
 
         groupByClause.append(expression);
+
+        if (expressionParameters != null)
+        {
+            getParameters().addAll(expressionParameters);
+        }
 
         return this;
     }
