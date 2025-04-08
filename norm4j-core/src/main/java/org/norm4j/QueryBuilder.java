@@ -937,6 +937,10 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
                         }
                     }
                 }
+                else if (value instanceof java.util.Date)
+                {
+                    value = new java.sql.Date(((java.util.Date)value).getTime());
+                }
     
                 getParameters().add(value);
             }
