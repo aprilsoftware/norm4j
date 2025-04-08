@@ -114,7 +114,7 @@ public class Query
         }
     }
 
-    public List<Object[]> getResultList(Class<?>... tableClasses)
+    public List<Object[]> getResultList(Class<?>... types)
     {
         try (Connection connection = tableManager.getDataSource().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql))
@@ -147,51 +147,54 @@ public class Query
 
                     index = 1;
 
-                    for (Class<?> tableClass : tableClasses)
+                    for (Class<?> type : types)
                     {
                         TableMetadata table;
                         Object record;
 
                         table = tableManager.getMetadataManager()
-                                .getMetadata(tableClass);
+                                .getMetadata(type);
 
                         if (table == null)
                         {
-                            throw new IllegalArgumentException("No metadata found for class " 
-                                    + tableClass.getName());
+                            columns.add(rs.getObject(index));
+
+                            index++;
                         }
-
-                        record = tableClass.getDeclaredConstructor().newInstance();
-
-                        for (int i = 0; i < table.getColumns().size(); i++)
+                        else
                         {
-                            Object value;
+                            record = type.getDeclaredConstructor().newInstance();
 
-                            value = rs.getObject(i + index);
-
-                            if (value != null)
+                            for (int i = 0; i < table.getColumns().size(); i++)
                             {
-                                ColumnMetadata column;
-                                String columnName;
-                                Field field;
-
-                                columnName = rs.getMetaData().getColumnName(i + index);
-
-                                column = table.getColumns().stream()
-                                        .filter(c -> c.getColumnName().equalsIgnoreCase(columnName))
-                                        .findFirst().get();
-
-                                field = column.getField();
-
-                                field.setAccessible(true);
-
-                                field.set(record, dialect.fromSqlValue(column, value));
+                                Object value;
+    
+                                value = rs.getObject(i + index);
+    
+                                if (value != null)
+                                {
+                                    ColumnMetadata column;
+                                    String columnName;
+                                    Field field;
+    
+                                    columnName = rs.getMetaData().getColumnName(i + index);
+    
+                                    column = table.getColumns().stream()
+                                            .filter(c -> c.getColumnName().equalsIgnoreCase(columnName))
+                                            .findFirst().get();
+    
+                                    field = column.getField();
+    
+                                    field.setAccessible(true);
+    
+                                    field.set(record, dialect.fromSqlValue(column, value));
+                                }
                             }
+    
+                            index += table.getColumns().size();
+    
+                            columns.add(record);
                         }
-
-                        index += table.getColumns().size();
-
-                        columns.add(record);
                     }
 
                     for (int i = index; i <= columnCount; i++)
