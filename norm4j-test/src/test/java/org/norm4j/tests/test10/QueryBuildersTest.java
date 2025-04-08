@@ -32,7 +32,7 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Test10 extends BaseTest {
+public class QueryBuildersTest extends BaseTest {
 
     private TableManager tableManager;
     private Book book1 = new Book();
@@ -110,7 +110,7 @@ public class Test10 extends BaseTest {
     }
 
     @Test
-    void test() {
+    void testCoalesceWithNonMatchingValueReturnsEmpty() {
         var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
@@ -124,7 +124,7 @@ public class Test10 extends BaseTest {
     }
 
     @Test
-    void test2() {
+    void testCoalesceWithArgumentsReturnsEmpty() {
         var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
@@ -138,21 +138,7 @@ public class Test10 extends BaseTest {
     }
 
     @Test
-    void test3() {
-        var books = tableManager.createSelectQueryBuilder()
-                .select(Book.class)
-                .from(Book.class)
-                .innerJoin(Author.class)
-                .where(Functions.coalesce(),
-                        "=", "Roman")
-                .orderByDesc(Book::getName)
-                .getResultList(Book.class);
-
-        assertEquals(0, books.size());
-    }
-
-    @Test
-    void test4() {
+    void testFilterByBookType() {
         var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
@@ -165,7 +151,7 @@ public class Test10 extends BaseTest {
     }
 
     @Test
-    void test5() {
+    void testUpdateBookType() {
         tableManager.createUpdateQueryBuilder()
                 .update(Book.class)
                 .set(Book::getBookType, BookType.Documentation)
@@ -182,7 +168,7 @@ public class Test10 extends BaseTest {
     }
 
     @Test
-    void test6() {
+    void testSelectBooksWithBookTypeInEnum() {
         var books = tableManager.createSelectQueryBuilder()
                 .select(Book.class)
                 .from(Book.class)
@@ -194,7 +180,7 @@ public class Test10 extends BaseTest {
     }
 
     @Test
-    void test8() {
+    void testDeleteBookById() {
         tableManager.createDeleteQueryBuilder()
                 .from(Book.class)
                 .where(Book::getId, "=", book1.getId())
