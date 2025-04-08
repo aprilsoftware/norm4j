@@ -253,7 +253,8 @@ public class PostgreSQLDialect extends GenericDialect
 
     public Object toSqlValue(ColumnMetadata column, Object value)
     {
-        if (value instanceof java.util.Date)
+        if (value instanceof java.sql.Date ||
+                value instanceof java.util.Date)
         {
             Temporal temporal;
 
@@ -262,15 +263,36 @@ public class PostgreSQLDialect extends GenericDialect
 
             if (temporal == null || temporal.value() == TemporalType.DATE)
             {
-                value = new java.sql.Date(((java.util.Date)value).getTime());
+                if (value instanceof java.sql.Date)
+                {
+                    value = new java.sql.Date(((java.sql.Date)value).getTime());
+                }
+                else
+                {
+                    value = new java.sql.Date(((java.util.Date)value).getTime());
+                }
             }
             else if (temporal.value() == TemporalType.TIME)
             {
-                value = new java.sql.Time(((java.util.Date)value).getTime());
+                if (value instanceof java.sql.Date)
+                {
+                    value = new java.sql.Time(((java.sql.Date)value).getTime());
+                }
+                else
+                {
+                    value = new java.sql.Time(((java.util.Date)value).getTime());
+                }
             }
             else
             {
-                value = new java.sql.Timestamp(((java.util.Date)value).getTime());
+                if (value instanceof java.sql.Date)
+                {
+                    value = new java.sql.Timestamp(((java.sql.Date)value).getTime());
+                }
+                else
+                {
+                    value = new java.sql.Timestamp(((java.util.Date)value).getTime());
+                }
             }
         }
         else if (value instanceof java.sql.Date)
@@ -286,7 +308,7 @@ public class PostgreSQLDialect extends GenericDialect
                 {
                     value = new java.sql.Time(((java.sql.Date)value).getTime());
                 }
-                else
+                else if (temporal.value() == TemporalType.TIMESTAMP)
                 {
                     value = new java.sql.Timestamp(((java.sql.Date)value).getTime());
                 }

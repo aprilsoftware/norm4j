@@ -914,34 +914,22 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
             {
                 clause.append("?");
 
-                if (value.getClass().isEnum())
+                if (column == null)
                 {
-                    if (column == null)
+                    if (value.getClass().isEnum())
                     {
                         value = ((Enum<?>)value).ordinal();
                     }
-                    else
+                    else if (value instanceof java.util.Date)
                     {
-                        Enumerated enumerated;
-                    
-                        enumerated = (Enumerated)column.getAnnotations().get(Enumerated.class);
-        
-                        if (enumerated == null ||
-                                enumerated.value() == EnumType.ORDINAL)
-                        {
-                            value = ((Enum<?>)value).ordinal();
-                        }
-                        else
-                        {
-                            value = ((Enum<?>)value).name();
-                        }
+                        value = new java.sql.Date(((java.util.Date)value).getTime());
                     }
                 }
-                else if (value instanceof java.util.Date)
+                else
                 {
-                    value = new java.sql.Date(((java.util.Date)value).getTime());
+                    value = tableManager.getDialect().toSqlValue(column, value);
                 }
-    
+
                 getParameters().add(value);
             }
         }

@@ -28,7 +28,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-core</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-postgresql</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
 </dependency>
 <dependency>
     <groupId>org.postgresql</groupId>
@@ -53,7 +53,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-mariadb</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
 </dependency>
 <dependency>
     <groupId>org.mariadb.jdbc</groupId>
@@ -67,7 +67,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-sqlserver</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
 </dependency>
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
@@ -81,7 +81,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-oracle</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
 </dependency>
 ```
 

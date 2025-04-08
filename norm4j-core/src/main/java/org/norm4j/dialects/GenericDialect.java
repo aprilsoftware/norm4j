@@ -24,6 +24,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.UUID;
 
 import org.norm4j.EnumType;
@@ -32,6 +38,8 @@ import org.norm4j.Join;
 import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.SequenceGenerator;
+import org.norm4j.Temporal;
+import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
@@ -235,7 +243,6 @@ public abstract class GenericDialect implements SQLDialect
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Object fromSqlValue(ColumnMetadata column, Object value)
     {
         if (value != null)
@@ -262,15 +269,22 @@ public abstract class GenericDialect implements SQLDialect
             {
                 value = UUID.fromString((String)value);
             }
-            if (column.getField().getType() == java.sql.Date.class &&
+            else if (column.getField().getType() == java.sql.Date.class &&
                     value instanceof java.sql.Time)
             {
-                value = new java.sql.Date(((java.sql.Time)value).getTime());
+                value = truncateTime(column, 
+                        new java.sql.Date(((java.sql.Time)value).getTime()));
             }
             else if (column.getField().getType() == java.sql.Date.class &&
                     value instanceof java.sql.Timestamp)
             {
-                value = new java.sql.Date(((java.sql.Timestamp)value).getTime());
+                value = truncateTime(column, 
+                        new java.sql.Date(((java.sql.Timestamp)value).getTime()));
+            }
+            else if (value instanceof java.sql.Date ||
+                    value instanceof java.util.Date)
+            {
+                value = truncateTime(column, value);
             }
         }
 
@@ -296,6 +310,52 @@ public abstract class GenericDialect implements SQLDialect
                 {
                     value = ((Enum<?>)value).name();
                 }
+            }
+            else if (value instanceof java.sql.Date ||
+                    value instanceof java.util.Date)
+            {
+                value = truncateTime(column, value);
+            }
+        }
+
+        return value;
+    }
+
+    private Object truncateTime(ColumnMetadata column, Object value)
+    {
+        Temporal temporal;
+
+        temporal = (Temporal)column.getAnnotations()
+                .get(Temporal.class);
+
+        if (temporal != null &&
+                temporal.value() == TemporalType.DATE)
+        {
+            Calendar calendar;
+
+            calendar = Calendar.getInstance();
+
+            if (value instanceof java.sql.Date)
+            {
+                calendar.setTime((java.sql.Date)value);
+            }
+            else
+            {
+                calendar.setTime((java.util.Date)value);
+            }
+
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+
+            if (value instanceof java.sql.Date)
+            {
+                value = new java.sql.Date(calendar.getTime().getTime());
+            }
+            else
+            {
+                value = calendar.getTime();
             }
         }
 
