@@ -69,6 +69,10 @@ public class Book
     @Column(nullable = false)
     private Date publishDate;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    private Date priceDate;
+
     private double price;
 
     public Book()
@@ -123,6 +127,16 @@ public class Book
     public void setPublishDate(Date publishDate)
     {
         this.publishDate = publishDate;
+    }
+
+    public Date getPriceDate()
+    {
+        return priceDate;
+    }
+
+    public void setPriceDate(Date priceDate)
+    {
+        this.priceDate = priceDate;
     }
 
     public double getPrice()

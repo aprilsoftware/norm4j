@@ -776,7 +776,7 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
             StringBuilder condition, 
             List<Object> parameters)
     {
-        condition.append(expression.build(tableManager, parameters));
+        condition.append(expression.build(this));
 
         condition.append(" ");
         condition.append(operator);

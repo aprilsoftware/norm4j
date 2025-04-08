@@ -28,6 +28,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.norm4j.Functions;
 import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
@@ -82,6 +83,7 @@ public class Test11 extends BaseTest
         book1.setName("Book 1");
         book1.setAuthorId(author.getId());
         book1.setPublishDate(new Date(System.currentTimeMillis()));
+        book1.setPriceDate(new Date(System.currentTimeMillis()));
         book1.setPrice(50);
 
         tableManager.persist(book1);
@@ -92,6 +94,7 @@ public class Test11 extends BaseTest
         book2.setName("Book 2");
         book2.setAuthorId(author.getId());
         book2.setPublishDate(new Date(System.currentTimeMillis()));
+        book2.setPriceDate(new Date(System.currentTimeMillis()));
         book2.setPrice(100);
 
         tableManager.persist(book2);
@@ -107,6 +110,16 @@ public class Test11 extends BaseTest
                 .from(Book.class)
                 .where(Book::getPublishDate, "<>", new Date())
                 .orderByDesc(Book::getName)
+            .getResultList(Book.class);
+
+        assertEquals(0, books.size());
+
+        books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+                .where(Book::getPriceDate, "<>", new Date())
+                .and(q -> q.condition(Book::getPriceDate, ">=", new Date())
+                    .or(Functions.coalesce(new Date()), "is", (Object)null))
             .getResultList(Book.class);
 
         assertEquals(0, books.size());

@@ -20,8 +20,6 @@
  */
 package org.norm4j;
 
-import java.util.List;
-
 public class Functions
 {
     public Functions()
@@ -32,8 +30,7 @@ public class Functions
     {
         return new Expression()
         {
-            public String build(TableManager tableManager, 
-                    List<Object> parameters)
+            public String build(QueryBuilder queryBuilder)
             {
                 StringBuilder expression;
                 boolean onlyNull = true;
@@ -68,17 +65,8 @@ public class Functions
                         }
     
                         value = values[i];
-    
-                        if (value == null)
-                        {
-                            expression.append("NULL");
-                        }
-                        else
-                        {
-                            expression.append("?");
-    
-                            parameters.add(value);
-                        }
+
+                        queryBuilder.appendValue(value, expression, null);
                     }
     
                     expression.append(", NULL)");
