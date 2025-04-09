@@ -195,7 +195,7 @@ public class OracleDialect extends GenericDialect
         return exists(connection, 
                 schema, 
                 sequenceName, 
-                "SEQUENCE");
+                new String[] {"SEQUENCE"});
     }
 
     public boolean tableExists(Connection connection, 
@@ -205,13 +205,13 @@ public class OracleDialect extends GenericDialect
         return exists(connection, 
                 schema, 
                 tableName, 
-                "TABLE");
+                new String[] {"TABLE", "VIEW"});
     }
 
     private boolean exists(Connection connection, 
             String schema, 
             String objectName, 
-            String objectType)
+            String[] objectTypes)
     {
         DatabaseMetaData dbMetaData;
 
@@ -227,7 +227,7 @@ public class OracleDialect extends GenericDialect
             try (ResultSet rs = dbMetaData.getTables(null,
                     schema, 
                     objectName, 
-                    new String[] {objectType}))
+                    objectTypes))
             {
                 return rs.next();
             }

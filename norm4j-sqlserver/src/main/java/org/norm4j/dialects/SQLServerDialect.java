@@ -245,7 +245,7 @@ public class SQLServerDialect extends GenericDialect
             try (ResultSet rs = dbMetaData.getTables(null,
                     schema, 
                     tableName, 
-                    new String[] {"TABLE"}))
+                    new String[] {"TABLE", "VIEW"}))
             {
                 return rs.next();
             }

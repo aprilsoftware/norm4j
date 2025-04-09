@@ -211,20 +211,26 @@ public class PostgreSQLDialect extends GenericDialect
             String schema, 
             String sequenceName)
     {
-        return exists(connection, schema, sequenceName, "SEQUENCE");
+        return exists(connection, 
+                schema, 
+                sequenceName, 
+                new String[] {"SEQUENCE"});
     }
 
     public boolean tableExists(Connection connection, 
             String schema, 
             String tableName)
     {
-        return exists(connection, schema, tableName, "TABLE");
+        return exists(connection, 
+                schema, 
+                tableName, 
+                new String[] {"TABLE", "VIEW"});
     }
 
     private boolean exists(Connection connection, 
             String schema, 
             String objectName, 
-            String objectType)
+            String[] objectTypes)
     {
         DatabaseMetaData dbMetaData;
 
@@ -240,7 +246,7 @@ public class PostgreSQLDialect extends GenericDialect
             try (ResultSet rs = dbMetaData.getTables(null,
                     schema, 
                     objectName, 
-                    new String[] {objectType}))
+                    objectTypes))
             {
                 return rs.next();
             }

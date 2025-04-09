@@ -227,7 +227,7 @@ public class MariaDBDialect extends GenericDialect
             try (ResultSet rs = dbMetaData.getTables(null, 
                     null, 
                     getTableName(schema, tableName), 
-                    new String[] {"TABLE"}))
+                    new String[] {"TABLE", "VIEW"}))
             {
                 return rs.next();
             }
