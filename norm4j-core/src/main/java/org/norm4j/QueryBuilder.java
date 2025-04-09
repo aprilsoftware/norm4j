@@ -61,6 +61,20 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return whereClause;
     }
 
+    public Q where(Object leftValue, 
+            String operator, 
+            Object rightValue)
+    {
+        appendWhere();
+
+        appendCondition(leftValue, 
+                operator, 
+                rightValue, 
+                whereClause);
+
+        return self();
+    }
+
     public <T, R> Q where(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -109,9 +123,9 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return self();
     }
 
-    public <T, R> Q where(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> Q where(FieldGetter<T, R> leftFieldGetter, 
             String operator, 
-            FieldGetter<T, R> rightFieldGetter)
+            FieldGetter<S, U> rightFieldGetter)
     {
         return where(leftFieldGetter, 
                 null, 
@@ -120,10 +134,10 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
                 null);
     }
 
-    public <T, R> Q where(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> Q where(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias)
     {
         appendWhere();
@@ -275,6 +289,13 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return self();
     }
 
+    public Q and(Object leftValue, 
+            String operator, 
+            Object rightValue)
+    {
+        return where(leftValue, operator, rightValue);
+    }
+
     public <T, R> Q and(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -305,22 +326,26 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return where(value, operator, fieldGetter, alias);
     }
 
-    public <T, R> Q and(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> Q and(FieldGetter<T, R> leftFieldGetter, 
             String operator, 
-            FieldGetter<T, R> rightFieldGetter)
+            FieldGetter<S, U> rightFieldGetter)
     {
         return where(leftFieldGetter, 
                 operator, 
                 rightFieldGetter);
     }
 
-    public <T, R> Q and(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> Q and(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias)
     {
-        return where(leftFieldGetter, leftAlias, operator, rightFieldGetter, rightAlias);
+        return where(leftFieldGetter, 
+                leftAlias, 
+                operator, 
+                rightFieldGetter, 
+                rightAlias);
     }
 
     public Q and(SelectQueryBuilder leftBuilder,
@@ -396,6 +421,20 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return where(consumer);
     }
 
+    public Q or(Object leftValue, 
+            String operator, 
+            Object rightValue)
+    {
+        appendOr();
+
+        appendCondition(leftValue, 
+                operator, 
+                rightValue, 
+                whereClause);
+
+        return self();
+    }
+
     public <T, R> Q or(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -444,9 +483,9 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return self();
     }
 
-    public <T, R> Q or(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> Q or(FieldGetter<T, R> leftFieldGetter, 
             String operator, 
-            FieldGetter<T, R> rightFieldGetter)
+            FieldGetter<S, U> rightFieldGetter)
     {
         return or(leftFieldGetter, 
                 null, 
@@ -455,10 +494,10 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
                 null);
     }
 
-    public <T, R> Q or(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> Q or(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias)
     {
         appendOr();
@@ -610,6 +649,20 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return self();
     }
 
+    protected void appendCondition(Object leftValue,
+            String operator, 
+            Object rightValue,
+            StringBuilder condition)
+    {
+        appendValue(leftValue, condition, null);
+
+        condition.append(" ");
+        condition.append(operator);
+        condition.append(" ");
+
+        appendValue(rightValue, condition, null);
+    }
+
     protected <T, R> void appendCondition(FieldGetter<T, R> fieldGetter, 
             String alias,
             String operator, 
@@ -650,10 +703,10 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         append(column, alias, condition);
     }
 
-    protected <T, R> void appendCondition(FieldGetter<T, R> leftFieldGetter, 
+    protected <T, R, S, U> void appendCondition(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias,
             StringBuilder condition, 
             List<Object> parameters)

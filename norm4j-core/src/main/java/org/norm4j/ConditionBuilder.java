@@ -44,6 +44,20 @@ public class ConditionBuilder
         return parameters;
     }
 
+    public ConditionBuilder condition(Object leftValue, 
+            String operator, 
+            Object rightValue)
+    {
+        appendCondition();
+
+        queryBuilder.appendCondition(leftValue, 
+                operator, 
+                rightValue, 
+                condition);
+
+        return this;
+    }
+
     public <T, R> ConditionBuilder condition(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -92,9 +106,9 @@ public class ConditionBuilder
         return this;
     }
 
-    public <T, R> ConditionBuilder condition(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> ConditionBuilder condition(FieldGetter<T, R> leftFieldGetter, 
             String operator, 
-            FieldGetter<T, R> rightFieldGetter)
+            FieldGetter<S, U> rightFieldGetter)
     {
         return condition(leftFieldGetter, 
                 null, 
@@ -103,10 +117,10 @@ public class ConditionBuilder
                 null);
     }
 
-    public <T, R> ConditionBuilder condition(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> ConditionBuilder condition(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias)
     {
         appendCondition();
@@ -258,6 +272,13 @@ public class ConditionBuilder
         return this;
     }
 
+    public ConditionBuilder and(Object leftValue, 
+            String operator, 
+            Object rightValue)
+    {
+        return condition(leftValue, operator, rightValue);
+    }
+
     public <T, R> ConditionBuilder and(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -288,22 +309,26 @@ public class ConditionBuilder
         return condition(value, operator, fieldGetter, alias);
     }
 
-    public <T, R> ConditionBuilder and(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> ConditionBuilder and(FieldGetter<T, R> leftFieldGetter, 
             String operator, 
-            FieldGetter<T, R> rightFieldGetter)
+            FieldGetter<S, U> rightFieldGetter)
     {
         return condition(leftFieldGetter, 
                 operator, 
                 rightFieldGetter);
     }
 
-    public <T, R> ConditionBuilder and(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> ConditionBuilder and(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias)
     {
-        return condition(leftFieldGetter, leftAlias, operator, rightFieldGetter, rightAlias);
+        return condition(leftFieldGetter, 
+                leftAlias, 
+                operator, 
+                rightFieldGetter, 
+                rightAlias);
     }
 
     public ConditionBuilder and(SelectQueryBuilder leftBuilder,
@@ -379,6 +404,20 @@ public class ConditionBuilder
         return condition(consumer);
     }
 
+    public ConditionBuilder or(Object leftValue, 
+            String operator, 
+            Object rightValue)
+    {
+        appendOr();
+
+        queryBuilder.appendCondition(leftValue, 
+                operator, 
+                rightValue, 
+                condition);
+
+        return this;
+    }
+
     public <T, R> ConditionBuilder or(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -427,9 +466,9 @@ public class ConditionBuilder
         return this;
     }
 
-    public <T, R> ConditionBuilder or(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> ConditionBuilder or(FieldGetter<T, R> leftFieldGetter, 
             String operator, 
-            FieldGetter<T, R> rightFieldGetter)
+            FieldGetter<S, U> rightFieldGetter)
     {
         return or(leftFieldGetter, 
                 null, 
@@ -438,10 +477,10 @@ public class ConditionBuilder
                 null);
     }
 
-    public <T, R> ConditionBuilder or(FieldGetter<T, R> leftFieldGetter, 
+    public <T, R, S, U> ConditionBuilder or(FieldGetter<T, R> leftFieldGetter, 
             String leftAlias,
             String operator, 
-            FieldGetter<T, R> rightFieldGetter,
+            FieldGetter<S, U> rightFieldGetter,
             String rightAlias)
     {
         appendOr();
