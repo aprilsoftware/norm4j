@@ -20,16 +20,15 @@
  */
 package org.norm4j.tests.test9;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Date;
-
 import org.junit.jupiter.api.Test;
-
 import org.norm4j.TableManager;
 import org.norm4j.dialects.SQLServerDialect;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
+
+import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Test9 extends BaseTest
 {
@@ -103,7 +102,7 @@ public class Test9 extends BaseTest
                     .from(Book.class)
                 .getSingleResult(int.class);
 
-            assertEquals(count, 2);
+            assertEquals(2, count);
 
             count = tableManager.createSelectQueryBuilder()
                     .count(Author::getId)
@@ -113,7 +112,7 @@ public class Test9 extends BaseTest
                     .where(Book::getId, "=", book1.getId())
                 .getSingleResult(int.class);
 
-            assertEquals(count, 1);
+            assertEquals(1, count);
         }
         else
         {
@@ -122,7 +121,7 @@ public class Test9 extends BaseTest
                     .from(Book.class)
                 .getSingleResult(long.class);
 
-            assertEquals(count, 2);
+            assertEquals(2, count);
 
             count = tableManager.createSelectQueryBuilder()
                     .count(Author::getId)
@@ -132,7 +131,7 @@ public class Test9 extends BaseTest
                     .where(Book::getId, "=", book1.getId())
                 .getSingleResult(long.class);
 
-            assertEquals(count, 1);
+            assertEquals(1, count);
         }
 
         value = tableManager.createSelectQueryBuilder()
@@ -140,7 +139,7 @@ public class Test9 extends BaseTest
                 .from(Book.class)
             .getSingleResult(double.class);
 
-        assertEquals(value, 150);
+        assertEquals(150, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .sum(Book::getPrice)
@@ -150,28 +149,28 @@ public class Test9 extends BaseTest
                 .orderByDesc(Book::getName)
             .getSingleResult(double.class);
 
-        assertEquals(value, 100);
+        assertEquals(100, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .avg(Book::getPrice)
                 .from(Book.class)
             .getSingleResult(double.class);
 
-        assertEquals(value, 75);
+        assertEquals(75, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .min(Book::getPrice)
                 .from(Book.class)
             .getSingleResult(double.class);
 
-        assertEquals(value, 50);
+        assertEquals(50, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .max(Book::getPrice)
                 .from(Book.class)
             .getSingleResult(double.class);
 
-        assertEquals(value, 100);
+        assertEquals(100, value);
 
         tableManager.remove(book1);
         tableManager.remove(book2);

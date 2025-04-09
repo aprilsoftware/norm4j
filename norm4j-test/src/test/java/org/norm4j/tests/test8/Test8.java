@@ -20,16 +20,16 @@
  */
 package org.norm4j.tests.test8;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Date;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.norm4j.Query;
 import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
+
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Test8 extends BaseTest
 {
@@ -109,7 +109,7 @@ public class Test8 extends BaseTest
                 .limit(1)
             .getResultList(Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         objects = tableManager.createSelectQueryBuilder()
                 .select(Book.class, "b")
@@ -121,27 +121,27 @@ public class Test8 extends BaseTest
                 .innerJoin(Author.class, "a")
                 .orderBy(Book::getName, "b")
                 .orderBy(Author::getName, "a")
-            .getResultList(new Class<?>[] {Book.class, Author.class});
+            .getResultList(Book.class, Author.class);
 
-        assertEquals(objects.size(), 1);
+        assertEquals(1, objects.size());
 
         for (Object[] row : objects)
         {
-            assertEquals(row.length, 3);
+            assertEquals(3, row.length);
 
             for (int i = 0; i < row.length; i++)
             {
                 if (i == 0)
                 {
-                    assertEquals(row[i] instanceof Book, true);
+                    assertInstanceOf(Book.class, row[i]);
                 }
                 else if (i == 1)
                 {
-                    assertEquals(row[i] instanceof Author, true);
+                    assertInstanceOf(Author.class, row[i]);
                 }
                 else if (i == 2)
                 {
-                    assertEquals(row[i] instanceof String, true);
+                    assertInstanceOf(String.class, row[i]);
                 }
             }
         }
@@ -157,7 +157,7 @@ public class Test8 extends BaseTest
 
         books = query.getResultList(Book.class);
 
-        assertEquals(books.size(), 1);
+        assertEquals(1, books.size());
 
         sql = new StringBuilder();
         sql.append("select * from book as b ");
@@ -170,23 +170,23 @@ public class Test8 extends BaseTest
         query.setParameter(1, book1.getTenantId());
         query.setParameter(2, book1.getId());
 
-        objects = query.getResultList(new Class<?>[] {Book.class, Author.class});
+        objects = query.getResultList(Book.class, Author.class);
 
-        assertEquals(objects.size(), 1);
+        assertEquals(1, objects.size());
 
         for (Object[] row : objects)
         {
-            assertEquals(row.length, 2);
+            assertEquals(2, row.length);
 
             for (int i = 0; i < row.length; i++)
             {
                 if (i == 0)
                 {
-                    assertEquals(row[i] instanceof Book, true);
+                    assertInstanceOf(Book.class, row[i]);
                 }
                 else if (i == 1)
                 {
-                    assertEquals(row[i] instanceof Author, true);
+                    assertInstanceOf(Author.class, row[i]);
                 }
             }
         }

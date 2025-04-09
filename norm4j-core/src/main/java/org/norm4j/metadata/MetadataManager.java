@@ -20,18 +20,7 @@
  */
 package org.norm4j.metadata;
 
-import org.norm4j.Array;
-import org.norm4j.Column;
-import org.norm4j.Enumerated;
-import org.norm4j.FieldGetter;
-import org.norm4j.GeneratedValue;
-import org.norm4j.Id;
-import org.norm4j.IdClass;
-import org.norm4j.Join;
-import org.norm4j.SequenceGenerator;
-import org.norm4j.Table;
-import org.norm4j.TableGenerator;
-import org.norm4j.Temporal;
+import org.norm4j.*;
 import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.helpers.TableCreationHelper;
 
@@ -42,17 +31,19 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static org.norm4j.metadata.helpers.TableCreationHelper.decapitalize;
+import static org.norm4j.metadata.helpers.TableCreationHelper.validateJoins;
 
 public class MetadataManager
 {
     private final Map<Class<?>, TableMetadata> metadataMap;
     private SQLDialect dialect;
-    List<Class<? extends Annotation>> annotationTypes = List.of(
+    private final Map<FieldGetter<?, ?>, FieldGetterMetadata> getterCache = new ConcurrentHashMap<>();
+    public static final List<Class<? extends Annotation>> annotationTypes = List.of(
             Column.class,
             Array.class,
             Id.class,
@@ -85,78 +76,45 @@ public class MetadataManager
 
     public void registerTable(Class<?> tableClass)
     {
-        Table tableAnnotation;
-        TableMetadata table;
-        String tableName;
-        String schema;
-        Class<?> idClass;
-        Join[] joins;
-
-        if (!tableClass.isAnnotationPresent(Table.class))
-        {
-            throw new IllegalArgumentException("Class " 
-                    + tableClass.getName()
-                    + " is not annotated with @Table");
+        if (!tableClass.isAnnotationPresent(Table.class)) {
+            throw new IllegalArgumentException("Class " + tableClass.getName() + " is not annotated with @Table");
         }
 
-        tableAnnotation = tableClass.getAnnotation(Table.class);
+        Table tableAnnotation = tableClass.getAnnotation(Table.class);
+        String tableName = tableAnnotation.name().isEmpty()
+                ? tableClass.getSimpleName().toLowerCase()
+                : tableAnnotation.name();
+        String schema = tableAnnotation.schema();
 
-        if (tableAnnotation.name().isEmpty())
-        {
-            tableName = tableClass.getSimpleName().toLowerCase();
-        }
-        else
-        {
-            tableName = tableAnnotation.name();
-        }
+        Class<?> idClass = tableClass.isAnnotationPresent(IdClass.class)
+                ? tableClass.getAnnotation(IdClass.class).value()
+                : null;
 
-        schema = tableAnnotation.schema();
+        Join[] joins = tableClass.getAnnotationsByType(Join.class);
+        validateJoins(joins);
 
-        if (tableClass.isAnnotationPresent(IdClass.class))
-        {
-            idClass = tableClass.getAnnotation(IdClass.class).value();
-        }
-        else
-        {
-            idClass = null;
-        }
-
-        joins = tableClass.getAnnotationsByType(Join.class);
-
-        for (Join join : joins)
-        {
-            if (join.columns().length == 0 ||
-                    join.reference().columns().length == 0)
-            {
-                throw new IllegalArgumentException("Missing column in join.");
-            }
-
-            if (join.columns().length != join.reference().columns().length)
-            {
-                throw new IllegalArgumentException("Different number of columns in join.");
-            }
-        }
-
-        table = new TableMetadata(
+        TableMetadata tableMetadata = new TableMetadata(
                 tableClass,
                 tableName,
                 schema,
                 idClass,
-                joins);
+                joins
+        );
 
         for (Field field : tableClass.getDeclaredFields()) {
             Map<Class<?>, Object> annotations = new HashMap<>();
 
             for (Class<? extends Annotation> annotationType : annotationTypes) {
-                if (field.isAnnotationPresent(annotationType)) {
-                    annotations.put(annotationType, field.getAnnotation(annotationType));
+                Annotation annotation = field.getAnnotation(annotationType);
+                if (annotation != null) {
+                    annotations.put(annotationType, annotation);
                 }
             }
 
-            table.getColumns().add(new ColumnMetadata(table, annotations, field));
+            tableMetadata.getColumns().add(new ColumnMetadata(tableMetadata, annotations, field));
         }
 
-        metadataMap.put(tableClass, table);
+        metadataMap.put(tableClass, tableMetadata);
     }
 
     public TableMetadata getMetadata(Class<?> tableClass)
@@ -184,16 +142,9 @@ public class MetadataManager
 
     public List<ColumnMetadata> getMetadata(Class<?> tableClass, String[] columnNames)
     {
-        List<ColumnMetadata> columns;
-
-        columns = new ArrayList<>();
-
-        for (String columnName : columnNames)
-        {
-            columns.add(getMetadata(tableClass, columnName));
-        }
-
-        return columns;
+        return Arrays.stream(columnNames)
+                .map(name -> getMetadata(tableClass, name))
+                .collect(Collectors.toList());
     }
 
     public <T, R> ColumnMetadata getMetadata(FieldGetter<T, R> fieldGetter)
@@ -201,20 +152,20 @@ public class MetadataManager
         FieldGetterMetadata fieldGetterMetadata;
         TableMetadata tableMetadata;
 
-        fieldGetterMetadata = extractMetadata(fieldGetter);
+        fieldGetterMetadata = getterCache.computeIfAbsent(fieldGetter, this::extractMetadata);
 
-        tableMetadata = getMetadata(fieldGetterMetadata.getTableClass());
+        tableMetadata = getMetadata(fieldGetterMetadata.tableClass());
 
         if (tableMetadata == null)
         {
             throw new IllegalArgumentException("No metadata found for class " 
-                    + fieldGetterMetadata.getTableClass().getName());
+                    + fieldGetterMetadata.tableClass().getName());
         }
 
         return tableMetadata.getColumns().stream()
-                .filter(c -> c.getField().getName().equals(fieldGetterMetadata.getFieldName()))
+                .filter(c -> c.getField().getName().equals(fieldGetterMetadata.fieldName()))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Field not found: " + fieldGetterMetadata.getFieldName()));
+                .orElseThrow(() -> new NoSuchElementException("Field not found: " + fieldGetterMetadata.fieldName()));
     }
 
     public void createTables(DataSource dataSource)
@@ -239,89 +190,44 @@ public class MetadataManager
         }
     }
 
-    private void executeUpdate(Connection connection, String sql)
-    {
-        try (Statement stmt = connection.createStatement())
-        {
-            stmt.executeUpdate(sql);
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
+    private void executeUpdate(Connection connection, String sql) {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error executing SQL: " + sql, e);
         }
     }
 
-    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter)
-    {
-        Method getImplMethodName;
-        Method getImplClass;
-        String implClass;
-        Object serializedLambda;
-        Method writeReplace;
-        String className;
-        String methodName;
-
-        try
-        {
-            writeReplace = getter.getClass().getDeclaredMethod("writeReplace");
-
+    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
+        try {
+            // Access the serialized lambda internals
+            Method writeReplace = getter.getClass().getDeclaredMethod("writeReplace");
             writeReplace.setAccessible(true);
+            Object serializedLambda = writeReplace.invoke(getter);
 
-            serializedLambda = writeReplace.invoke(getter);
+            Method getImplClassMethod = serializedLambda.getClass().getDeclaredMethod("getImplClass");
+            Method getImplMethodNameMethod = serializedLambda.getClass().getDeclaredMethod("getImplMethodName");
 
-            getImplClass = serializedLambda.getClass()
-                    .getDeclaredMethod("getImplClass");
+            String internalClassName = (String) getImplClassMethod.invoke(serializedLambda);
+            String className = internalClassName.replace('/', '.');
 
-            getImplMethodName = serializedLambda.getClass()
-                    .getDeclaredMethod("getImplMethodName");
+            String methodName = (String) getImplMethodNameMethod.invoke(serializedLambda);
+            String fieldName;
 
-            implClass = (String) getImplClass.invoke(serializedLambda);
-
-            className = implClass.replace('/', '.');
-
-            methodName = (String) getImplMethodName.invoke(serializedLambda);
-
-            if (methodName.startsWith("get") && methodName.length() > 3)
-            {
-                return new FieldGetterMetadata(Class.forName(className),
-                        Character.toLowerCase(methodName.charAt(3))
-                                + methodName.substring(4));
-            }
-            else if (methodName.startsWith("is") && methodName.length() > 2)
-            {
-                return new FieldGetterMetadata(Class.forName(className),
-                        Character.toLowerCase(methodName.charAt(2))
-                                + methodName.substring(3));
+            if (methodName.startsWith("get") && methodName.length() > 3) {
+                fieldName = decapitalize(methodName.substring(3));
+            } else if (methodName.startsWith("is") && methodName.length() > 2) {
+                fieldName = decapitalize(methodName.substring(2));
+            } else {
+                fieldName = methodName;
             }
 
-            return new FieldGetterMetadata(Class.forName(className), methodName);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
+            return new FieldGetterMetadata(Class.forName(className), fieldName);
+
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to extract field metadata from getter: " + getter, e);
         }
     }
 
-    private static class FieldGetterMetadata
-    {
-        private final Class<?> tableClass;
-        private final String fieldName;
-    
-        public FieldGetterMetadata(Class<?> tableClass, String fieldName)
-        {
-            this.tableClass = tableClass;
-    
-            this.fieldName = fieldName;
-        }
-    
-        public Class<?> getTableClass()
-        {
-            return tableClass;
-        }
-    
-        public String getFieldName()
-        {
-            return fieldName;
-        }
-    }
+    private record FieldGetterMetadata(Class<?> tableClass, String fieldName) {}
 }

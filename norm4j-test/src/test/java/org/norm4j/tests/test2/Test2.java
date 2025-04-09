@@ -20,13 +20,12 @@
  */
 package org.norm4j.tests.test2;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 import org.junit.jupiter.api.Test;
-
 import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
+
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class Test2 extends BaseTest
 {
@@ -62,7 +61,7 @@ public class Test2 extends BaseTest
 
         author = tableManager.find(Author.class, author.getId());
 
-        assertNotEquals(author, null);
+        assertNotEquals(null, author);
 
         book = new Book();
 
