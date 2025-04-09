@@ -56,9 +56,7 @@ public class Test11 extends BaseTest
 
         metadataManager = new MetadataManager();
 
-        metadataManager.registerTable(Tenant.class);
-        metadataManager.registerTable(Book.class);
-        metadataManager.registerTable(Author.class);
+        metadataManager.registerPackage("org.norm4j.tests.test11");
 
         metadataManager.createTables(getDataSource());
 

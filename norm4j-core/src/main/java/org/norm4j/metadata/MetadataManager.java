@@ -25,6 +25,10 @@ import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.helpers.TableCreationHelper;
 
 import javax.sql.DataSource;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -72,6 +76,46 @@ public class MetadataManager
         }
 
         return dialect;
+    }
+
+    public void registerPackage(String packageName)
+    {
+        for (Class c : getPackageClasses(packageName))
+        {
+            if (c.isAnnotationPresent(Table.class))
+            {
+                registerTable(c);
+            }
+        }
+    }
+
+    private List<Class> getPackageClasses(String packageName)
+    {
+        InputStream inputStream;
+        BufferedReader reader;
+
+        inputStream = ClassLoader.getSystemClassLoader()
+                .getResourceAsStream(packageName.replaceAll("[.]", "/"));
+
+        reader = new BufferedReader(new InputStreamReader(inputStream));
+
+        return reader.lines()
+                .filter(line -> line.endsWith(".class"))
+                .map(line -> getClass(line, packageName))
+                .collect(Collectors.toList());
+    }
+ 
+    private Class getClass(String className, String packageName)
+    {
+        try
+        {
+            return Class.forName(packageName + "."
+                    + className.substring(0, className.lastIndexOf('.')));
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public void registerTable(Class<?> tableClass)
