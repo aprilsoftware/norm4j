@@ -164,6 +164,18 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         selectClause.append(")");
     }
 
+    public SelectQueryBuilder select()
+    {
+        if (!selectClause.isEmpty())
+        {
+            selectClause.append(", ");
+        }
+
+        selectClause.append("*");
+
+        return this;
+    }
+
     public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter)
     {
         return select(fieldGetter, null);
@@ -277,6 +289,39 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         fromClause.append(alias);
 
         getParameters().addAll(builder.getParameters());
+
+        return this;
+    }
+
+    public SelectQueryBuilder from(String expression)
+    {
+        return from(expression, null, null);
+    }
+
+    public SelectQueryBuilder from(String expression, List<Object> parameters)
+    {
+        return from(expression, null, parameters);
+    }
+
+    public SelectQueryBuilder from(String expression, String alias, List<Object> parameters)
+    {
+        if (!fromClause.isEmpty())
+        {
+            throw new RuntimeException("from(...) must be called only once.");
+        }
+
+        fromClause.append(expression);
+
+        if (alias != null)
+        {
+            fromClause.append(" AS ");
+            fromClause.append(alias);
+        }
+
+        if (parameters != null)
+        {
+            getParameters().addAll(parameters);
+        }
 
         return this;
     }
