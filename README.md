@@ -143,6 +143,16 @@ metadataManager.createTables(getDataSource());
 TableManager tableManager = new TableManager(getDataSource(), metadataManager);
 ```
 
+or
+
+```java
+MetadataManager metadataManager = new MetadataManager();
+metadataManager.registerPackage("org.norm4j.tests.test11");
+metadataManager.createTables(getDataSource());
+
+TableManager tableManager = new TableManager(getDataSource(), metadataManager);
+```
+
 ### CRUD Operations
 
 **Persist**
