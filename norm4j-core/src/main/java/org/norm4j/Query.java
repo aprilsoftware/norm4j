@@ -223,16 +223,6 @@ public class Query
 
                         if (table == null)
                         {
-                            Object value;
-
-                            value = rs.getObject(index);
-
-                            if (value != null &&
-                                    !value.getClass().isAssignableFrom(type))
-                            {
-                                throw new RuntimeException("Unexpected value type.");
-                            }
-
                             columns.add(rs.getObject(index));
 
                             index++;
