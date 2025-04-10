@@ -233,9 +233,10 @@ public class SQLServerDialect extends GenericDialect
     {
         DatabaseMetaData dbMetaData;
 
-        if (schema != null && schema.isEmpty())
+        if (schema == null ||
+            (schema != null && schema.isEmpty()))
         {
-            schema = null;
+            schema = "dbo";
         }
 
         try
