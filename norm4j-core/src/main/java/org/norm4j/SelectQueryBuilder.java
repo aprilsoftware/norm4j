@@ -22,6 +22,7 @@ package org.norm4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
@@ -806,49 +807,37 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return statement.toString();
     }
 
+    public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType)
+    {
+        return createQuery().mapResultList(keyType, valueType);
+    }
+
+    public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType)
+    {
+        return createQuery().mapSingleResult(keyType, valueType);
+    }
+
     public <T> List<T> getResultList(Class<T> type)
     {
-        Query query;
-
-        query = getTableManager().createQuery(build());
-
-        for (int i = 0; i < getParameters().size(); i++)
-        {
-            query.setParameter(i + 1, getParameters().get(i));
-        }
-
-        return query.getResultList(type);
+        return createQuery().getResultList(type);
     }
 
     public List<Object[]> getResultList(Class<?>... tableClasses)
     {
-        Query query;
-
-        query = getTableManager().createQuery(build());
-
-        for (int i = 0; i < getParameters().size(); i++)
-        {
-            query.setParameter(i + 1, getParameters().get(i));
-        }
-
-        return query.getResultList(tableClasses);
+        return createQuery().getResultList(tableClasses);
     }
 
     public <T> T getSingleResult(Class<T> type)
     {
-        Query query;
-
-        query = getTableManager().createQuery(build());
-
-        for (int i = 0; i < getParameters().size(); i++)
-        {
-            query.setParameter(i + 1, getParameters().get(i));
-        }
-
-        return query.getSingleResult(type);
+        return createQuery().getSingleResult(type);
     }
 
     public Object[] getSingleResult(Class<?>... tableClasses)
+    {
+        return createQuery().getSingleResult(tableClasses);
+    }
+
+    private Query createQuery()
     {
         Query query;
 
@@ -859,7 +848,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
             query.setParameter(i + 1, getParameters().get(i));
         }
 
-        return query.getSingleResult(tableClasses);
+        return query;
     }
 
     private class FromClauseTable

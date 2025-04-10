@@ -49,6 +49,72 @@ public class Query
         parameters = new HashMap<>();
     }
 
+    public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType)
+    {
+        Map<K, List<V>> map;
+        List<Object[]> rows;
+
+        map = new HashMap<>();
+
+        rows = getResultList(keyType, valueType);
+
+        for (Object[] row : rows)
+        {
+            List<V> values;
+            V value;
+            K key;
+
+            if (row.length != 2)
+            {
+                throw new RuntimeException("Unexpected number of columns.");
+            }
+
+            key = (K)row[0];
+
+            if (map.containsKey(key))
+            {
+                values = map.get(key);
+            }
+            else
+            {
+                values = new ArrayList<>();
+
+                map.put(key, values);
+            }
+
+            value = (V)row[1];
+
+            if (value != null)
+            {
+                values.add(value);
+            }
+        }
+
+        return map;
+    }
+
+    public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType)
+    {
+        Map<K, V> map;
+        List<Object[]> rows;
+
+        map = new HashMap<>();
+
+        rows = getResultList(keyType, valueType);
+
+        for (Object[] row : rows)
+        {
+            if (row.length != 2)
+            {
+                throw new RuntimeException("Unexpected number of columns.");
+            }
+
+            map.put((K)row[0], (V)row[1]);
+        }
+
+        return map;
+    }
+
     public <T> List<T> getResultList(Class<T> type)
     {
         List<Object[]> rows;
@@ -157,6 +223,16 @@ public class Query
 
                         if (table == null)
                         {
+                            Object value;
+
+                            value = rs.getObject(index);
+
+                            if (value != null &&
+                                    !value.getClass().isAssignableFrom(type))
+                            {
+                                throw new RuntimeException("Unexpected value type.");
+                            }
+
                             columns.add(rs.getObject(index));
 
                             index++;
