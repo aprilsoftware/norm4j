@@ -35,4 +35,5 @@ public @interface Join
     String[] columns();
     Reference reference();
     boolean referencialIntegrity() default true;
+    boolean cascadeDelete() default false;
 }

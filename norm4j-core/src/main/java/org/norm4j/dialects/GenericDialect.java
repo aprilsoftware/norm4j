@@ -175,6 +175,11 @@ public abstract class GenericDialect implements SQLDialect
 
         ddl.append(")");
 
+        if (foreignKey.cascadeDelete())
+        {
+            ddl.append(" ON DELETE CASCADE");
+        }
+
         return ddl.toString();
     }
 
