@@ -28,7 +28,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-core</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-postgresql</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
 </dependency>
 <dependency>
     <groupId>org.postgresql</groupId>
@@ -53,7 +53,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-mariadb</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
 </dependency>
 <dependency>
     <groupId>org.mariadb.jdbc</groupId>
@@ -67,7 +67,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-sqlserver</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
 </dependency>
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
@@ -81,7 +81,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-oracle</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
 </dependency>
 ```
 
@@ -138,6 +138,18 @@ public class Book {
 MetadataManager metadataManager = new MetadataManager();
 metadataManager.registerTable(Book.class);
 metadataManager.registerTable(Author.class);
+metadataManager.createTables(getDataSource());
+
+TableManager tableManager = new TableManager(getDataSource(), metadataManager);
+```
+
+or
+
+```java
+MetadataManager metadataManager = new MetadataManager();
+
+metadataManager.registerPackage("org.norm4j.tests.test11");
+
 metadataManager.createTables(getDataSource());
 
 TableManager tableManager = new TableManager(getDataSource(), metadataManager);
