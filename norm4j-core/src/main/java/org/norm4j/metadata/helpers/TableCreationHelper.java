@@ -181,7 +181,9 @@ public class TableCreationHelper {
                 }
 
                 if (join.name().isEmpty()) {
-                    foreignKeyName =  dialect.createForeignKeyName(tableMetadata, tableMetadata, join);
+                        foreignKeyName =  dialect.createForeignKeyName(tableMetadata, 
+                        metadataMap.get(join.reference().table()), 
+                        join);
                 } else {
                     namedForeignKeys.add(join);
 

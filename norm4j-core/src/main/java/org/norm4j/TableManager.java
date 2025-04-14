@@ -594,23 +594,15 @@ public class TableManager
         }
     }
 
-    public <T> T joinOne(Object leftRecord, 
-            Class<T> rightTableClass)
-    {
-        return joinOne(leftRecord, 
-                rightTableClass, 
-                null);
-    }
-
-    public <T> T joinOne(Object leftRecord, 
+    public <T, S, R> T joinOne(Object leftRecord, 
             Class<T> rightTableClass, 
-            String joinName)
+            FieldGetter<S, R>... fieldGetters)
     {
         List<T> rightRecords;
 
         rightRecords = joinMany(leftRecord, 
                 rightTableClass, 
-                joinName);
+                fieldGetters);
 
         if (rightRecords.isEmpty())
         {
@@ -663,30 +655,18 @@ public class TableManager
         }
     }
 
-    public <T> List<T> joinMany(Object leftRecord, 
-            Class<T> rightTableClass)
-    {
-        return joinMany(leftRecord, 
-                rightTableClass, 
-                null);
-    }
-
-    public <T> List<T> joinMany(Object leftRecord, 
+    public <T, S, R> List<T> joinMany(Object leftRecord, 
             Class<T> rightTableClass, 
-            String joinName)
+            FieldGetter<S, R>... fieldGetters)
     {
         TableMetadata leftTable;
         Join join;
 
         leftTable = getTable(leftRecord.getClass());
 
-        join = Arrays.asList(leftTable.getJoins())
-                .stream()
-                .filter(j -> (joinName == null ||
-                        j.name().equals(joinName)) &&
-                        j.reference().table().equals(rightTableClass))
-                .findFirst()
-                .orElse(null);
+        join = getJoin(leftTable, 
+                rightTableClass, 
+                fieldGetters);
 
         if (join == null)
         {
@@ -694,13 +674,9 @@ public class TableManager
 
             rightTable = getTable(rightTableClass);
 
-            join = Arrays.asList(rightTable.getJoins())
-                    .stream()
-                    .filter(j -> (joinName == null ||
-                            j.name().equals(joinName)) &&
-                            j.reference().table().equals(leftRecord.getClass()))
-                    .findFirst()
-                    .orElse(null);
+            join = getJoin(rightTable, 
+                    leftRecord.getClass(), 
+                    fieldGetters);
     
             if (join == null)
             {
@@ -724,6 +700,29 @@ public class TableManager
                     metadataManager.getMetadata(rightTableClass, 
                             join.reference().columns()));
         }
+    }
+
+    private <T, S, R> Join getJoin(TableMetadata leftTable, 
+            Class<T> rightTableClass, 
+            FieldGetter<S, R>... fieldGetters)
+    {
+        for (Join join : leftTable.getJoins())
+        {
+            if (fieldGetters.length > 0)
+            {
+                if (!getMetadataManager().compareColumns(leftTable, join, fieldGetters))
+                {
+                    continue;
+                }
+            }
+
+            if (join.reference().table().equals(rightTableClass))
+            {
+                return join;
+            }
+        }
+
+        return null;
     }
 
     public <T, L, R> List<T> joinMany(L leftRecord, 

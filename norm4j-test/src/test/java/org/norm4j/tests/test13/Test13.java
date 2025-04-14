@@ -37,7 +37,8 @@ public class Test13 extends BaseTest
 {
     private TableManager tableManager;
     private Tenant tenant;
-    private Author author;
+    private Author author1;
+    private Author author2;
     private Book book1;
     private Book book2;
 
@@ -68,18 +69,25 @@ public class Test13 extends BaseTest
 
         tableManager.persist(tenant);
 
-        author = new Author();
+        author1 = new Author();
 
-        author.setTenantId(tenant.getId());
-        author.setName("Author 1");
+        author1.setTenantId(tenant.getId());
+        author1.setName("Author 1");
 
-        tableManager.persist(author);
+        tableManager.persist(author1);
+
+        author2 = new Author();
+
+        author2.setTenantId(tenant.getId());
+        author2.setName("Author 2");
+
+        tableManager.persist(author2);
 
         book1 = new Book();
 
         book1.setTenantId(tenant.getId());
         book1.setName("Book 1");
-        book1.setAuthorId(author.getId());
+        book1.setAuthorId(author1.getId());
         book1.setPublishDate(new Date(System.currentTimeMillis()));
         book1.setPriceDate(new Date(System.currentTimeMillis()));
         book1.setPrice(50);
@@ -90,7 +98,8 @@ public class Test13 extends BaseTest
 
         book2.setTenantId(tenant.getId());
         book2.setName("Book 2");
-        book2.setAuthorId(author.getId());
+        book2.setAuthorId(author1.getId());
+        book2.setSecondAuthorId(author2.getId());
         book2.setPublishDate(new Date(System.currentTimeMillis()));
         book2.setPriceDate(new Date(System.currentTimeMillis()));
         book2.setPrice(100);
@@ -102,14 +111,69 @@ public class Test13 extends BaseTest
     public void test13()
     {
         List<Book> books;
+        List<Author> authors;
 
         books = tableManager.createSelectQueryBuilder()
-                .select()
+                .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class, Book::getAuthorId)
             .getResultList(Book.class);
 
         assertEquals(2, books.size());
+
+        books = tableManager.createSelectQueryBuilder()
+                .select(Book.class)
+                .from(Book.class)
+                .innerJoin(Author.class, Book::getSecondAuthorId)
+            .getResultList(Book.class);
+
+        assertEquals(1, books.size());
+
+        assertEquals(true, books.get(0).getId().equals(book2.getId()));
+
+        authors = tableManager.createSelectQueryBuilder()
+                .select(Author.class)
+                .from(Author.class)
+                .innerJoin(Book.class, Author::getId)
+                .groupBy(Author.class)
+            .getResultList(Author.class);
+
+        assertEquals(1, authors.size());
+
+        assertEquals(true, authors.get(0).getId().equals(author1.getId()));
+
+        authors = tableManager.createSelectQueryBuilder()
+                .select(Author.class)
+                .from(Author.class)
+                .innerJoin(Book.class, Book::getSecondAuthorId)
+                .groupBy(Author.class)
+            .getResultList(Author.class);
+
+        assertEquals(1, authors.size());
+
+        assertEquals(true, authors.get(0).getId().equals(author2.getId()));
+
+        books = tableManager.joinMany(author1, Book.class);
+
+        assertEquals(2, books.size());
+
+        books = tableManager.joinMany(author1, Book.class, Book::getAuthorId);
+
+        assertEquals(2, books.size());
+
+        books = tableManager.joinMany(author1, Book.class, Author::getId);
+
+        assertEquals(2, books.size());
+
+        books = tableManager.joinMany(author2, Book.class);
+
+        assertEquals(0, books.size());
+
+        books = tableManager.joinMany(author2, Book.class, Book::getSecondAuthorId);
+
+        assertEquals(1, books.size());
+
+        assertEquals(true, books.get(0).getId().equals(book2.getId()));
     }
 
     @AfterEach

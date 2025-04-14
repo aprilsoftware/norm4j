@@ -457,36 +457,13 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         fromClauseTables.add(new FromClauseTable(table, alias));
     }
 
-    private <T, R> boolean compareColumns(TableMetadata table, 
-            List<String> columns, 
-            FieldGetter<T, R>... fieldGetters)
-    {
-        for (FieldGetter<T, R> fieldGetter : fieldGetters)
-        {
-            ColumnMetadata column;
-
-            column = getTableManager().getMetadataManager()
-                    .getMetadata(fieldGetter);
-
-            if (table.getTableName().equals(column.getTable().getTableName()))
-            {
-                if (!columns.contains(column.getColumnName()))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     private <T, R> String getJoinExpression(TableMetadata table, String alias, FieldGetter<T, R>... fieldGetters)
     {
         for (Join join : table.getJoins())
         {
             if (fieldGetters.length > 0)
             {
-                if (!compareColumns(table, Arrays.asList(join.columns()), fieldGetters))
+                if (!getTableManager().getMetadataManager().compareColumns(table, join, fieldGetters))
                 {
                     continue;
                 }
@@ -571,8 +548,8 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
                     if (fieldGetters.length > 0)
                     {
-                        if (!compareColumns(fromClauseTable.table, 
-                                Arrays.asList(join.columns()), 
+                        if (!getTableManager().getMetadataManager().compareColumns(fromClauseTable.table, 
+                                join, 
                                 fieldGetters))
                         {
                             continue;

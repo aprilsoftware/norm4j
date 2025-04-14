@@ -43,11 +43,15 @@ import org.norm4j.TemporalType;
 )
 @Join
 (
-    name = "test_ref",
     columns = {"tenant_id", "author_id"}, 
     reference = @Reference(table = Author.class, 
-            columns = {"tenant_id", "id"}),
-    cascadeDelete = true
+            columns = {"tenant_id", "id"})
+)
+@Join
+(
+    columns = {"tenant_id", "secondauthor_id"}, 
+    reference = @Reference(table = Author.class, 
+            columns = {"tenant_id", "id"})
 )
 @IdClass(value = RowId.class)
 public class Book
@@ -65,6 +69,9 @@ public class Book
     
     @Column(name = "author_id")
     private UUID authorId;
+
+    @Column(name = "secondauthor_id")
+    private UUID secondAuthorId;
 
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
@@ -118,6 +125,16 @@ public class Book
     public void setAuthorId(UUID authorId)
     {
         this.authorId = authorId;
+    }
+
+    public UUID getSecondAuthorId()
+    {
+        return secondAuthorId;
+    }
+
+    public void setSecondAuthorId(UUID secondAuthorId)
+    {
+        this.secondAuthorId = secondAuthorId;
     }
 
     public Date getPublishDate()

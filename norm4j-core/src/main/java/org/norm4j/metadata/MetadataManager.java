@@ -212,6 +212,52 @@ public class MetadataManager
                 .orElseThrow(() -> new NoSuchElementException("Field not found: " + fieldGetterMetadata.fieldName()));
     }
 
+    public <T, R> boolean compareColumns(TableMetadata table, 
+            Join join, 
+            FieldGetter<T, R>... fieldGetters)
+    {
+        for (FieldGetter<T, R> fieldGetter : fieldGetters)
+        {
+            ColumnMetadata column;
+
+            column = getMetadata(fieldGetter);
+
+            if (table.getTableName().equals(column.getTable().getTableName()))
+            {
+                if (!Arrays.asList(join.columns()).contains(column.getColumnName()))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                TableMetadata referenceTableMetadata;
+
+                referenceTableMetadata = getMetadata(join.reference().table());
+
+                if (referenceTableMetadata == null)
+                {
+                    throw new IllegalArgumentException("No metadata found for class " 
+                            + join.reference().table().getName());
+                }
+
+                if (referenceTableMetadata.getTableName().equals(column.getTable().getTableName()))
+                {
+                    if (!Arrays.asList(join.reference().columns()).contains(column.getColumnName()))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public void createTables(DataSource dataSource)
     {
         try (Connection connection = dataSource.getConnection()) {
