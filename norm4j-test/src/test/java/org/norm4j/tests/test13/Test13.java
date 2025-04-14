@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.tests.test12;
+package org.norm4j.tests.test13;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,7 +33,7 @@ import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
-public class Test12 extends BaseTest
+public class Test13 extends BaseTest
 {
     private TableManager tableManager;
     private Tenant tenant;
@@ -41,7 +41,7 @@ public class Test12 extends BaseTest
     private Book book1;
     private Book book2;
 
-    public Test12()
+    public Test13()
     {
     }
 
@@ -56,7 +56,7 @@ public class Test12 extends BaseTest
 
         metadataManager = new MetadataManager();
 
-        metadataManager.registerPackage("org.norm4j.tests.test12");
+        metadataManager.registerPackage("org.norm4j.tests.test13");
 
         metadataManager.createTables(getDataSource());
 
@@ -99,25 +99,17 @@ public class Test12 extends BaseTest
     }
 
     @Test
-    public void test12()
+    public void test13()
     {
         List<Book> books;
 
         books = tableManager.createSelectQueryBuilder()
                 .select()
                 .from(Book.class)
+                .innerJoin(Author.class, Book::getAuthorId)
             .getResultList(Book.class);
 
         assertEquals(2, books.size());
-
-        tableManager.remove(author);
-
-        books = tableManager.createSelectQueryBuilder()
-                .select()
-                .from(Book.class)
-            .getResultList(Book.class);
-
-        assertEquals(0, books.size());
     }
 
     @AfterEach

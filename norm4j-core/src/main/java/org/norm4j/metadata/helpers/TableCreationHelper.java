@@ -33,6 +33,7 @@ import org.norm4j.metadata.TableMetadata;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -165,18 +166,77 @@ public class TableCreationHelper {
                                          List<TableMetadata> existingTables) throws SQLException {
         for (Map.Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet()) {
             TableMetadata tableMetadata = metadataMap.get(entry.getKey());
+            Map<String, List<Join>> foreignKeyMap = new HashMap<>();
+            List<Join> namedForeignKeys = new ArrayList<>();
 
             if (tableExists(tableMetadata, existingTables)) {
                 continue;
             }
 
             for (Join join : entry.getValue().getJoins()) {
-                if (join.referencialIntegrity()) {
+                String foreignKeyName;
+
+                if (!join.referencialIntegrity()) {
+                    continue;
+                }
+
+                if (join.name().isEmpty()) {
+                    foreignKeyName =  dialect.createForeignKeyName(tableMetadata, tableMetadata, join);
+                } else {
+                    namedForeignKeys.add(join);
+
+                    continue;
+                }
+            
+                if (foreignKeyMap.containsKey(foreignKeyName)) {
+                    foreignKeyMap.get(foreignKeyName).add(join);
+                }
+                else {
+                    List<Join> foreignKeys = new ArrayList<>();
+
+                    foreignKeys.add(join);
+
+                    foreignKeyMap.put(foreignKeyName, foreignKeys);
+                }
+            }
+
+            for (Join foreignKey : namedForeignKeys) {
+                if (foreignKeyMap.containsKey(foreignKey.name())) {
+                    throw new RuntimeException("More than one join with the same name"
+                            + foreignKey.name());
+                } else {
+                    sqlExecutor.execute(connection, dialect.alterTable(
+                            tableMetadata,
+                            metadataMap.get(foreignKey.reference().table()),
+                            foreignKey,
+                            foreignKey.name()
+                    ));
+                }
+            }
+
+            for (String foreignKeyName : foreignKeyMap.keySet()) {
+                List<Join> foreignKeys = foreignKeyMap.get(foreignKeyName);
+
+                if (foreignKeys.size() == 1) {
+                    Join join = foreignKeys.get(0);
+
                     sqlExecutor.execute(connection, dialect.alterTable(
                             tableMetadata,
                             metadataMap.get(join.reference().table()),
-                            join
+                            join,
+                            foreignKeyName
                     ));
+                } else {
+                    for (int i = 0; i < foreignKeys.size(); i++) {
+                        Join join = foreignKeys.get(i);
+
+                        sqlExecutor.execute(connection, dialect.alterTable(
+                                tableMetadata,
+                                metadataMap.get(join.reference().table()),
+                                join,
+                                foreignKeyName + "_" + (i + 1)
+                        ));
+                    }
                 }
             }
         }

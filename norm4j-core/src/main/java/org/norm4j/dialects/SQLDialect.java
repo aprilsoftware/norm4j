@@ -35,7 +35,7 @@ public interface SQLDialect
     public boolean isArraySupported();
     public boolean isSequenceSupported();
     public boolean isGeneratedKeysForSequenceSupported();
-    public String getForeignKeyName(TableMetadata table, 
+    public String createForeignKeyName(TableMetadata table, 
             TableMetadata referenceTable,
             Join foreignKey);
     public default String getTableName(TableMetadata table)
@@ -57,7 +57,8 @@ public interface SQLDialect
             String valueColumnName);
     public String alterTable(TableMetadata table, 
             TableMetadata referenceTable,
-            Join foreignKey);
+            Join foreignKey,
+            String foreignKeyName);
     public boolean sequenceExists(Connection connection, 
             String schema, 
             String sequenceName);

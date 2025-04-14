@@ -113,24 +113,18 @@ public abstract class GenericDialect implements SQLDialect
                 + "_seq";
     }
 
-    public String getForeignKeyName(TableMetadata table, TableMetadata referenceTable, Join foreignKey)
+    public String createForeignKeyName(TableMetadata table, TableMetadata referenceTable, Join foreignKey)
     {
-        if (foreignKey.name().isEmpty())
-        {
-            return "fk_"
-                    + table.getTableName()
-                    + "_"
-                    + referenceTable.getTableName();
-        }
-        else
-        {
-            return foreignKey.name();
-        }
+        return "fk_"
+                + table.getTableName()
+                + "_"
+                + referenceTable.getTableName();
     }
 
     public String alterTable(TableMetadata table, 
             TableMetadata referenceTable,
-            Join foreignKey)
+            Join foreignKey,
+            String foreignKeyName)
     {
         StringBuilder ddl;
 
@@ -139,9 +133,7 @@ public abstract class GenericDialect implements SQLDialect
         ddl.append("ALTER TABLE ");
         ddl.append(getTableName(table));
         ddl.append(" ADD CONSTRAINT ");
-        ddl.append(getForeignKeyName(table, 
-                referenceTable, 
-                foreignKey));
+        ddl.append(foreignKeyName);
         ddl.append(" FOREIGN KEY (");
 
         for (int i = 0; i < foreignKey.columns().length; i++)
