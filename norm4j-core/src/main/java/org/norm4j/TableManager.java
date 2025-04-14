@@ -594,7 +594,8 @@ public class TableManager
         }
     }
 
-    public <T, S, R> T joinOne(Object leftRecord, 
+    @SafeVarargs
+    public final <T, S, R> T joinOne(Object leftRecord, 
             Class<T> rightTableClass, 
             FieldGetter<S, R>... fieldGetters)
     {
@@ -655,7 +656,8 @@ public class TableManager
         }
     }
 
-    public <T, S, R> List<T> joinMany(Object leftRecord, 
+    @SafeVarargs
+    public final <T, S, R> List<T> joinMany(Object leftRecord, 
             Class<T> rightTableClass, 
             FieldGetter<S, R>... fieldGetters)
     {
