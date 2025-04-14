@@ -328,13 +328,15 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass,
+    @SafeVarargs
+    public final <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass,
             FieldGetter<T, R>... fieldGetters)
     {
         return innerJoin(tableClass, null, fieldGetters);
     }
 
-    public <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass, 
+    @SafeVarargs
+    public final <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass, 
             String alias,
             FieldGetter<T, R>... fieldGetters)
     {
@@ -362,15 +364,17 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass, 
+    @SafeVarargs
+    public final <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass, 
             FieldGetter<T, R>... fieldGetters)
     {
         return leftJoin(tableClass, null, fieldGetters);
     }
 
-    public <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass, 
-            String alias, FieldGetter<T, R>... 
-            fieldGetters)
+    @SafeVarargs
+    public final <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass, 
+            String alias,
+            FieldGetter<T, R>... fieldGetters)
     {
         if (fromClause.isEmpty())
         {
@@ -396,13 +400,15 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass,
+    @SafeVarargs
+    public final <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass,
             FieldGetter<T, R>... fieldGetters)
     {
         return rightJoin(tableClass, null, fieldGetters);
     }
 
-    public <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass, 
+    @SafeVarargs
+    public final <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass, 
             String alias, 
             FieldGetter<T, R>... fieldGetters)
     {
