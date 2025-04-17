@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -39,7 +38,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static org.norm4j.metadata.helpers.TableCreationHelper.decapitalize;
 import static org.norm4j.metadata.helpers.TableCreationHelper.validateJoins;
 
 public class MetadataManager
@@ -121,7 +119,8 @@ public class MetadataManager
     public void registerTable(Class<?> tableClass)
     {
         if (!tableClass.isAnnotationPresent(Table.class)) {
-            throw new IllegalArgumentException("Class " + tableClass.getName() + " is not annotated with @Table");
+            throw new IllegalArgumentException("Class " + tableClass.getName()
+                    + " is not annotated with @Table");
         }
 
         Table tableAnnotation = tableClass.getAnnotation(Table.class);
@@ -198,18 +197,19 @@ public class MetadataManager
 
         fieldGetterMetadata = getterCache.computeIfAbsent(fieldGetter, this::extractMetadata);
 
-        tableMetadata = getMetadata(fieldGetterMetadata.tableClass());
+        tableMetadata = getMetadata(fieldGetterMetadata.getTableClass());
 
         if (tableMetadata == null)
         {
             throw new IllegalArgumentException("No metadata found for class " 
-                    + fieldGetterMetadata.tableClass().getName());
+                    + fieldGetterMetadata.getTableClass().getName());
         }
 
         return tableMetadata.getColumns().stream()
-                .filter(c -> c.getField().getName().equals(fieldGetterMetadata.fieldName()))
+                .filter(c -> c.getField().getName().equals(fieldGetterMetadata.getFieldName()))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Field not found: " + fieldGetterMetadata.fieldName()));
+                .orElseThrow(() -> new NoSuchElementException("Field not found: "
+                        + fieldGetterMetadata.getFieldName()));
     }
 
     public <T, R> boolean compareColumns(TableMetadata table, 
@@ -288,36 +288,8 @@ public class MetadataManager
         }
     }
 
-    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
-        try {
-            // Access the serialized lambda internals
-            Method writeReplace = getter.getClass().getDeclaredMethod("writeReplace");
-            writeReplace.setAccessible(true);
-            Object serializedLambda = writeReplace.invoke(getter);
-
-            Method getImplClassMethod = serializedLambda.getClass().getDeclaredMethod("getImplClass");
-            Method getImplMethodNameMethod = serializedLambda.getClass().getDeclaredMethod("getImplMethodName");
-
-            String internalClassName = (String) getImplClassMethod.invoke(serializedLambda);
-            String className = internalClassName.replace('/', '.');
-
-            String methodName = (String) getImplMethodNameMethod.invoke(serializedLambda);
-            String fieldName;
-
-            if (methodName.startsWith("get") && methodName.length() > 3) {
-                fieldName = decapitalize(methodName.substring(3));
-            } else if (methodName.startsWith("is") && methodName.length() > 2) {
-                fieldName = decapitalize(methodName.substring(2));
-            } else {
-                fieldName = methodName;
-            }
-
-            return new FieldGetterMetadata(Class.forName(className), fieldName);
-
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to extract field metadata from getter: " + getter, e);
-        }
+    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter)
+    {
+        return FieldGetterMetadata.extractMetadata(getter);
     }
-
-    private record FieldGetterMetadata(Class<?> tableClass, String fieldName) {}
 }
