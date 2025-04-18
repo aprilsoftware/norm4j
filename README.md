@@ -143,7 +143,7 @@ metadataManager.createTables(getDataSource());
 TableManager tableManager = new TableManager(getDataSource(), metadataManager);
 ```
 
-or
+**or**
 
 ```java
 MetadataManager metadataManager = new MetadataManager();
