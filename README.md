@@ -263,7 +263,7 @@ authorDTO = RecordMapper.from(Author.class, AuthorDTO.class).map(author);
 ```
 
 ### DTO with relations
-One to Many
+**One to Many**
 
 ```java
 RecordMapper<Author, AuthorDTO> authorMapper;
@@ -280,7 +280,7 @@ authorDTO = authorMapper.map(author);
 books = authorDTO.getBooks();
 ```
 
-Many to One
+**Many to One**
 
 ```java
 RecordMapper<Author, AuthorDTO> authorMapper;
@@ -297,7 +297,7 @@ bookDTO = bookMapper.map(book);
 authorDTO = bookDTO.getAuthor();
 ```
 
-Map relation
+**Map a specific field of the related object**
 
 ```java
 RecordMapper<Author, AuthorDTO> authorMapper;
