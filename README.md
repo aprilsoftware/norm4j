@@ -4,7 +4,7 @@
 
 While inspired by JPA to simplify migration and ease adoption, norm4j breaks away from traditional ORM patterns. It does not load object graphs by default. Instead, entities can define relationships using familiar annotations, but related data is only loaded explicitly when needed—providing fine-grained control over performance and memory usage.
 
-norm4j focuses on records rather than object hierarchies. There's no inheritance, no automatic eager-loading, and no deep object references by default. However, developers can build wrapper layers or proxy objects on top of norm4j records to simulate object-oriented patterns if desired. This design gives you full control over what gets loaded, when, and how. RecordMapper and RecordMapperBuilder provide a type‑safe bridge from raw result sets to fully populated domain objects—so you control *what* gets mapped and *when*.
+norm4j focuses on records rather than object hierarchies. There's no inheritance, no automatic eager-loading, and no deep object references by default. However, developers can build wrapper layers or proxy objects on top of norm4j records to simulate object-oriented patterns if desired. This design gives you full control over what gets loaded, when, and how. RecordMapper and RecordMapperBuilder provide a type‑safe bridge from records to fully populated domain objects—so you control *what* gets mapped and *when*.
 
 Built with Jakarta EE in mind, norm4j integrates naturally into modern enterprise stacks. It uses CDI for dependency injection and is designed to work with JTA transactions, interceptors, and connection pooling—making it easy to slot into existing JPA-based applications or microservices.
 
