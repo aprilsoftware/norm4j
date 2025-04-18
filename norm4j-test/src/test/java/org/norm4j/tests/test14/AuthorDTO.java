@@ -30,10 +30,13 @@ public class AuthorDTO
     private UUID id;
     private String name;
     private List<Book> books;
+    private List<UUID> bookIds;
 
     public AuthorDTO()
     {
         books = new ArrayList<>();
+
+        bookIds = new ArrayList<>();
     }
 
     public UUID getTenantId()
@@ -74,5 +77,15 @@ public class AuthorDTO
     public void setBooks(List<Book> books)
     {
         this.books = books;
+    }
+
+    public List<UUID> getBookIds()
+    {
+        return bookIds;
+    }
+
+    public void setBookIds(List<UUID> bookIds)
+    {
+        this.bookIds = bookIds;
     }
 }

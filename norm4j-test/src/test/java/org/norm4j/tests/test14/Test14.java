@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -126,13 +127,18 @@ public class Test14 extends BaseTest
 
         // authorMapper
         authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
+                .map(Author::getId).to(AuthorDTO::getId)
                 .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
                 .endJoin()
+                .join(AuthorDTO::getBookIds, Book.class, UUID.class)
+                    .map(Book::getId).toObject()
             .build(tableManager);
 
         authorDTO = authorMapper.map(author1);
 
         assertEquals(2, authorDTO.getBooks().size());
+
+        assertEquals(2, authorDTO.getBookIds().size());
 
         authorDTO = authorMapper.map(author2);
 

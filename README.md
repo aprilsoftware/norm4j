@@ -270,6 +270,7 @@ RecordMapper<Author, AuthorDTO> authorMapper;
 List<BookDTO> books;
 
 authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
+        .map(Author::getId).to(AuthorDTO::getId) // Automactivally mapped, but can be overriden
         .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
         .endJoin()
     .build(tableManager);
@@ -278,8 +279,6 @@ authorDTO = authorMapper.map(author);
 
 books = authorDTO.getBooks();
 ```
-
-or
 
 Many to One
 
@@ -296,6 +295,22 @@ bookMapper = RecordMapperBuilder.from(Book.class, BookDTO.class)
 bookDTO = bookMapper.map(book);
 
 authorDTO = bookDTO.getAuthor();
+```
+
+Map relation
+
+```java
+RecordMapper<Author, AuthorDTO> authorMapper;
+List<UUID> bookIds;
+
+authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
+        .join(AuthorDTO::getBookIds, Book.class, UUID.class)
+            .map(Book::getId).toObject()
+    .build(tableManager);
+
+authorDTO = authorMapper.map(author);
+
+bookIds = authorDTO.getBookIds();
 ```
 
 ---
