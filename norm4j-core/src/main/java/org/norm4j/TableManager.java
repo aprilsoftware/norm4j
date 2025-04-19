@@ -890,6 +890,8 @@ public class TableManager
         }
         else
         {
+            // TODO Use tuple if supported, in memory table
+            //  or otherwise we can use this technic
             for (R record : primaryKeyMap.keySet())
             {
                 queryBuilder.or(q -> 
