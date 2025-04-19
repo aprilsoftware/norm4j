@@ -30,13 +30,13 @@ public class RelationMapping<P, S, T>
     private final Class<S> sourceClass;
     private final Class<T> targetClass;
     private final List<FieldMapping<S, T>> fieldMappings;
-    private final List<RelationMapping<T, ?, ?>> childRelations;
+    private final List<RelationMapping<T, ?, ?>> childRelationMappings;
     
     public RelationMapping(FieldGetter<P, ?> targetGetter,
             Class<S> sourceClass,
             Class<T> targetClass,
             List<FieldMapping<S, T>> fieldMappings,
-            List<RelationMapping<?, ?, ?>> childRelations)
+            List<RelationMapping<?, ?, ?>> childRelationMappings)
     {
         this.targetGetter = targetGetter;
 
@@ -48,9 +48,9 @@ public class RelationMapping<P, S, T>
 
         @SuppressWarnings("unchecked")
         List<RelationMapping<T, ?, ?>> relations = (List<RelationMapping<T, ?, ?>>)
-                (List<?>) childRelations;
+                (List<?>) childRelationMappings;
 
-        this.childRelations = relations;
+        this.childRelationMappings = relations;
     }
 
     public FieldGetter<P, ?> getTargetGetter()
@@ -73,8 +73,8 @@ public class RelationMapping<P, S, T>
         return fieldMappings;
     }
 
-    public List<RelationMapping<T, ?, ?>> getChildRelations()
+    public List<RelationMapping<T, ?, ?>> getChildRelationMappings()
     {
-        return childRelations;
+        return childRelationMappings;
     }
 }

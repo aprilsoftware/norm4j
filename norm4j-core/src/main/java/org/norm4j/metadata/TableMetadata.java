@@ -82,4 +82,21 @@ public class TableMetadata
     {
         return columns;
     }
+
+    public List<ColumnMetadata> getPrimaryKeys()
+    {
+        List<ColumnMetadata> primaryKeys;
+
+        primaryKeys = new ArrayList<>();
+
+        for (ColumnMetadata column : columns)
+        {
+            if (column.isPrimaryKey())
+            {
+                primaryKeys.add(column);
+            }
+        }
+
+        return primaryKeys;
+    }
 }

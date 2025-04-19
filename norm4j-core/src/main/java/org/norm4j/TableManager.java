@@ -27,7 +27,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.sql.DataSource;
@@ -239,8 +241,6 @@ public class TableManager
 
         table = getTable(tableClass);
 
-        primaryKeys = new ArrayList<>();
-
         try (Connection connection = dataSource.getConnection())
         {
             SQLDialect dialect;
@@ -248,13 +248,7 @@ public class TableManager
             
             dialect = metadataManager.getDialect(connection);
 
-            for (ColumnMetadata column : table.getColumns())
-            {
-                if (column.isPrimaryKey())
-                {
-                    primaryKeys.add(column);
-                }
-            }
+            primaryKeys = table.getPrimaryKeys();
     
             if (primaryKeys.isEmpty())
             {
@@ -348,8 +342,6 @@ public class TableManager
 
         table = getTable(tableClass);
 
-        primaryKeys = new ArrayList<>();
-
         try (Connection connection = dataSource.getConnection())
         {
             SQLDialect dialect;
@@ -357,14 +349,8 @@ public class TableManager
             
             dialect = metadataManager.getDialect(connection);
 
-            for (ColumnMetadata column : table.getColumns())
-            {
-                if (column.isPrimaryKey())
-                {
-                    primaryKeys.add(column);
-                }
-            }
-    
+            primaryKeys = table.getPrimaryKeys();
+
             if (primaryKeys.isEmpty())
             {
                 throw new IllegalStateException("No primary key found for class "
@@ -424,8 +410,6 @@ public class TableManager
 
         table = getTable(tableClass);
 
-        primaryKeys = new ArrayList<>();
-
         try (Connection connection = dataSource.getConnection())
         {
             SQLDialect dialect;
@@ -433,13 +417,7 @@ public class TableManager
             
             dialect = metadataManager.getDialect(connection);
 
-            for (ColumnMetadata column : table.getColumns())
-            {
-                if (column.isPrimaryKey())
-                {
-                    primaryKeys.add(column);
-                }
-            }
+            primaryKeys = table.getPrimaryKeys();
     
             if (primaryKeys.isEmpty())
             {
@@ -496,8 +474,6 @@ public class TableManager
 
         table = getTable(tableClass);
 
-        primaryKeys = new ArrayList<>();
-
         try (Connection connection = dataSource.getConnection())
         {
             SQLDialect dialect;
@@ -505,14 +481,8 @@ public class TableManager
             
             dialect = metadataManager.getDialect(connection);
 
-            for (ColumnMetadata column : table.getColumns())
-            {
-                if (column.isPrimaryKey())
-                {
-                    primaryKeys.add(column);
-                }
-            }
-    
+            primaryKeys = table.getPrimaryKeys();
+
             if (primaryKeys.isEmpty())
             {
                 throw new IllegalStateException("No primary key found for class "
@@ -841,6 +811,113 @@ public class TableManager
         catch (Exception e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    public <R, T> Map<R, List<T>> mapMany(List<R> records, Class<T> rightTableClass)
+    {
+        final List<ColumnMetadata> primaryKeys;
+        Map<R, List<Object>> primaryKeyMap;
+        SelectQueryBuilder queryBuilder;
+        Class<R> recordClass = null;
+
+        primaryKeys = new ArrayList<>();
+
+        primaryKeyMap = new HashMap<>();
+
+        for (R record : records)
+        {
+            List<Object> values;
+
+            if (recordClass == null)
+            {
+                TableMetadata table;
+
+                recordClass = (Class<R>)record.getClass();
+
+                table = getTable(recordClass);
+
+                primaryKeys.addAll(table.getPrimaryKeys());
+
+                if (primaryKeys.isEmpty())
+                {
+                    throw new IllegalStateException("No primary key found for class "
+                            + recordClass.getName());
+                }
+            }
+
+            values = new ArrayList<>();
+
+            for (ColumnMetadata primaryKey : primaryKeys)
+            {
+                Field field;
+
+                field = primaryKey.getField();
+
+                field.setAccessible(true);
+        
+                try
+                {
+                    values.add(field.get(record));
+                }
+                catch (IllegalAccessException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            primaryKeyMap.put(record, values);
+        }
+
+        queryBuilder = createSelectQueryBuilder()
+                .select(recordClass)
+                .select(rightTableClass)
+                .from(recordClass)
+                .innerJoin(rightTableClass);
+
+        if (primaryKeys.size() == 1)
+        {
+            List<Object> values;
+
+            values = new ArrayList<>();
+
+            for (R record : primaryKeyMap.keySet())
+            {
+                values.add(primaryKeyMap.get(record).get(0));
+            }
+
+            queryBuilder.where(primaryKeys.get(0), "in", values);
+        }
+        else
+        {
+            for (R record : primaryKeyMap.keySet())
+            {
+                queryBuilder.or(q -> 
+                {
+                    List<Object> values;
+                    int index;
+    
+                    values = primaryKeyMap.get(record);
+    
+                    index = 0;
+    
+                    for (ColumnMetadata primaryKey : primaryKeys)
+                    {
+                        q.and(primaryKey, "=", values.get(index));
+    
+                        index++;
+                    }
+                });
+            }
+        }
+
+        if (recordClass == null)
+        {
+            return new HashMap<>();
+        }
+        else
+        {
+            return queryBuilder.mapResultList(recordClass, rightTableClass);
         }
     }
 

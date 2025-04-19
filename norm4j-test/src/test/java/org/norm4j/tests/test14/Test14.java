@@ -147,6 +147,8 @@ public class Test14 extends BaseTest
         // bookMapper
         bookMapper = RecordMapperBuilder.from(Book.class, BookDTO.class)
                 .join(BookDTO::getAuthor, Author.class, AuthorDTO.class)
+                    .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
+                    .endJoin()
                 .endJoin()
             .build(tableManager);
 
@@ -162,6 +164,13 @@ public class Test14 extends BaseTest
         booksDTO = bookMapper.mapList(books);
 
         assertEquals(2, booksDTO.size());
+
+        for (BookDTO b : booksDTO)
+        {
+            assertEquals(2, b.getAuthor().getBooks().size());
+
+            assertEquals(0, b.getAuthor().getBookIds().size());
+        }
     }
 
     @AfterEach

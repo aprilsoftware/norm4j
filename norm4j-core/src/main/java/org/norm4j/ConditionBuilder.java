@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.norm4j.metadata.ColumnMetadata;
+
 public class ConditionBuilder
 {
     private final QueryBuilder queryBuilder;
@@ -63,6 +65,30 @@ public class ConditionBuilder
             Object value)
     {
         return condition(fieldGetter, null, operator, value);
+    }
+
+    public ConditionBuilder condition(ColumnMetadata column, 
+            String operator, 
+            Object value)
+    {
+        return condition(column, null, operator, value);
+    }
+
+    public ConditionBuilder condition(ColumnMetadata column, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        appendCondition();
+        
+        queryBuilder.appendCondition(column, 
+                alias, 
+                operator, 
+                value, 
+                condition, 
+                getParameters());
+
+        return this;
     }
 
     public <T, R> ConditionBuilder condition(FieldGetter<T, R> fieldGetter, 
@@ -279,6 +305,21 @@ public class ConditionBuilder
         return condition(leftValue, operator, rightValue);
     }
 
+    public ConditionBuilder and(ColumnMetadata column, 
+            String operator, 
+            Object value)
+    {
+        return condition(column, operator, value);
+    }
+
+    public ConditionBuilder and(ColumnMetadata column, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        return condition(column, alias, operator, value);
+    }
+
     public <T, R> ConditionBuilder and(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -414,6 +455,30 @@ public class ConditionBuilder
                 operator, 
                 rightValue, 
                 condition);
+
+        return this;
+    }
+
+    public ConditionBuilder or(ColumnMetadata column, 
+            String operator, 
+            Object value)
+    {
+        return or(column, null, operator, value);
+    }
+
+    public ConditionBuilder or(ColumnMetadata column, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        appendOr();
+        
+        queryBuilder.appendCondition(column, 
+                alias, 
+                operator, 
+                value, 
+                condition, 
+                getParameters());
 
         return this;
     }

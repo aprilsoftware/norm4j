@@ -24,19 +24,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.norm4j.FieldGetter;
-import org.norm4j.Join;
 import org.norm4j.TableManager;
-import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.FieldGetterMetadata;
-import org.norm4j.metadata.TableMetadata;
 
 public class RecordMapper<R, D>
 {
@@ -68,12 +65,22 @@ public class RecordMapper<R, D>
     {
         List<D> targetObjects;
 
-        // TODO N+1 optimization
         targetObjects = new ArrayList<>();
 
         for (R sourceObject : sourceObjects)
         {
-            targetObjects.add(map(sourceObject, excludeInternal));
+            targetObjects.add(mapScalar(sourceObject, 
+                    targetClass, 
+                    fieldMappings,
+                    excludeInternal));
+        }
+
+        for (RelationMapping<?, ?, ?> relationMapping : relationMappings)
+        {
+            mapRelation(sourceObjects,
+                    targetObjects,
+                    relationMapping,
+                    excludeInternal);
         }
 
         return targetObjects;
@@ -93,15 +100,15 @@ public class RecordMapper<R, D>
             return null;
         }
 
-        targetObject = map(sourceObject, 
+        targetObject = mapScalar(sourceObject, 
                 targetClass, 
                 fieldMappings,
                 excludeInternal);
 
         for (RelationMapping<?, ?, ?> relationMapping : relationMappings)
         {
-            mapRelation(sourceObject, 
-                    targetObject, 
+            mapRelation(List.of(sourceObject),
+                    List.of(targetObject),
                     relationMapping,
                     excludeInternal);
         }
@@ -109,97 +116,121 @@ public class RecordMapper<R, D>
         return targetObject;
     }
 
-    private <R2, D2, S, T> void mapRelation(R2 sourceObject, D2 targetObject, 
+    private <R2, D2, S, T> void mapRelation(List<R2> sourceObjects, 
+            List<D2> targetObjects, 
             RelationMapping<?, S, T> relationMapping,
             boolean excludeInternal)
     {
+        List<S> relationSourceObjects;
+        List<T> relationTargetObjects;
+        Map<R2, List<S>> relationMap;
         Field targetField;
+        boolean list = false;
 
         targetField = extractField(relationMapping.getTargetGetter());
 
-        targetField.setAccessible(true);
-
         if (Collection.class.isAssignableFrom(targetField.getType()))
         {
-            List<S> relationObjects;
-            List<T> targetValues;
-
-            if (!List.class.isAssignableFrom(targetField.getType()))
+            if (List.class.isAssignableFrom(targetField.getType()))
+            {
+                list = true;
+            }
+            else
             {
                 throw new RuntimeException("Invalid value for the relation: only list are supported for now.");
             }
+        }
 
-            targetValues = new ArrayList<>();
+        targetField.setAccessible(true);
 
-            relationObjects = tableManager.joinMany(sourceObject, relationMapping.getSourceClass());
+        relationMap = tableManager.mapMany(sourceObjects, 
+                relationMapping.getSourceClass());
 
-            // TODO N+1 optimization
-            for (S relationObject : relationObjects)
+        relationSourceObjects = new ArrayList<>();
+
+        relationTargetObjects = new ArrayList<>();
+
+        for (int i = 0; i < sourceObjects.size(); i++)
+        {
+            R2 sourceObject;
+            D2 targetObject;
+
+            sourceObject = sourceObjects.get(i);
+            targetObject = targetObjects.get(i);
+
+            if (relationMap.containsKey(sourceObject))
             {
-                T targetValue;
+                if (list)
+                {
+                    List<T> targetValues;
 
-                targetValue = mapTarget(relationObject, relationMapping, excludeInternal);
+                    targetValues = new ArrayList<>();
 
-                targetValues.add(targetValue);
-            }
+                    for (S relationObject : relationMap.get(sourceObject))
+                    {
+                        T targetValue;
 
-            try
-            {
-                targetField.set(targetObject, targetValues);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException(e);
+                        targetValue = mapScalar(relationObject, 
+                                relationMapping.getTargetClass(), 
+                                relationMapping.getFieldMappings(),
+                                excludeInternal);
+
+                        targetValues.add(targetValue);
+
+                        relationSourceObjects.add(relationObject);
+                        relationTargetObjects.add(targetValue);
+                    }
+
+                    try
+                    {
+                        targetField.set(targetObject, targetValues);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+                else if (!relationMap.get(sourceObject).isEmpty())
+                {
+                    S relationObject;
+                    T targetValue;
+        
+                    relationObject = relationMap.get(sourceObject).get(0);
+        
+                    if (relationObject != null)
+                    {
+                        targetValue = mapScalar(relationObject, 
+                                relationMapping.getTargetClass(), 
+                                relationMapping.getFieldMappings(),
+                                excludeInternal);
+        
+                        try
+                        {
+                            targetField.set(targetObject, targetValue);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+
+                        relationSourceObjects.add(relationObject);
+                        relationTargetObjects.add(targetValue);
+                    }
+                }
             }
         }
-        else
+
+        for (RelationMapping<?, ?, ?> childRelationMapping : relationMapping.getChildRelationMappings())
         {
-            S relationObject;
-            T targetValue;
-
-            relationObject = tableManager.joinOne(sourceObject, 
-                    relationMapping.getSourceClass());
-
-            if (relationObject != null)
-            {
-                targetValue = mapTarget(relationObject, relationMapping, excludeInternal);
-
-                try
-                {
-                    targetField.set(targetObject, targetValue);
-                }
-                catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    private <S, T> T mapTarget(S relationObject, 
-            RelationMapping<?, S, T> relationMapping, 
-            boolean excludeInternal)
-    {
-        T targetValue;
-
-        targetValue = map(relationObject, 
-                relationMapping.getTargetClass(), 
-                relationMapping.getFieldMappings(),
-                excludeInternal);
-
-        for (RelationMapping<?, ?, ?> childMapping : relationMapping.getChildRelations())
-        {
-            mapRelation(relationObject, 
-                    targetValue, 
-                    childMapping,
+            mapRelation(relationSourceObjects,
+                    relationTargetObjects,
+                    childRelationMapping,
                     excludeInternal);
         }
-
-        return targetValue;
     }
 
     @SuppressWarnings("unchecked")
-    private <S, T> T map(S sourceObject, 
+    private <S, T> T mapScalar(S sourceObject, 
             Class<T> targetClass, 
             List<FieldMapping<S, T>> fieldMappings,
             boolean excludeInternal)
@@ -236,13 +267,7 @@ public class RecordMapper<R, D>
     
                     sourceField = extractField(fieldMapping.getSourceGetter());
     
-                    if (sourceField.getType().isAnnotationPresent(Ignore.class))
-                    {
-                        continue;
-                    }
-    
-                    if (excludeInternal &&
-                            sourceField.getType().isAnnotationPresent(Internal.class))
+                    if (skip(sourceField, excludeInternal))
                     {
                         continue;
                     }
@@ -264,23 +289,11 @@ public class RecordMapper<R, D>
                     Field targetField;
                     Object value;
     
-                    if (Modifier.isStatic(sourceField.getModifiers()) || 
-                            sourceField.isSynthetic())
+                    if (skip(sourceField, excludeInternal))
                     {
                         continue;
                     }
     
-                    if (sourceField.getType().isAnnotationPresent(Ignore.class))
-                    {
-                        continue;
-                    }
-    
-                    if (excludeInternal &&
-                            sourceField.getType().isAnnotationPresent(Internal.class))
-                    {
-                        continue;
-                    }
-
                     fieldName = sourceField.getName();
     
                     if (explicitFieldNames.contains(fieldName))
@@ -321,6 +334,28 @@ public class RecordMapper<R, D>
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private boolean skip(Field field, boolean excludeInternal)
+    {
+        if (Modifier.isStatic(field.getModifiers()) || 
+                field.isSynthetic())
+        {
+            return true;
+        }
+
+        if (field.getType().isAnnotationPresent(Ignore.class))
+        {
+            return true;
+        }
+
+        if (excludeInternal &&
+                field.getType().isAnnotationPresent(Internal.class))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private Field extractField(FieldGetter<?, ?> fieldGetter)

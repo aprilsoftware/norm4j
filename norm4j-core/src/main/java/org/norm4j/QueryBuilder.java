@@ -75,6 +75,30 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return self();
     }
 
+    public Q where(ColumnMetadata column, 
+            String operator, 
+            Object value)
+    {
+        return where(column, null, operator, value);
+    }
+
+    public Q where(ColumnMetadata column, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        appendWhere();
+
+        appendCondition(column, 
+                alias, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
     public <T, R> Q where(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -296,6 +320,21 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return where(leftValue, operator, rightValue);
     }
 
+    public Q and(ColumnMetadata column, 
+            String operator, 
+            Object value)
+    {
+        return where(column, operator, value);
+    }
+
+    public Q and(ColumnMetadata column, 
+            String alias,
+            String operator, 
+            Object value)
+    {
+        return where(column, alias, operator, value);
+    }
+
     public <T, R> Q and(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -431,6 +470,30 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
                 operator, 
                 rightValue, 
                 whereClause);
+
+        return self();
+    }
+
+    public Q or(ColumnMetadata column,
+            String operator, 
+            Object value)
+    {
+        return or(column, null, operator, value);
+    }
+
+    public Q or(ColumnMetadata column,
+            String alias,
+            String operator, 
+            Object value)
+    {
+        appendOr();
+
+        appendCondition(column, 
+                alias, 
+                operator, 
+                value, 
+                whereClause, 
+                getParameters());
 
         return self();
     }
@@ -674,6 +737,22 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
 
         column = tableManager.getMetadataManager().getMetadata(fieldGetter);
 
+        append(column, alias, condition);
+
+        condition.append(" ");
+        condition.append(operator);
+        condition.append(" ");
+
+        appendValue(value, condition, column);
+    }
+
+    protected <T, R> void appendCondition(ColumnMetadata column, 
+            String alias,
+            String operator, 
+            Object value,
+            StringBuilder condition, 
+            List<Object> parameters)
+    {
         append(column, alias, condition);
 
         condition.append(" ");
