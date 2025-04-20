@@ -55,6 +55,11 @@ public class PostgreSQLDialect extends GenericDialect
                 .contains("postgresql");
     }
 
+    public boolean isTupleSupported()
+    {
+        return true;
+    }
+
     public boolean isArraySupported()
     {
         return true;

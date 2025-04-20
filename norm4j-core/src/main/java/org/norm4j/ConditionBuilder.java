@@ -91,6 +91,30 @@ public class ConditionBuilder
         return this;
     }
 
+    public ConditionBuilder condition(List<ColumnMetadata> columns, 
+            String operator, 
+            List<List<Object>> values)
+    {
+        return condition(columns, null, operator, values);
+    }
+
+    public ConditionBuilder condition(List<ColumnMetadata> columns, 
+            String alias,
+            String operator, 
+            List<List<Object>> values)
+    {
+        appendCondition();
+        
+        queryBuilder.appendCondition(columns, 
+                alias, 
+                operator, 
+                values, 
+                condition, 
+                getParameters());
+
+        return this;
+    }
+
     public <T, R> ConditionBuilder condition(FieldGetter<T, R> fieldGetter, 
             String alias,
             String operator, 
@@ -320,6 +344,21 @@ public class ConditionBuilder
         return condition(column, alias, operator, value);
     }
 
+    public ConditionBuilder and(List<ColumnMetadata> columns, 
+            String operator, 
+            List<List<Object>> values)
+    {
+        return condition(columns, operator, values);
+    }
+
+    public ConditionBuilder and(List<ColumnMetadata> columns, 
+            String alias,
+            String operator, 
+            List<List<Object>> values)
+    {
+        return condition(columns, alias, operator, values);
+    }
+
     public <T, R> ConditionBuilder and(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -477,6 +516,30 @@ public class ConditionBuilder
                 alias, 
                 operator, 
                 value, 
+                condition, 
+                getParameters());
+
+        return this;
+    }
+
+    public ConditionBuilder or(List<ColumnMetadata> columns, 
+            String operator, 
+            List<List<Object>> values)
+    {
+        return or(columns, null, operator, values);
+    }
+
+    public ConditionBuilder or(List<ColumnMetadata> columns, 
+            String alias,
+            String operator, 
+            List<List<Object>> values)
+    {
+        appendOr();
+        
+        queryBuilder.appendCondition(columns, 
+                alias, 
+                operator, 
+                values, 
                 condition, 
                 getParameters());
 

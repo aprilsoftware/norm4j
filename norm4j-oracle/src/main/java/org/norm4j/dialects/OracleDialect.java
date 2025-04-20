@@ -50,6 +50,11 @@ public class OracleDialect extends GenericDialect
                 .contains("oracle");
     }
 
+    public boolean isTupleSupported()
+    {
+        return true;
+    }
+
     public String createSequence(String schema, 
             String sequenceName, 
             int initialValue)

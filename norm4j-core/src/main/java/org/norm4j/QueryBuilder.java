@@ -99,6 +99,30 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return self();
     }
 
+    public Q where(List<ColumnMetadata> columns, 
+            String operator, 
+            List<List<Object>> values)
+    {
+        return where(columns, null, operator, values);
+    }
+
+    public Q where(List<ColumnMetadata> columns, 
+            String alias,
+            String operator, 
+            List<List<Object>> values)
+    {
+        appendWhere();
+
+        appendCondition(columns, 
+                alias, 
+                operator, 
+                values, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
     public <T, R> Q where(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -335,6 +359,21 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         return where(column, alias, operator, value);
     }
 
+    public Q and(List<ColumnMetadata> columns, 
+            String operator, 
+            List<List<Object>> values)
+    {
+        return where(columns, operator, values);
+    }
+
+    public Q and(List<ColumnMetadata> columns, 
+            String alias,
+            String operator, 
+            List<List<Object>> values)
+    {
+        return where(columns, alias, operator, values);
+    }
+
     public <T, R> Q and(FieldGetter<T, R> fieldGetter, 
             String operator, 
             Object value)
@@ -492,6 +531,30 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
                 alias, 
                 operator, 
                 value, 
+                whereClause, 
+                getParameters());
+
+        return self();
+    }
+
+    public Q or(List<ColumnMetadata> columns,
+            String operator, 
+            List<List<Object>> values)
+    {
+        return or(columns, null, operator, values);
+    }
+
+    public Q or(List<ColumnMetadata> columns,
+            String alias,
+            String operator, 
+            List<List<Object>> values)
+    {
+        appendOr();
+
+        appendCondition(columns, 
+                alias, 
+                operator, 
+                values, 
                 whereClause, 
                 getParameters());
 
@@ -760,6 +823,78 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>>
         condition.append(" ");
 
         appendValue(value, condition, column);
+    }
+
+    protected <T, R> void appendCondition(List<ColumnMetadata> columns, 
+            String alias,
+            String operator, 
+            List<List<Object>> values,
+            StringBuilder condition, 
+            List<Object> parameters)
+    {
+        int index;
+
+        if (columns.size() < 2)
+        {
+            throw new RuntimeException("Invalid tuple.");
+        }
+
+        condition.append("(");
+
+        index = 0;
+
+        for (ColumnMetadata column : columns)
+        {
+            if (index > 0)
+            {
+                condition.append(", ");
+            }
+
+            append(column, alias, condition);
+
+            index++;
+        }
+
+        condition.append(")");
+
+        condition.append(" ");
+        condition.append(operator);
+        condition.append(" ");
+
+        condition.append("(");
+
+        index = 0;
+
+        for (List<Object> tupleValues : values)
+        {
+            if (columns.size() != tupleValues.size())
+            {
+                throw new RuntimeException("Invalid tuple.");
+            }
+
+            if (index > 0)
+            {
+                condition.append(", ");
+            }
+
+            condition.append("(");
+
+            for (int i = 0; i < columns.size(); i++)
+            {
+                if (i > 0)
+                {
+                    condition.append(", ");
+                }
+
+                appendValue(tupleValues.get(i), condition, columns.get(i));
+            }
+
+            condition.append(")");
+
+            index++;
+        }
+        
+        condition.append(")");
     }
 
     protected <T, R> void appendCondition(Object value, 

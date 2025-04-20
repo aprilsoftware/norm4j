@@ -51,6 +51,11 @@ public class SQLServerDialect extends GenericDialect
                 .contains("sql server");
     }
 
+    public boolean isTupleSupported()
+    {
+        return false;
+    }
+
     public boolean isGeneratedKeysForSequenceSupported()
     {
         return false;

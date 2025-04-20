@@ -32,7 +32,7 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class QueryBuildersTest extends BaseTest {
+public class Test10 extends BaseTest {
 
     private TableManager tableManager;
     private Book book1 = new Book();

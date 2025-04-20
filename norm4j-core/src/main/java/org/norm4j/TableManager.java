@@ -890,26 +890,40 @@ public class TableManager
         }
         else
         {
-            // TODO Use tuple if supported, in memory table
-            //  or otherwise we can use this technic
-            for (R record : primaryKeyMap.keySet())
+            if (getDialect().isTupleSupported())
             {
-                queryBuilder.or(q -> 
+                List<List<Object>> values;
+
+                values = new ArrayList<>();
+
+                for (R record : primaryKeyMap.keySet())
                 {
-                    List<Object> values;
-                    int index;
-    
-                    values = primaryKeyMap.get(record);
-    
-                    index = 0;
-    
-                    for (ColumnMetadata primaryKey : primaryKeys)
+                    values.add(primaryKeyMap.get(record));
+                }
+
+                queryBuilder.where(primaryKeys, "in", values);
+            }
+            else
+            {
+                for (R record : primaryKeyMap.keySet())
+                {
+                    queryBuilder.or(q -> 
                     {
-                        q.and(primaryKey, "=", values.get(index));
-    
-                        index++;
-                    }
-                });
+                        List<Object> values;
+                        int index;
+        
+                        values = primaryKeyMap.get(record);
+        
+                        index = 0;
+        
+                        for (ColumnMetadata primaryKey : primaryKeys)
+                        {
+                            q.and(primaryKey, "=", values.get(index));
+        
+                            index++;
+                        }
+                    });
+                }
             }
         }
 

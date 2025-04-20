@@ -51,6 +51,11 @@ public class MariaDBDialect extends GenericDialect
                 productName.contains("mysql");
     }
 
+    public boolean isTupleSupported()
+    {
+        return true;
+    }
+
     public boolean isSequenceSupported()
     {
         return false;

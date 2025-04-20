@@ -32,6 +32,7 @@ import org.norm4j.metadata.TableMetadata;
 public interface SQLDialect
 {
     public boolean isDialect(String productName);
+    public boolean isTupleSupported();
     public boolean isArraySupported();
     public boolean isSequenceSupported();
     public boolean isGeneratedKeysForSequenceSupported();
