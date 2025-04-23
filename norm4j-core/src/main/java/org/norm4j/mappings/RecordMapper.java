@@ -392,6 +392,11 @@ public class RecordMapper<R, D>
             {
                 return sourceObject.toString();
             }
+            else if (sourceObject instanceof String &&
+                    targetClass.equals(UUID.class))
+            {
+                return UUID.fromString((String)sourceObject);
+            }
             else if (sourceObject.getClass().isEnum())
             {
                 if (targetClass.isEnum())
