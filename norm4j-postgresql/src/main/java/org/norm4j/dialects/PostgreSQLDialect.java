@@ -621,4 +621,39 @@ public class PostgreSQLDialect extends GenericDialect
 
         throw new RuntimeException("Unsupported SQL type.");
     }
+
+    public static Object toVector(float[] vector)
+    {
+        PGobject pgObject;
+        StringBuilder sb;
+
+        pgObject = new PGobject();
+
+        pgObject.setType("vector");
+
+        sb = new StringBuilder("[");
+
+        for (int i = 0; i < vector.length; i++)
+        {
+            if (i > 0)
+            {
+                sb.append(", ");
+            }
+
+            sb.append(vector[i]);
+        }
+
+        sb.append("]");
+
+        try
+        {
+            pgObject.setValue(sb.toString());
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return pgObject;
+    }
 }
