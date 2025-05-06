@@ -23,7 +23,6 @@ package org.norm4j;
 import java.io.Serializable;
 
 @FunctionalInterface
-public interface FieldGetter<T, R> extends Serializable
-{
+public interface FieldGetter<T, R> extends Serializable {
     R apply(T source);
 }

@@ -28,20 +28,17 @@ import java.sql.SQLException;
 import org.norm4j.TableGenerator;
 import org.norm4j.dialects.SQLDialect;
 
-public class TableIdGenerator
-{
+public class TableIdGenerator {
     private String schema;
     private String table;
     private String pkColumnName;
     private String valueColumnName;
     private int initialValue;
 
-    public TableIdGenerator(TableGenerator tableGenerator)
-    {
+    public TableIdGenerator(TableGenerator tableGenerator) {
         initialValue = 0;
 
-        if (tableGenerator != null)
-        {
+        if (tableGenerator != null) {
             schema = tableGenerator.schema();
             table = tableGenerator.table();
             pkColumnName = tableGenerator.pkColumnName();
@@ -49,54 +46,45 @@ public class TableIdGenerator
             initialValue = tableGenerator.initialValue();
         }
 
-        if (schema == null)
-        {
+        if (schema == null) {
             schema = "";
         }
 
         if (table == null ||
-            table.isEmpty())
-        {
+                table.isEmpty()) {
             table = "norm_sequences";
         }
 
-        if (pkColumnName == null || 
-            pkColumnName.isEmpty())
-        {
+        if (pkColumnName == null ||
+                pkColumnName.isEmpty()) {
             pkColumnName = "sequence_name";
         }
 
         if (valueColumnName == null ||
-            valueColumnName.isEmpty())
-        {
+                valueColumnName.isEmpty()) {
             valueColumnName = "next_val";
         }
     }
 
-    public String getSchema()
-    {
+    public String getSchema() {
         return schema;
     }
 
-    public String getTable()
-    {
+    public String getTable() {
         return table;
     }
 
-    public String getPkColumnName()
-    {
+    public String getPkColumnName() {
         return pkColumnName;
     }
 
-    public String getValueColumnName()
-    {
+    public String getValueColumnName() {
         return valueColumnName;
     }
 
-    public Object generateId(Connection connection, 
-            SQLDialect dialect, 
-            String sequenceName)
-    {
+    public Object generateId(Connection connection,
+            SQLDialect dialect,
+            String sequenceName) {
         boolean exists = false;
         int currentValue;
         int nextValue;
@@ -112,22 +100,16 @@ public class TableIdGenerator
         sql.append(pkColumnName);
         sql.append("=?");
 
-        try
-        {
-            try (PreparedStatement ps = connection.prepareStatement(sql.toString())) 
-            {
+        try {
+            try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
                 ps.setString(1, sequenceName);
 
-                try (ResultSet rs = ps.executeQuery())
-                {
-                    if (rs.next())
-                    {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
                         currentValue = rs.getInt(1);
 
                         exists = true;
-                    }
-                    else
-                    {
+                    } else {
                         currentValue = initialValue;
                     }
                 }
@@ -137,8 +119,7 @@ public class TableIdGenerator
 
             sql = new StringBuilder();
 
-            if (exists)
-            {
+            if (exists) {
                 sql.append("UPDATE ");
                 sql.append(dialect.getTableName(schema, table));
                 sql.append(" SET ");
@@ -147,9 +128,7 @@ public class TableIdGenerator
                 sql.append(" WHERE ");
                 sql.append(pkColumnName);
                 sql.append("=?");
-            }
-            else
-            {
+            } else {
                 sql.append("INSERT INTO ");
                 sql.append(dialect.getTableName(schema, table));
                 sql.append(" (");
@@ -159,18 +138,15 @@ public class TableIdGenerator
                 sql.append(") VALUES (?, ?)");
             }
 
-            try (PreparedStatement ps = connection.prepareStatement(sql.toString())) 
-            {
+            try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
                 ps.setInt(1, nextValue);
                 ps.setString(2, sequenceName);
 
                 ps.executeUpdate();
             }
-            
+
             return nextValue;
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

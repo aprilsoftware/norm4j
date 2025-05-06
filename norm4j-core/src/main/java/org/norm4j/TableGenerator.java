@@ -27,11 +27,14 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface TableGenerator
-{
+public @interface TableGenerator {
     String table() default "";
+
     String schema() default "";
+
     String pkColumnName() default "";
+
     String valueColumnName() default "";
+
     int initialValue() default 0;
 }

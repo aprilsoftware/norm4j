@@ -28,46 +28,36 @@ import org.norm4j.SequenceGenerator;
 import org.norm4j.Table;
 
 @Table(name = "author", schema = "test3")
-public class Author
-{
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(schema = "test3", 
-            sequenceName = "author_id_test_seq", 
-            initialValue = 50
-    )
+    @SequenceGenerator(schema = "test3", sequenceName = "author_id_test_seq", initialValue = 50)
     private int id;
 
     @Column(nullable = false)
     private String name;
 
-    public Author()
-    {
+    public Author() {
     }
 
-    public int getId()
-    {
+    public int getId() {
         return id;
     }
 
-    public void setId(int id)
-    {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -78,8 +68,7 @@ public class Author
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 

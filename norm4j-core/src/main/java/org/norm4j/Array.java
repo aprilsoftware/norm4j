@@ -27,8 +27,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Array
-{
+public @interface Array {
     ArrayType type() default ArrayType.Array;
+
     int length() default 0;
 }

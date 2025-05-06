@@ -23,13 +23,11 @@ package org.norm4j;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder>
-{
+public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder> {
     private final StringBuilder tableClause;
     private final StringBuilder setClause;
 
-    public UpdateQueryBuilder(TableManager tableManager)
-    {
+    public UpdateQueryBuilder(TableManager tableManager) {
         super(tableManager);
 
         tableClause = new StringBuilder();
@@ -37,17 +35,14 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder>
         setClause = new StringBuilder();
     }
 
-    protected UpdateQueryBuilder self()
-    {
+    protected UpdateQueryBuilder self() {
         return this;
     }
 
-    public UpdateQueryBuilder update(Class<?> tableClass)
-    {
+    public UpdateQueryBuilder update(Class<?> tableClass) {
         TableMetadata table;
 
-        if (!tableClause.isEmpty())
-        {
+        if (!tableClause.isEmpty()) {
             throw new RuntimeException("update(...) must be called only once.");
         }
 
@@ -59,19 +54,17 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder>
         return this;
     }
 
-    public <T, R> UpdateQueryBuilder set(FieldGetter<T, R> fieldGetter, Object value)
-    {
+    public <T, R> UpdateQueryBuilder set(FieldGetter<T, R> fieldGetter, Object value) {
         ColumnMetadata column;
 
         column = getTableManager()
                 .getMetadataManager()
                 .getMetadata(fieldGetter);
 
-        if (!setClause.isEmpty())
-        {
+        if (!setClause.isEmpty()) {
             setClause.append(", ");
         }
-        
+
         setClause.append(column.getColumnName());
 
         setClause.append(" = ");
@@ -81,19 +74,17 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder>
         return this;
     }
 
-    public <T, R> UpdateQueryBuilder set(FieldGetter<T, R> fieldGetter, SelectQueryBuilder builder)
-    {
+    public <T, R> UpdateQueryBuilder set(FieldGetter<T, R> fieldGetter, SelectQueryBuilder builder) {
         ColumnMetadata column;
 
         column = getTableManager()
                 .getMetadataManager()
                 .getMetadata(fieldGetter);
 
-        if (!setClause.isEmpty())
-        {
+        if (!setClause.isEmpty()) {
             setClause.append(", ");
         }
-        
+
         setClause.append(column.getColumnName());
 
         setClause.append(" = ");
@@ -103,8 +94,7 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder>
         return this;
     }
 
-    public String build()
-    {
+    public String build() {
         StringBuilder statement;
 
         statement = new StringBuilder();
@@ -114,22 +104,19 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder>
         statement.append(" SET ");
         statement.append(setClause.toString());
 
-        if (!getWhereClause().isEmpty())
-        {
+        if (!getWhereClause().isEmpty()) {
             statement.append(getWhereClause().toString());
         }
 
         return statement.toString();
     }
 
-    public int executeUpdate()
-    {
+    public int executeUpdate() {
         Query query;
 
         query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < getParameters().size(); i++)
-        {
+        for (int i = 0; i < getParameters().size(); i++) {
             query.setParameter(i + 1, getParameters().get(i));
         }
 

@@ -28,15 +28,12 @@ import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
-public class Test1 extends BaseTest
-{
-    public Test1()
-    {
+public class Test1 extends BaseTest {
+    public Test1() {
     }
 
     @Test
-    public void test1()
-    {
+    public void test1() {
         MetadataManager metadataManager;
         TableManager tableManager;
         Author author;

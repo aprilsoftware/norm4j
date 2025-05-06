@@ -38,94 +38,75 @@ import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public abstract class GenericDialect implements SQLDialect
-{
-    public GenericDialect()
-    {
+public abstract class GenericDialect implements SQLDialect {
+    public GenericDialect() {
     }
 
-    public boolean isArraySupported()
-    {
+    public boolean isArraySupported() {
         return false;
     }
 
-    public boolean isSequenceSupported()
-    {
+    public boolean isSequenceSupported() {
         return true;
     }
 
-    public boolean isGeneratedKeysForSequenceSupported()
-    {
+    public boolean isGeneratedKeysForSequenceSupported() {
         return true;
     }
 
-    public String getTableName(String schema, String tableName)
-    {
+    public String getTableName(String schema, String tableName) {
         if (schema == null ||
-            schema.isEmpty())
-        {
+                schema.isEmpty()) {
             return tableName;
-        }
-        else
-        {
+        } else {
             return schema
                     + "."
                     + tableName;
         }
     }
 
-    public String getSequenceName(TableMetadata table, ColumnMetadata column)
-    {
+    public String getSequenceName(TableMetadata table, ColumnMetadata column) {
         SequenceGenerator sequenceGenerator;
         String sequenceName;
 
-        sequenceGenerator = (SequenceGenerator)column.getAnnotations()
+        sequenceGenerator = (SequenceGenerator) column.getAnnotations()
                 .get(SequenceGenerator.class);
 
-        if (sequenceGenerator == null || sequenceGenerator.sequenceName().isEmpty())
-        {
+        if (sequenceGenerator == null || sequenceGenerator.sequenceName().isEmpty()) {
             sequenceName = createSequenceName(table, column);
-        }
-        else
-        {
+        } else {
             sequenceName = sequenceGenerator.sequenceName();
         }
 
         if (sequenceGenerator != null &&
-            !sequenceGenerator.schema().isEmpty())
-        {
+                !sequenceGenerator.schema().isEmpty()) {
             return sequenceGenerator.schema()
                     + "."
                     + sequenceName;
-        }
-        else
-        {
+        } else {
             return sequenceName;
         }
     }
 
-    public String createSequenceName(TableMetadata table, 
-            ColumnMetadata column)
-    {
+    public String createSequenceName(TableMetadata table,
+            ColumnMetadata column) {
         return table.getTableName()
                 + "_"
                 + column.getColumnName()
                 + "_seq";
     }
 
-    public String createForeignKeyName(TableMetadata table, TableMetadata referenceTable, Join foreignKey)
-    {
+    public String createForeignKeyName(TableMetadata table, TableMetadata referenceTable, Join foreignKey) {
         return "fk_"
                 + table.getTableName()
                 + "_"
                 + referenceTable.getTableName();
     }
 
-    public String alterTable(TableMetadata table, 
+    public String alterTable(TableMetadata table,
             TableMetadata referenceTable,
             Join foreignKey,
-            String foreignKeyName)
-    {
+            String foreignKeyName) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
@@ -136,10 +117,8 @@ public abstract class GenericDialect implements SQLDialect
         ddl.append(foreignKeyName);
         ddl.append(" FOREIGN KEY (");
 
-        for (int i = 0; i < foreignKey.columns().length; i++)
-        {
-            if (i > 0)
-            {
+        for (int i = 0; i < foreignKey.columns().length; i++) {
+            if (i > 0) {
                 ddl.append(", ");
             }
 
@@ -147,18 +126,16 @@ public abstract class GenericDialect implements SQLDialect
         }
 
         ddl.append(") REFERENCES ");
-        ddl.append(getTableName(referenceTable.getSchema(), 
+        ddl.append(getTableName(referenceTable.getSchema(),
                 referenceTable.getTableName()));
         ddl.append(" (");
 
-        for (int i = 0; i < foreignKey.reference().columns().length; i++)
-        {
+        for (int i = 0; i < foreignKey.reference().columns().length; i++) {
             String columnName;
 
             columnName = foreignKey.reference().columns()[i];
 
-            if (i > 0)
-            {
+            if (i > 0) {
                 ddl.append(", ");
             }
 
@@ -167,17 +144,15 @@ public abstract class GenericDialect implements SQLDialect
 
         ddl.append(")");
 
-        if (foreignKey.cascadeDelete())
-        {
+        if (foreignKey.cascadeDelete()) {
             ddl.append(" ON DELETE CASCADE");
         }
 
         return ddl.toString();
     }
 
-    public PreparedStatement createPersistStatement(Connection connection, 
-            TableMetadata table)
-    {
+    public PreparedStatement createPersistStatement(Connection connection,
+            TableMetadata table) {
         StringBuilder sql;
         StringBuilder values;
         int index;
@@ -192,30 +167,27 @@ public abstract class GenericDialect implements SQLDialect
 
         index = 1;
 
-        for (ColumnMetadata column : table.getColumns())
-        {
+        for (ColumnMetadata column : table.getColumns()) {
             GeneratedValue generatedValue;
 
-            generatedValue = (GeneratedValue)column.getAnnotations()
+            generatedValue = (GeneratedValue) column.getAnnotations()
                     .get(GeneratedValue.class);
 
             if (generatedValue == null ||
                     (generatedValue != null &&
-                    generatedValue.strategy() != GenerationType.AUTO &&
-                    generatedValue.strategy() != GenerationType.IDENTITY &&
-                    generatedValue.strategy() != GenerationType.SEQUENCE))
-            {
-                if (index > 1)
-                {
+                            generatedValue.strategy() != GenerationType.AUTO &&
+                            generatedValue.strategy() != GenerationType.IDENTITY &&
+                            generatedValue.strategy() != GenerationType.SEQUENCE)) {
+                if (index > 1) {
                     sql.append(", ");
-    
+
                     values.append(", ");
                 }
-    
+
                 sql.append(column.getColumnName());
-    
+
                 values.append("?");
-    
+
                 index++;
             }
         }
@@ -224,58 +196,41 @@ public abstract class GenericDialect implements SQLDialect
         sql.append(values);
         sql.append(")");
 
-        try
-        {
-            return connection.prepareStatement(sql.toString(), 
+        try {
+            return connection.prepareStatement(sql.toString(),
                     Statement.RETURN_GENERATED_KEYS);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Object fromSqlValue(ColumnMetadata column, Object value)
-    {
-        if (value != null)
-        {
-            if (column.getField().getType().isEnum())
-            {
-                Enumerated  enumerated;
-    
-                enumerated = (Enumerated)column.getAnnotations()
+    public Object fromSqlValue(ColumnMetadata column, Object value) {
+        if (value != null) {
+            if (column.getField().getType().isEnum()) {
+                Enumerated enumerated;
+
+                enumerated = (Enumerated) column.getAnnotations()
                         .get(Enumerated.class);
-    
-                if (enumerated == null || enumerated.value() == EnumType.ORDINAL)
-                {
-                    value = column.getField().getType().getEnumConstants()[(int)value];
-                }
-                else
-                {
+
+                if (enumerated == null || enumerated.value() == EnumType.ORDINAL) {
+                    value = column.getField().getType().getEnumConstants()[(int) value];
+                } else {
                     value = Enum.valueOf(column.getField().getType()
-                            .asSubclass(Enum.class), (String)value);
+                            .asSubclass(Enum.class), (String) value);
                 }
-            }
-            else if (column.getField().getType() == UUID.class
-                    && value instanceof String)
-            {
-                value = UUID.fromString((String)value);
-            }
-            else if (column.getField().getType() == java.sql.Date.class &&
-                    value instanceof java.sql.Time)
-            {
-                value = truncateTime(column, 
-                        new java.sql.Date(((java.sql.Time)value).getTime()));
-            }
-            else if (column.getField().getType() == java.sql.Date.class &&
-                    value instanceof java.sql.Timestamp)
-            {
-                value = truncateTime(column, 
-                        new java.sql.Date(((java.sql.Timestamp)value).getTime()));
-            }
-            else if (value instanceof java.sql.Date ||
-                    value instanceof java.util.Date)
-            {
+            } else if (column.getField().getType() == UUID.class
+                    && value instanceof String) {
+                value = UUID.fromString((String) value);
+            } else if (column.getField().getType() == java.sql.Date.class &&
+                    value instanceof java.sql.Time) {
+                value = truncateTime(column,
+                        new java.sql.Date(((java.sql.Time) value).getTime()));
+            } else if (column.getField().getType() == java.sql.Date.class &&
+                    value instanceof java.sql.Timestamp) {
+                value = truncateTime(column,
+                        new java.sql.Date(((java.sql.Timestamp) value).getTime()));
+            } else if (value instanceof java.sql.Date ||
+                    value instanceof java.util.Date) {
                 value = truncateTime(column, value);
             }
         }
@@ -283,29 +238,21 @@ public abstract class GenericDialect implements SQLDialect
         return value;
     }
 
-    public Object toSqlValue(ColumnMetadata column, Object value)
-    {
-        if (value != null)
-        {
-            if (column.getField().getType().isEnum())
-            {
-                Enumerated  enumerated;
+    public Object toSqlValue(ColumnMetadata column, Object value) {
+        if (value != null) {
+            if (column.getField().getType().isEnum()) {
+                Enumerated enumerated;
 
-                enumerated = (Enumerated)column.getAnnotations()
+                enumerated = (Enumerated) column.getAnnotations()
                         .get(Enumerated.class);
 
-                if (enumerated == null || enumerated.value() == EnumType.ORDINAL)
-                {
-                    value = ((Enum<?>)value).ordinal();
+                if (enumerated == null || enumerated.value() == EnumType.ORDINAL) {
+                    value = ((Enum<?>) value).ordinal();
+                } else {
+                    value = ((Enum<?>) value).name();
                 }
-                else
-                {
-                    value = ((Enum<?>)value).name();
-                }
-            }
-            else if (value instanceof java.sql.Date ||
-                    value instanceof java.util.Date)
-            {
+            } else if (value instanceof java.sql.Date ||
+                    value instanceof java.util.Date) {
                 value = truncateTime(column, value);
             }
         }
@@ -313,27 +260,22 @@ public abstract class GenericDialect implements SQLDialect
         return value;
     }
 
-    private Object truncateTime(ColumnMetadata column, Object value)
-    {
+    private Object truncateTime(ColumnMetadata column, Object value) {
         Temporal temporal;
 
-        temporal = (Temporal)column.getAnnotations()
+        temporal = (Temporal) column.getAnnotations()
                 .get(Temporal.class);
 
         if (temporal != null &&
-                temporal.value() == TemporalType.DATE)
-        {
+                temporal.value() == TemporalType.DATE) {
             Calendar calendar;
 
             calendar = Calendar.getInstance();
 
-            if (value instanceof java.sql.Date)
-            {
-                calendar.setTime((java.sql.Date)value);
-            }
-            else
-            {
-                calendar.setTime((java.util.Date)value);
+            if (value instanceof java.sql.Date) {
+                calendar.setTime((java.sql.Date) value);
+            } else {
+                calendar.setTime((java.util.Date) value);
             }
 
             calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -341,12 +283,9 @@ public abstract class GenericDialect implements SQLDialect
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MILLISECOND, 0);
 
-            if (value instanceof java.sql.Date)
-            {
+            if (value instanceof java.sql.Date) {
                 value = new java.sql.Date(calendar.getTime().getTime());
-            }
-            else
-            {
+            } else {
                 value = calendar.getTime();
             }
         }

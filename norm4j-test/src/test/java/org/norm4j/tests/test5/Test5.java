@@ -30,15 +30,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class Test5 extends BaseTest
-{
-    public Test5()
-    {
+public class Test5 extends BaseTest {
+    public Test5() {
     }
 
     @Test
-    public void test5()
-    {
+    public void test5() {
         MetadataManager metadataManager;
         TableManager tableManager;
         List<Book> books;
@@ -74,7 +71,7 @@ public class Test5 extends BaseTest
 
         tableManager.persist(author);
 
-        author = tableManager.find(Author.class, 
+        author = tableManager.find(Author.class,
                 new RowId(author.getTenantId(), author.getId()));
 
         assertNotEquals(null, author);
@@ -120,13 +117,13 @@ public class Test5 extends BaseTest
                 .orderBy(Book::getName)
                 .orderBy(Author::getName)
                 .limit(1)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(1, books.size());
 
         tableManager.remove(book1);
         tableManager.remove(book2);
-        tableManager.remove(Author.class, 
+        tableManager.remove(Author.class,
                 new RowId(author.getTenantId(), author.getId()));
 
         dropTable("test5", "book");

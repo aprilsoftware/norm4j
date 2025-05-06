@@ -25,32 +25,26 @@ import java.lang.reflect.Method;
 import org.norm4j.FieldGetter;
 import static org.norm4j.metadata.helpers.TableCreationHelper.decapitalize;
 
-public class FieldGetterMetadata
-{
+public class FieldGetterMetadata {
     private final Class<?> tableClass;
     private final String fieldName;
 
-    public FieldGetterMetadata(Class<?> tableClass, String fieldName)
-    {
+    public FieldGetterMetadata(Class<?> tableClass, String fieldName) {
         this.tableClass = tableClass;
 
         this.fieldName = fieldName;
     }
 
-    public Class<?> getTableClass()
-    {
+    public Class<?> getTableClass() {
         return tableClass;
     }
 
-    public String getFieldName()
-    {
+    public String getFieldName() {
         return fieldName;
     }
 
-    public static <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter)
-    {
-        try
-        {
+    public static <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
+        try {
             Method writeReplace = getter.getClass().getDeclaredMethod("writeReplace");
             writeReplace.setAccessible(true);
             Object serializedLambda = writeReplace.invoke(getter);

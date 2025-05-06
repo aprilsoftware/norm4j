@@ -20,8 +20,7 @@
  */
 package org.norm4j;
 
-public enum GenerationType
-{
+public enum GenerationType {
     TABLE,
     SEQUENCE,
     IDENTITY,

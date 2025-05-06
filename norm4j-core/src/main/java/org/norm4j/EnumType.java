@@ -20,8 +20,7 @@
  */
 package org.norm4j;
 
-public enum EnumType
-{
+public enum EnumType {
     ORDINAL,
     STRING
 }

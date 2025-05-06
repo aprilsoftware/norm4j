@@ -20,8 +20,7 @@
  */
 package org.norm4j;
 
-public enum TemporalType
-{
+public enum TemporalType {
     DATE,
     TIME,
     TIMESTAMP

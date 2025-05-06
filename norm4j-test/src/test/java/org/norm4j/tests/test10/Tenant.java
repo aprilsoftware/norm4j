@@ -25,8 +25,7 @@ import org.norm4j.*;
 import java.util.UUID;
 
 @Table
-public class Tenant
-{
+public class Tenant {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -34,33 +33,27 @@ public class Tenant
     @Column(nullable = false)
     private String name;
 
-    public Tenant()
-    {
+    public Tenant() {
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -71,8 +64,7 @@ public class Tenant
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -84,10 +76,9 @@ public class Tenant
 
         Tenant other = (Tenant) obj;
 
-        if (id == null)
-        {
+        if (id == null) {
             return other.id == null;
-        }
-        else return id.equals(other.id);
+        } else
+            return id.equals(other.id);
     }
 }

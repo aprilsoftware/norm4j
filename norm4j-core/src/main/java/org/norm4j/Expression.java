@@ -20,7 +20,6 @@
  */
 package org.norm4j;
 
-public interface Expression
-{
+public interface Expression {
     public String build(QueryBuilder queryBuilder);
 }

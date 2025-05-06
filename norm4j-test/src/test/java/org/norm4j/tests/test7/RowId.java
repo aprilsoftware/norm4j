@@ -22,45 +22,37 @@ package org.norm4j.tests.test7;
 
 import java.util.UUID;
 
-public class RowId
-{
+public class RowId {
     private UUID tenantId;
     private UUID id;
-    
-    public RowId()
-    {
+
+    public RowId() {
     }
 
-    public RowId(UUID tenantId, UUID id)
-    {
+    public RowId(UUID tenantId, UUID id) {
         this.tenantId = tenantId;
 
         this.id = id;
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -73,8 +65,7 @@ public class RowId
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -86,20 +77,16 @@ public class RowId
 
         RowId other = (RowId) obj;
 
-        if (tenantId == null)
-        {
+        if (tenantId == null) {
             if (other.tenantId != null)
                 return false;
-        }
-        else if (!tenantId.equals(other.tenantId))
+        } else if (!tenantId.equals(other.tenantId))
             return false;
 
-        if (id == null)
-        {
+        if (id == null) {
             if (other.id != null)
                 return false;
-        }
-        else if (!id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
 
         return true;

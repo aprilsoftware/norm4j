@@ -33,21 +33,18 @@ import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
-public class Test12 extends BaseTest
-{
+public class Test12 extends BaseTest {
     private TableManager tableManager;
     private Tenant tenant;
     private Author author;
     private Book book1;
     private Book book2;
 
-    public Test12()
-    {
+    public Test12() {
     }
 
     @BeforeEach
-    public void setup()
-    {
+    public void setup() {
         MetadataManager metadataManager;
 
         dropTable(null, "book");
@@ -99,14 +96,13 @@ public class Test12 extends BaseTest
     }
 
     @Test
-    public void test12()
-    {
+    public void test12() {
         List<Book> books;
 
         books = tableManager.createSelectQueryBuilder()
                 .select()
                 .from(Book.class)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(2, books.size());
 
@@ -115,14 +111,13 @@ public class Test12 extends BaseTest
         books = tableManager.createSelectQueryBuilder()
                 .select()
                 .from(Book.class)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(0, books.size());
     }
 
     @AfterEach
-    void cleanup()
-    {
+    void cleanup() {
         dropTable(null, "book");
         dropTable(null, "author");
         dropTable(null, "tenant");

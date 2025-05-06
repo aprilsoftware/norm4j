@@ -32,22 +32,11 @@ import org.norm4j.Reference;
 import org.norm4j.Table;
 
 @Table(name = "book", schema = "test5")
-@Join
-(
-    columns = "tenant_id", 
-    reference = @Reference(table = Tenant.class, 
-            columns = "id")
-)
-@Join
-(
-    name = "test_ref",
-    columns = {"tenant_id", "author_id"}, 
-    reference = @Reference(table = Author.class, 
-            columns = {"tenant_id", "id"})
-)
+@Join(columns = "tenant_id", reference = @Reference(table = Tenant.class, columns = "id"))
+@Join(name = "test_ref", columns = { "tenant_id",
+        "author_id" }, reference = @Reference(table = Author.class, columns = { "tenant_id", "id" }))
 @IdClass(value = RowId.class)
-public class Book
-{
+public class Book {
     @Id
     @Column(name = "tenant_id")
     private UUID tenantId;
@@ -58,57 +47,47 @@ public class Book
 
     @Column(nullable = false)
     private String name;
-    
+
     @Column(name = "author_id")
     private UUID authorId;
 
-    public Book()
-    {
+    public Book() {
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public UUID getAuthorId()
-    {
+    public UUID getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(UUID authorId)
-    {
+    public void setAuthorId(UUID authorId) {
         this.authorId = authorId;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -121,8 +100,7 @@ public class Book
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -134,20 +112,16 @@ public class Book
 
         Book other = (Book) obj;
 
-        if (tenantId == null)
-        {
+        if (tenantId == null) {
             if (other.tenantId != null)
                 return false;
-        }
-        else if (!tenantId.equals(other.tenantId))
+        } else if (!tenantId.equals(other.tenantId))
             return false;
 
-        if (id == null)
-        {
+        if (id == null) {
             if (other.id != null)
                 return false;
-        }
-        else if (!id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
 
         return true;

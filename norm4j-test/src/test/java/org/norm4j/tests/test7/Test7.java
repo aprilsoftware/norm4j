@@ -31,117 +31,113 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class Test7 extends BaseTest
-{
-    public Test7()
-    {
-    }
-
-    @Test
-    public void test7()
-    {
-        MetadataManager metadataManager;
-        TableManager tableManager;
-        List<Book> books;
-        Tenant tenant;
-        Author author;
-        Book book1;
-        Book book2;
-
-        if (!isArraySupported())
-        {
-            return;
+public class Test7 extends BaseTest {
+        public Test7() {
         }
 
-        dropTable(null, "book");
-        dropTable(null, "author");
-        dropTable(null, "tenant");
+        @Test
+        public void test7() {
+                MetadataManager metadataManager;
+                TableManager tableManager;
+                List<Book> books;
+                Tenant tenant;
+                Author author;
+                Book book1;
+                Book book2;
 
-        metadataManager = new MetadataManager();
+                if (!isArraySupported()) {
+                        return;
+                }
 
-        metadataManager.registerTable(Tenant.class);
-        metadataManager.registerTable(Book.class);
-        metadataManager.registerTable(Author.class);
+                dropTable(null, "book");
+                dropTable(null, "author");
+                dropTable(null, "tenant");
 
-        metadataManager.createTables(getDataSource());
+                metadataManager = new MetadataManager();
 
-        tableManager = new TableManager(getDataSource(), metadataManager);
+                metadataManager.registerTable(Tenant.class);
+                metadataManager.registerTable(Book.class);
+                metadataManager.registerTable(Author.class);
 
-        tenant = new Tenant();
+                metadataManager.createTables(getDataSource());
 
-        tenant.setName("Tenant 1");
+                tableManager = new TableManager(getDataSource(), metadataManager);
 
-        tableManager.persist(tenant);
+                tenant = new Tenant();
 
-        author = new Author();
+                tenant.setName("Tenant 1");
 
-        author.setTenantId(tenant.getId());
-        author.setName("Author 1");
+                tableManager.persist(tenant);
 
-        tableManager.persist(author);
+                author = new Author();
 
-        author = tableManager.find(Author.class, 
-                new RowId(author.getTenantId(), author.getId()));
+                author.setTenantId(tenant.getId());
+                author.setName("Author 1");
 
-        assertNotEquals(null, author);
+                tableManager.persist(author);
 
-        book1 = new Book();
+                author = tableManager.find(Author.class,
+                                new RowId(author.getTenantId(), author.getId()));
 
-        book1.setTenantId(tenant.getId());
-        book1.setName("Book 1");
-        book1.setAuthorId(author.getId());
-        book1.setPublishDate(new Date(System.currentTimeMillis()));
+                assertNotEquals(null, author);
 
-        tableManager.persist(book1);
+                book1 = new Book();
 
-        author.setName("Author 1.1");
+                book1.setTenantId(tenant.getId());
+                book1.setName("Book 1");
+                book1.setAuthorId(author.getId());
+                book1.setPublishDate(new Date(System.currentTimeMillis()));
 
-        tableManager.merge(author);
+                tableManager.persist(book1);
 
-        author = tableManager.joinOne(book1, Author.class);
+                author.setName("Author 1.1");
 
-        assertNotEquals(null, author);
+                tableManager.merge(author);
 
-        books = tableManager.joinMany(author, Book.class);
+                author = tableManager.joinOne(book1, Author.class);
 
-        assertEquals(1, books.size());
+                assertNotEquals(null, author);
 
-        books = tableManager.joinMany(author, Author::getId, 
-                Book.class, 
-                Book::getAuthorId);
+                books = tableManager.joinMany(author, Book.class);
 
-        assertEquals(1, books.size());
+                assertEquals(1, books.size());
 
-        book2 = new Book();
+                books = tableManager.joinMany(author, Author::getId,
+                                Book.class,
+                                Book::getAuthorId);
 
-        book2.setTenantId(tenant.getId());
-        book2.setName("Book 2");
-        book2.setAuthorId(author.getId());
-        book2.setBookType(BookType.Documentation);
-        book2.setPublishDate(new Date(System.currentTimeMillis()));
-        book2.setEmbedding(new float[] {0.1F, 0.2F, -0.1F});
-        book2.setIds1(new int[] {1, 2});
-        book2.setIds2(new String[] { "s1", "s2"});
+                assertEquals(1, books.size());
 
-        tableManager.persist(book2);
+                book2 = new Book();
 
-        books = tableManager.joinMany(author, Book.class);
+                book2.setTenantId(tenant.getId());
+                book2.setName("Book 2");
+                book2.setAuthorId(author.getId());
+                book2.setBookType(BookType.Documentation);
+                book2.setPublishDate(new Date(System.currentTimeMillis()));
+                book2.setEmbedding(new float[] { 0.1F, 0.2F, -0.1F });
+                book2.setIds1(new int[] { 1, 2 });
+                book2.setIds2(new String[] { "s1", "s2" });
 
-        assertEquals(2, books.size());
+                tableManager.persist(book2);
 
-        books = tableManager.joinMany(author, Author::getId, 
-                Book.class, 
-                Book::getAuthorId);
+                books = tableManager.joinMany(author, Book.class);
 
-        assertEquals(2, books.size());
+                assertEquals(2, books.size());
 
-        tableManager.remove(book1);
-        tableManager.remove(book2);
-        tableManager.remove(Author.class, 
-                new RowId(author.getTenantId(), author.getId()));
+                books = tableManager.joinMany(author, Author::getId,
+                                Book.class,
+                                Book::getAuthorId);
 
-        dropTable(null, "book");
-        dropTable(null, "author");
-        dropTable(null, "tenant");
-    }
+                assertEquals(2, books.size());
+
+                tableManager.remove(book1);
+                tableManager.remove(book2);
+                tableManager.remove(Author.class,
+                                new RowId(author.getTenantId(), author.getId()));
+
+                dropTable(null, "book");
+                dropTable(null, "author");
+                dropTable(null, "tenant");
+        }
 }

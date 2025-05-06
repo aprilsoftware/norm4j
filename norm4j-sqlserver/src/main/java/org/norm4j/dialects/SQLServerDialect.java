@@ -39,39 +39,32 @@ import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public class SQLServerDialect extends GenericDialect
-{
-    public SQLServerDialect()
-    {
+public class SQLServerDialect extends GenericDialect {
+    public SQLServerDialect() {
     }
 
-    public boolean isDialect(String productName)
-    {
+    public boolean isDialect(String productName) {
         return productName.toLowerCase()
                 .contains("sql server");
     }
 
-    public boolean isTupleSupported()
-    {
+    public boolean isTupleSupported() {
         return false;
     }
 
-    public boolean isGeneratedKeysForSequenceSupported()
-    {
+    public boolean isGeneratedKeysForSequenceSupported() {
         return false;
     }
 
-    public String createSequence(String schema, 
-            String sequenceName, 
-            int initialValue)
-    {
+    public String createSequence(String schema,
+            String sequenceName,
+            int initialValue) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
 
         ddl.append("CREATE SEQUENCE ");
-        if (!schema.isEmpty())
-        {
+        if (!schema.isEmpty()) {
             ddl.append(schema);
             ddl.append(".");
         }
@@ -84,8 +77,7 @@ public class SQLServerDialect extends GenericDialect
         return ddl.toString();
     }
 
-    public String createTable(TableMetadata table)
-    {
+    public String createTable(TableMetadata table) {
         List<ColumnMetadata> primaryKeys;
         List<ColumnMetadata> columns;
         StringBuilder ddl;
@@ -100,21 +92,19 @@ public class SQLServerDialect extends GenericDialect
 
         primaryKeys = new ArrayList<>();
 
-        for (int i = 0; i < columns.size(); i++)
-        {
+        for (int i = 0; i < columns.size(); i++) {
             GeneratedValue generatedValueAnnotation;
             ColumnMetadata column;
             Column columnAnnotation;
 
             column = columns.get(i);
 
-            columnAnnotation = (Column)column.getAnnotations().get(Column.class);
+            columnAnnotation = (Column) column.getAnnotations().get(Column.class);
 
-            generatedValueAnnotation = (GeneratedValue)column.getAnnotations()
+            generatedValueAnnotation = (GeneratedValue) column.getAnnotations()
                     .get(GeneratedValue.class);
 
-            if (i > 0)
-            {
+            if (i > 0) {
                 ddl.append(", ");
             }
 
@@ -122,52 +112,38 @@ public class SQLServerDialect extends GenericDialect
             ddl.append(" ");
 
             if (columnAnnotation == null ||
-                columnAnnotation.columnDefinition().isEmpty())
-            {
+                    columnAnnotation.columnDefinition().isEmpty()) {
                 ddl.append(getSqlType(column));
-            }
-            else
-            {
+            } else {
                 ddl.append(columnAnnotation.columnDefinition());
             }
 
-            if (generatedValueAnnotation == null)
-            {
+            if (generatedValueAnnotation == null) {
                 if (column.getField().getType().isPrimitive() ||
                         (columnAnnotation != null && !columnAnnotation.nullable()) ||
-                        column.isPrimaryKey())
-                {
+                        column.isPrimaryKey()) {
                     ddl.append(" NOT NULL");
                 }
-            }
-            else
-            {
+            } else {
                 if (generatedValueAnnotation.strategy() == GenerationType.AUTO ||
-                    generatedValueAnnotation.strategy() == GenerationType.IDENTITY)
-                {
+                        generatedValueAnnotation.strategy() == GenerationType.IDENTITY) {
                     ddl.append(" IDENTITY(1,1)");
-                }
-                else if (generatedValueAnnotation.strategy() == GenerationType.SEQUENCE)
-                {
+                } else if (generatedValueAnnotation.strategy() == GenerationType.SEQUENCE) {
                     ddl.append(" DEFAULT NEXT VALUE FOR ");
                     ddl.append(getSequenceName(table, column));
                 }
             }
 
-            if (column.isPrimaryKey())
-            {
+            if (column.isPrimaryKey()) {
                 primaryKeys.add(column);
             }
         }
 
-        if (!primaryKeys.isEmpty())
-        {
+        if (!primaryKeys.isEmpty()) {
             ddl.append(", PRIMARY KEY (");
 
-            for (int i = 0; i < primaryKeys.size(); i++)
-            {
-                if (i > 0)
-                {
+            for (int i = 0; i < primaryKeys.size(); i++) {
+                if (i > 0) {
                     ddl.append(", ");
                 }
 
@@ -182,11 +158,10 @@ public class SQLServerDialect extends GenericDialect
         return ddl.toString();
     }
 
-    public String createSequenceTable(String schema, 
-            String tableName, 
-            String pkColumnName, 
-            String valueColumnName)
-    {
+    public String createSequenceTable(String schema,
+            String tableName,
+            String pkColumnName,
+            String valueColumnName) {
         StringBuilder ddl = new StringBuilder();
 
         ddl.append("CREATE TABLE ");
@@ -202,68 +177,54 @@ public class SQLServerDialect extends GenericDialect
         return ddl.toString();
     }
 
-    public boolean sequenceExists(Connection connection, 
-            String schema, 
-            String sequenceName)
-    {
+    public boolean sequenceExists(Connection connection,
+            String schema,
+            String sequenceName) {
         String sql;
 
         sql = "SELECT SCHEMA_NAME(schema_id), name FROM sys.sequences WHERE name = ? AND SCHEMA_NAME(schema_id) = ?";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql))
-        {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, sequenceName);
             ps.setString(2, schema);
 
-            try (ResultSet rs = ps.executeQuery())
-            {
-                if (rs.next())
-                {
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     return true;
-                }
-                else
-                {
+                } else {
                     return false;
                 }
             }
-        } catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean tableExists(Connection connection, 
-            String schema, 
-            String tableName)
-    {
+    public boolean tableExists(Connection connection,
+            String schema,
+            String tableName) {
         DatabaseMetaData dbMetaData;
 
         if (schema == null ||
-            (schema != null && schema.isEmpty()))
-        {
+                (schema != null && schema.isEmpty())) {
             schema = "dbo";
         }
 
-        try
-        {
+        try {
             dbMetaData = connection.getMetaData();
 
             try (ResultSet rs = dbMetaData.getTables(null,
-                    schema, 
-                    tableName, 
-                    new String[] {"TABLE", "VIEW"}))
-            {
+                    schema,
+                    tableName,
+                    new String[] { "TABLE", "VIEW" })) {
                 return rs.next();
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String limitSelect(int offset, int limit)
-    {
+    public String limitSelect(int offset, int limit) {
         return "OFFSET "
                 + offset
                 + " ROWS FETCH NEXT "
@@ -271,74 +232,46 @@ public class SQLServerDialect extends GenericDialect
                 + " ROWS ONLY";
     }
 
-    private String getSqlType(ColumnMetadata column)
-    {
+    private String getSqlType(ColumnMetadata column) {
         Column columnAnnotation;
         Class<?> fieldType;
-        
+
         fieldType = column.getField().getType();
 
-        columnAnnotation = (Column)column.getAnnotations().get(Column.class);
+        columnAnnotation = (Column) column.getAnnotations().get(Column.class);
 
-        if (fieldType == String.class)
-        {
+        if (fieldType == String.class) {
             return "NVARCHAR(" + columnAnnotation.length() + ")";
-        }
-        else if (fieldType == boolean.class || fieldType == Boolean.class)
-        {
+        } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BIT";
-        }
-        else if (fieldType == int.class || fieldType == Integer.class)
-        {
+        } else if (fieldType == int.class || fieldType == Integer.class) {
             return "INT";
-        }
-        else if (fieldType == long.class || fieldType == Long.class)
-        {
+        } else if (fieldType == long.class || fieldType == Long.class) {
             return "BIGINT";
-        }
-        else if (fieldType == float.class || fieldType == Float.class)
-        {
+        } else if (fieldType == float.class || fieldType == Float.class) {
             return "REAL";
-        }
-        else if (fieldType == double.class || fieldType == Double.class)
-        {
+        } else if (fieldType == double.class || fieldType == Double.class) {
             return "FLOAT";
-        }
-        else if (fieldType == BigDecimal.class)
-        {
+        } else if (fieldType == BigDecimal.class) {
             return "DECIMAL";
-        }
-        else if (fieldType == java.util.Date.class || fieldType == java.sql.Date.class)
-        {
+        } else if (fieldType == java.util.Date.class || fieldType == java.sql.Date.class) {
             return "DATETIME";
-        }
-        else if (fieldType == UUID.class)
-        {
+        } else if (fieldType == UUID.class) {
             return "UNIQUEIDENTIFIER";
-        }
-        else if (column.getField().getType().isEnum())
-        {
+        } else if (column.getField().getType().isEnum()) {
             Enumerated enumeratedAnnotation;
 
-            enumeratedAnnotation = (Enumerated)column.getAnnotations()
+            enumeratedAnnotation = (Enumerated) column.getAnnotations()
                     .get(Enumerated.class);
 
-            if (enumeratedAnnotation == null)
-            {
+            if (enumeratedAnnotation == null) {
                 return "INT";
-            }
-            else
-            {
-                if (enumeratedAnnotation.value() == EnumType.ORDINAL)
-                {
+            } else {
+                if (enumeratedAnnotation.value() == EnumType.ORDINAL) {
                     return "INT";
-                }
-                else if (enumeratedAnnotation.value() == EnumType.STRING)
-                {
+                } else if (enumeratedAnnotation.value() == EnumType.STRING) {
                     return "NVARCHAR(255)";
-                }
-                else
-                {
+                } else {
                     throw new RuntimeException("Unsupported enum type.");
                 }
             }
@@ -347,9 +280,8 @@ public class SQLServerDialect extends GenericDialect
         throw new RuntimeException("Unsupported SQL type.");
     }
 
-    public PreparedStatement createPersistStatement(Connection connection, 
-            TableMetadata table)
-    {
+    public PreparedStatement createPersistStatement(Connection connection,
+            TableMetadata table) {
         StringBuilder sql;
         StringBuilder output;
         StringBuilder values;
@@ -367,54 +299,44 @@ public class SQLServerDialect extends GenericDialect
 
         index = 1;
 
-        for (ColumnMetadata column : table.getColumns())
-        {
+        for (ColumnMetadata column : table.getColumns()) {
             GeneratedValue generatedValue;
 
-            generatedValue = (GeneratedValue)column.getAnnotations()
+            generatedValue = (GeneratedValue) column.getAnnotations()
                     .get(GeneratedValue.class);
 
-            if (generatedValue == null)
-            {
-                if (index > 1)
-                {
+            if (generatedValue == null) {
+                if (index > 1) {
                     sql.append(", ");
 
                     values.append(", ");
                 }
-    
+
                 sql.append(column.getColumnName());
-    
+
                 values.append("?");
-    
+
                 index++;
-            }
-            else
-            {
-                if (generatedValue.strategy() == GenerationType.SEQUENCE)
-                {
-                    if (!output.isEmpty())
-                    {
+            } else {
+                if (generatedValue.strategy() == GenerationType.SEQUENCE) {
+                    if (!output.isEmpty()) {
                         output.append(", ");
                     }
 
                     output.append("INSERTED.");
                     output.append(column.getColumnName());
-                }
-                else if (generatedValue.strategy() == GenerationType.TABLE ||
-                        generatedValue.strategy() == GenerationType.UUID)
-                {
-                    if (index > 1)
-                    {
+                } else if (generatedValue.strategy() == GenerationType.TABLE ||
+                        generatedValue.strategy() == GenerationType.UUID) {
+                    if (index > 1) {
                         sql.append(", ");
-        
+
                         values.append(", ");
                     }
-        
+
                     sql.append(column.getColumnName());
-        
+
                     values.append("?");
-        
+
                     index++;
                 }
             }
@@ -422,8 +344,7 @@ public class SQLServerDialect extends GenericDialect
 
         sql.append(") ");
 
-        if (!output.isEmpty())
-        {
+        if (!output.isEmpty()) {
             sql.append("OUTPUT ");
             sql.append(output);
         }
@@ -432,13 +353,10 @@ public class SQLServerDialect extends GenericDialect
         sql.append(values);
         sql.append(")");
 
-        try
-        {
-            return connection.prepareStatement(sql.toString(), 
+        try {
+            return connection.prepareStatement(sql.toString(),
                     Statement.RETURN_GENERATED_KEYS);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

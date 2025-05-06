@@ -36,22 +36,11 @@ import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 
 @Table(name = "book")
-@Join
-(
-    columns = "tenant_id", 
-    reference = @Reference(table = Tenant.class, 
-            columns = "id")
-)
-@Join
-(
-    name = "test_ref",
-    columns = {"tenant_id", "author_id"}, 
-    reference = @Reference(table = Author.class, 
-            columns = {"tenant_id", "id"})
-)
+@Join(columns = "tenant_id", reference = @Reference(table = Tenant.class, columns = "id"))
+@Join(name = "test_ref", columns = { "tenant_id",
+        "author_id" }, reference = @Reference(table = Author.class, columns = { "tenant_id", "id" }))
 @IdClass(value = RowId.class)
-public class Book
-{
+public class Book {
     @Id
     @Column(name = "tenant_id")
     private UUID tenantId;
@@ -62,7 +51,7 @@ public class Book
 
     @Column(nullable = false)
     private String name;
-    
+
     @Column(name = "author_id")
     private UUID authorId;
 
@@ -99,143 +88,115 @@ public class Book
     @Column(nullable = false)
     private java.sql.Date publishTS2;
 
-    public Book()
-    {
+    public Book() {
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public UUID getAuthorId()
-    {
+    public UUID getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(UUID authorId)
-    {
+    public void setAuthorId(UUID authorId) {
         this.authorId = authorId;
     }
 
-    public BookType getBookType1()
-    {
+    public BookType getBookType1() {
         return bookType1;
     }
 
-    public void setBookType1(BookType bookType1)
-    {
+    public void setBookType1(BookType bookType1) {
         this.bookType1 = bookType1;
     }
 
-    public BookType getBookType2()
-    {
+    public BookType getBookType2() {
         return bookType2;
     }
 
-    public void setBookType2(BookType bookType2)
-    {
+    public void setBookType2(BookType bookType2) {
         this.bookType2 = bookType2;
     }
 
-    public BookType getBookType3()
-    {
+    public BookType getBookType3() {
         return bookType3;
     }
 
-    public void setBookType3(BookType bookType3)
-    {
+    public void setBookType3(BookType bookType3) {
         this.bookType3 = bookType3;
     }
 
-    public java.util.Date getPublishDate1()
-    {
+    public java.util.Date getPublishDate1() {
         return publishDate1;
     }
 
-    public void setPublishDate1(java.util.Date publishDate1)
-    {
+    public void setPublishDate1(java.util.Date publishDate1) {
         this.publishDate1 = publishDate1;
     }
 
-    public java.sql.Date getPublishDate2()
-    {
+    public java.sql.Date getPublishDate2() {
         return publishDate2;
     }
 
-    public void setPublishDate2(java.sql.Date publishDate2)
-    {
+    public void setPublishDate2(java.sql.Date publishDate2) {
         this.publishDate2 = publishDate2;
     }
 
-    public java.util.Date getPublishTime1()
-    {
+    public java.util.Date getPublishTime1() {
         return publishTime1;
     }
 
-    public void setPublishTime1(java.util.Date publishTime1)
-    {
+    public void setPublishTime1(java.util.Date publishTime1) {
         this.publishTime1 = publishTime1;
     }
 
-    public java.sql.Date getPublishTime2()
-    {
+    public java.sql.Date getPublishTime2() {
         return publishTime2;
     }
 
-    public void setPublishTime2(java.sql.Date publishTime2)
-    {
+    public void setPublishTime2(java.sql.Date publishTime2) {
         this.publishTime2 = publishTime2;
     }
 
-    public java.util.Date getPublishTS1()
-    {
+    public java.util.Date getPublishTS1() {
         return publishTS1;
     }
 
-    public void setPublishTS1(java.util.Date publishTS1)
-    {
+    public void setPublishTS1(java.util.Date publishTS1) {
         this.publishTS1 = publishTS1;
     }
 
-    public java.sql.Date getPublishTS2()
-    {
+    public java.sql.Date getPublishTS2() {
         return publishTS2;
     }
 
-    public void setPublishTS2(java.sql.Date publishTS2)
-    {
+    public void setPublishTS2(java.sql.Date publishTS2) {
         this.publishTS2 = publishTS2;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -248,8 +209,7 @@ public class Book
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -261,20 +221,16 @@ public class Book
 
         Book other = (Book) obj;
 
-        if (tenantId == null)
-        {
+        if (tenantId == null) {
             if (other.tenantId != null)
                 return false;
-        }
-        else if (!tenantId.equals(other.tenantId))
+        } else if (!tenantId.equals(other.tenantId))
             return false;
 
-        if (id == null)
-        {
+        if (id == null) {
             if (other.id != null)
                 return false;
-        }
-        else if (!id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
 
         return true;

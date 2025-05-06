@@ -26,14 +26,12 @@ import org.norm4j.Id;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class ColumnMetadata
-{
+public class ColumnMetadata {
     private final TableMetadata table;
     private final Map<Class<?>, Object> annotations;
     private final Field field;
 
-    public ColumnMetadata(TableMetadata table, Map<Class<?>, Object> annotations, Field field)
-    {
+    public ColumnMetadata(TableMetadata table, Map<Class<?>, Object> annotations, Field field) {
         this.table = table;
 
         this.annotations = annotations;
@@ -41,40 +39,32 @@ public class ColumnMetadata
         this.field = field;
     }
 
-    public TableMetadata getTable()
-    {
+    public TableMetadata getTable() {
         return table;
     }
 
-    public Map<Class<?>, Object> getAnnotations()
-    {
+    public Map<Class<?>, Object> getAnnotations() {
         return annotations;
     }
 
-    public Field getField()
-    {
+    public Field getField() {
         return field;
     }
 
-    public String getColumnName()
-    {
+    public String getColumnName() {
         Column column;
 
-        column = (Column)annotations.get(Column.class);
+        column = (Column) annotations.get(Column.class);
 
         if (column == null ||
-            column.name().isEmpty())
-        {
+                column.name().isEmpty()) {
             return field.getName();
-        }
-        else
-        {
+        } else {
             return column.name();
         }
     }
 
-    public boolean isPrimaryKey()
-    {
+    public boolean isPrimaryKey() {
         return annotations.containsKey(Id.class);
     }
 }

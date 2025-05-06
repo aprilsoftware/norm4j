@@ -29,11 +29,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Repeatable(Joins.class)
-public @interface Join
-{
+public @interface Join {
     String name() default "";
+
     String[] columns();
+
     Reference reference();
+
     boolean referencialIntegrity() default true;
+
     boolean cascadeDelete() default false;
 }

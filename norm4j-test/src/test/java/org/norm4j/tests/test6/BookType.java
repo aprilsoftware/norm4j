@@ -20,8 +20,7 @@
  */
 package org.norm4j.tests.test6;
 
-public enum BookType
-{
+public enum BookType {
     Roman,
     Documentation
 }

@@ -30,15 +30,12 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Test9 extends BaseTest
-{
-    public Test9()
-    {
+public class Test9 extends BaseTest {
+    public Test9() {
     }
 
     @Test
-    public void test9()
-    {
+    public void test9() {
         MetadataManager metadataManager;
         TableManager tableManager;
         Tenant tenant;
@@ -95,12 +92,11 @@ public class Test9 extends BaseTest
 
         tableManager.persist(book2);
 
-        if (getDialect() instanceof SQLServerDialect)
-        {
+        if (getDialect() instanceof SQLServerDialect) {
             count = tableManager.createSelectQueryBuilder()
                     .count()
                     .from(Book.class)
-                .getSingleResult(int.class);
+                    .getSingleResult(int.class);
 
             assertEquals(2, count);
 
@@ -110,16 +106,14 @@ public class Test9 extends BaseTest
                     .innerJoin(Author.class)
                     .where(Book::getTenantId, "=", book1.getTenantId())
                     .where(Book::getId, "=", book1.getId())
-                .getSingleResult(int.class);
+                    .getSingleResult(int.class);
 
             assertEquals(1, count);
-        }
-        else
-        {
+        } else {
             count = tableManager.createSelectQueryBuilder()
                     .count()
                     .from(Book.class)
-                .getSingleResult(long.class);
+                    .getSingleResult(long.class);
 
             assertEquals(2, count);
 
@@ -129,7 +123,7 @@ public class Test9 extends BaseTest
                     .innerJoin(Author.class)
                     .where(Book::getTenantId, "=", book1.getTenantId())
                     .where(Book::getId, "=", book1.getId())
-                .getSingleResult(long.class);
+                    .getSingleResult(long.class);
 
             assertEquals(1, count);
         }
@@ -137,7 +131,7 @@ public class Test9 extends BaseTest
         value = tableManager.createSelectQueryBuilder()
                 .sum(Book::getPrice)
                 .from(Book.class)
-            .getSingleResult(double.class);
+                .getSingleResult(double.class);
 
         assertEquals(150, value);
 
@@ -147,34 +141,34 @@ public class Test9 extends BaseTest
                 .innerJoin(Author.class)
                 .groupBy(Book::getName)
                 .orderByDesc(Book::getName)
-            .getSingleResult(double.class);
+                .getSingleResult(double.class);
 
         assertEquals(100, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .avg(Book::getPrice)
                 .from(Book.class)
-            .getSingleResult(double.class);
+                .getSingleResult(double.class);
 
         assertEquals(75, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .min(Book::getPrice)
                 .from(Book.class)
-            .getSingleResult(double.class);
+                .getSingleResult(double.class);
 
         assertEquals(50, value);
 
         value = tableManager.createSelectQueryBuilder()
                 .max(Book::getPrice)
                 .from(Book.class)
-            .getSingleResult(double.class);
+                .getSingleResult(double.class);
 
         assertEquals(100, value);
 
         tableManager.remove(book1);
         tableManager.remove(book2);
-        tableManager.remove(Author.class, 
+        tableManager.remove(Author.class,
                 new RowId(author.getTenantId(), author.getId()));
 
         dropTable(null, "book");

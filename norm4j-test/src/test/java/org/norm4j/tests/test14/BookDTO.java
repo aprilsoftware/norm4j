@@ -23,8 +23,7 @@ package org.norm4j.tests.test14;
 import java.util.Date;
 import java.util.UUID;
 
-public class BookDTO
-{
+public class BookDTO {
     private UUID tenantId;
     private UUID id;
     private String name;
@@ -32,67 +31,54 @@ public class BookDTO
     private Date publishDate;
     private Date priceDate;
 
-    public BookDTO()
-    {
+    public BookDTO() {
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public AuthorDTO getAuthor()
-    {
+    public AuthorDTO getAuthor() {
         return author;
     }
 
-    public void setAuthor(AuthorDTO author)
-    {
+    public void setAuthor(AuthorDTO author) {
         this.author = author;
     }
 
-    public Date getPublishDate()
-    {
+    public Date getPublishDate() {
         return publishDate;
     }
 
-    public void setPublishDate(Date publishDate)
-    {
+    public void setPublishDate(Date publishDate) {
         this.publishDate = publishDate;
     }
 
-    public Date getPriceDate()
-    {
+    public Date getPriceDate() {
         return priceDate;
     }
 
-    public void setPriceDate(Date priceDate)
-    {
+    public void setPriceDate(Date priceDate) {
         this.priceDate = priceDate;
     }
 }

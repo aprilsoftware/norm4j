@@ -25,8 +25,7 @@ import java.util.List;
 
 import org.norm4j.Join;
 
-public class TableMetadata
-{
+public class TableMetadata {
     private final Class<?> tableClass;
     private final String tableName;
     private final String schema;
@@ -38,8 +37,7 @@ public class TableMetadata
             String tableName,
             String schema,
             Class<?> idClass,
-            Join[] joins)
-    {
+            Join[] joins) {
         this.tableClass = tableClass;
 
         this.tableName = tableName;
@@ -53,46 +51,37 @@ public class TableMetadata
         this.columns = new ArrayList<>();
     }
 
-    public Class<?> getTableClass()
-    {
+    public Class<?> getTableClass() {
         return tableClass;
     }
 
-    public String getTableName()
-    {
+    public String getTableName() {
         return tableName;
     }
 
-    public String getSchema()
-    {
+    public String getSchema() {
         return schema;
     }
 
-    public Class<?> getIdClass()
-    {
+    public Class<?> getIdClass() {
         return idClass;
     }
 
-    public Join[] getJoins()
-    {
+    public Join[] getJoins() {
         return joins;
     }
 
-    public List<ColumnMetadata> getColumns()
-    {
+    public List<ColumnMetadata> getColumns() {
         return columns;
     }
 
-    public List<ColumnMetadata> getPrimaryKeys()
-    {
+    public List<ColumnMetadata> getPrimaryKeys() {
         List<ColumnMetadata> primaryKeys;
 
         primaryKeys = new ArrayList<>();
 
-        for (ColumnMetadata column : columns)
-        {
-            if (column.isPrimaryKey())
-            {
+        for (ColumnMetadata column : columns) {
+            if (column.isPrimaryKey()) {
                 primaryKeys.add(column);
             }
         }

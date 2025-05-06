@@ -27,10 +27,12 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Column
-{
+public @interface Column {
     String name() default "";
+
     boolean nullable() default true;
+
     String columnDefinition() default "";
+
     int length() default 255;
 }

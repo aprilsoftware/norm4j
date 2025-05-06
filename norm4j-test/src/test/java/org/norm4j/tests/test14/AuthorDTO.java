@@ -24,68 +24,56 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class AuthorDTO
-{
+public class AuthorDTO {
     private UUID tenantId;
     private UUID id;
     private String name;
     private List<Book> books;
     private List<UUID> bookIds;
 
-    public AuthorDTO()
-    {
+    public AuthorDTO() {
         books = new ArrayList<>();
 
         bookIds = new ArrayList<>();
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public List<Book> getBooks()
-    {
+    public List<Book> getBooks() {
         return books;
     }
 
-    public void setBooks(List<Book> books)
-    {
+    public void setBooks(List<Book> books) {
         this.books = books;
     }
 
-    public List<UUID> getBookIds()
-    {
+    public List<UUID> getBookIds() {
         return bookIds;
     }
 
-    public void setBookIds(List<UUID> bookIds)
-    {
+    public void setBookIds(List<UUID> bookIds) {
         this.bookIds = bookIds;
     }
 }

@@ -31,61 +31,47 @@ import org.norm4j.Reference;
 import org.norm4j.Table;
 
 @Table(name = "book", schema = "test4")
-@Join
-(
-    columns = "author_id", 
-    reference = @Reference(table = Author.class, 
-            columns = "id")
-)
-public class Book
-{
+@Join(columns = "author_id", reference = @Reference(table = Author.class, columns = "id"))
+public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
     private String name;
-    
+
     @Column(name = "author_id")
     private UUID authorId;
 
-    public Book()
-    {
+    public Book() {
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public UUID getAuthorId()
-    {
+    public UUID getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(UUID authorId)
-    {
+    public void setAuthorId(UUID authorId) {
         this.authorId = authorId;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -96,8 +82,7 @@ public class Book
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -109,12 +94,10 @@ public class Book
 
         Book other = (Book) obj;
 
-        if (id == null)
-        {
+        if (id == null) {
             if (other.id != null)
                 return false;
-        }
-        else if (!id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
 
         return true;

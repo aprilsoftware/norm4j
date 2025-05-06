@@ -27,8 +27,7 @@ import org.norm4j.Id;
 import org.norm4j.Table;
 
 @Table(name = "author", schema = "test2")
-public class Author
-{
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -36,33 +35,27 @@ public class Author
     @Column(nullable = false)
     private String name;
 
-    public Author()
-    {
+    public Author() {
     }
 
-    public int getId()
-    {
+    public int getId() {
         return id;
     }
 
-    public void setId(int id)
-    {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -73,8 +66,7 @@ public class Author
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 

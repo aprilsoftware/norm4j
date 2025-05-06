@@ -34,14 +34,12 @@ import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public class Query
-{
+public class Query {
     private final Map<Integer, Object> parameters;
     private final TableManager tableManager;
     private final String sql;
 
-    public Query(TableManager tableManager, String sql)
-    {
+    public Query(TableManager tableManager, String sql) {
         this.tableManager = tableManager;
 
         this.sql = sql;
@@ -49,8 +47,7 @@ public class Query
         parameters = new HashMap<>();
     }
 
-    public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType)
-    {
+    public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType) {
         Map<K, List<V>> map;
         List<Object[]> rows;
 
@@ -58,34 +55,28 @@ public class Query
 
         rows = getResultList(keyType, valueType);
 
-        for (Object[] row : rows)
-        {
+        for (Object[] row : rows) {
             List<V> values;
             V value;
             K key;
 
-            if (row.length != 2)
-            {
+            if (row.length != 2) {
                 throw new RuntimeException("Unexpected number of columns.");
             }
 
-            key = (K)row[0];
+            key = (K) row[0];
 
-            if (map.containsKey(key))
-            {
+            if (map.containsKey(key)) {
                 values = map.get(key);
-            }
-            else
-            {
+            } else {
                 values = new ArrayList<>();
 
                 map.put(key, values);
             }
 
-            value = (V)row[1];
+            value = (V) row[1];
 
-            if (value != null)
-            {
+            if (value != null) {
                 values.add(value);
             }
         }
@@ -93,8 +84,7 @@ public class Query
         return map;
     }
 
-    public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType)
-    {
+    public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType) {
         Map<K, V> map;
         List<Object[]> rows;
 
@@ -102,63 +92,50 @@ public class Query
 
         rows = getResultList(keyType, valueType);
 
-        for (Object[] row : rows)
-        {
-            if (row.length != 2)
-            {
+        for (Object[] row : rows) {
+            if (row.length != 2) {
                 throw new RuntimeException("Unexpected number of columns.");
             }
 
-            map.put((K)row[0], (V)row[1]);
+            map.put((K) row[0], (V) row[1]);
         }
 
         return map;
     }
 
-    public <T> List<T> getResultList(Class<T> type)
-    {
+    public <T> List<T> getResultList(Class<T> type) {
         List<Object[]> rows;
 
         if (tableManager.getMetadataManager()
-                                .getMetadata(type) == null)
-        {
+                .getMetadata(type) == null) {
             rows = getResultList();
-        }
-        else
-        {
-            rows = getResultList(new Class[] {type});
+        } else {
+            rows = getResultList(new Class[] { type });
         }
 
-        if (rows.isEmpty())
-        {
+        if (rows.isEmpty()) {
             return new ArrayList<>();
-        }
-        else
-        {
+        } else {
             List<T> objects;
 
             objects = new ArrayList<>();
 
-            for (Object[] row : rows)
-            {
+            for (Object[] row : rows) {
                 T value;
 
-                value = (T)row[0];
+                value = (T) row[0];
 
                 if (value != null &&
-                    type.isEnum())
-                {
-                    if (value instanceof Number)
-                    {
+                        type.isEnum()) {
+                    if (value instanceof Number) {
                         T[] constants;
                         int ordinal;
 
-                        ordinal = ((Number)value).intValue();
+                        ordinal = ((Number) value).intValue();
 
                         constants = type.getEnumConstants();
 
-                        if (ordinal < 0 || ordinal >= constants.length)
-                        {
+                        if (ordinal < 0 || ordinal >= constants.length) {
                             throw new IllegalArgumentException("Invalid ordinal ("
                                     + ordinal
                                     + ") for enum "
@@ -166,10 +143,8 @@ public class Query
                         }
 
                         objects.add(constants[ordinal]);
-                    }
-                    else
-                    {
-                        value = (T)Enum.valueOf((Class<? extends Enum>)type, value.toString());
+                    } else {
+                        value = (T) Enum.valueOf((Class<? extends Enum>) type, value.toString());
                     }
                 }
 
@@ -180,22 +155,18 @@ public class Query
         }
     }
 
-    public List<Object[]> getResultList(Class<?>... types)
-    {
+    public List<Object[]> getResultList(Class<?>... types) {
         try (Connection connection = tableManager.getDataSource().getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql))
-        {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             SQLDialect dialect;
 
             dialect = tableManager.getMetadataManager().getDialect(connection);
 
-            for (Map.Entry<Integer, Object> entry : parameters.entrySet())
-            {
+            for (Map.Entry<Integer, Object> entry : parameters.entrySet()) {
                 ps.setObject(entry.getKey(), entry.getValue());
             }
 
-            try (ResultSet rs = ps.executeQuery())
-            {
+            try (ResultSet rs = ps.executeQuery()) {
                 List<Object[]> rows;
                 int columnCount;
 
@@ -203,8 +174,7 @@ public class Query
 
                 columnCount = rs.getMetaData().getColumnCount();
 
-                while (rs.next())
-                {
+                while (rs.next()) {
                     List<Object> columns;
                     Object[] row;
                     int index;
@@ -213,65 +183,57 @@ public class Query
 
                     index = 1;
 
-                    for (Class<?> type : types)
-                    {
+                    for (Class<?> type : types) {
                         TableMetadata table;
                         Object record;
 
                         table = tableManager.getMetadataManager()
                                 .getMetadata(type);
 
-                        if (table == null)
-                        {
+                        if (table == null) {
                             columns.add(rs.getObject(index));
 
                             index++;
-                        }
-                        else
-                        {
+                        } else {
                             record = type.getDeclaredConstructor().newInstance();
 
-                            for (int i = 0; i < table.getColumns().size(); i++)
-                            {
+                            for (int i = 0; i < table.getColumns().size(); i++) {
                                 Object value;
-    
+
                                 value = rs.getObject(i + index);
-    
-                                if (value != null)
-                                {
+
+                                if (value != null) {
                                     ColumnMetadata column;
                                     String columnName;
                                     Field field;
-    
+
                                     columnName = rs.getMetaData().getColumnName(i + index);
-    
+
                                     column = table.getColumns().stream()
                                             .filter(c -> c.getColumnName().equalsIgnoreCase(columnName))
                                             .findFirst().get();
-    
+
                                     field = column.getField();
-    
+
                                     field.setAccessible(true);
-    
+
                                     field.set(record, dialect.fromSqlValue(column, value));
                                 }
                             }
-    
+
                             index += table.getColumns().size();
-    
+
                             columns.add(record);
                         }
                     }
 
-                    for (int i = index; i <= columnCount; i++)
-                    {
+                    for (int i = index; i <= columnCount; i++) {
                         columns.add(rs.getObject(i));
                     }
-                    
+
                     row = new Object[columns.size()];
 
-                    for (int i = 0; i < columns.size(); i++)
-                    {
+                    for (int i = 0; i < columns.size(); i++) {
                         row[i] = columns.get(i);
                     }
 
@@ -280,71 +242,57 @@ public class Query
 
                 return rows;
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Object[] getSingleResult(Class<?>... tableClasses)
-    {
+    public Object[] getSingleResult(Class<?>... tableClasses) {
         List<Object[]> list;
 
         list = getResultList(tableClasses);
 
-        if (list.isEmpty())
-        {
+        if (list.isEmpty()) {
             return null;
         }
 
         return list.get(0);
     }
 
-    public <T> T getSingleResult(Class<T> type)
-    {
+    public <T> T getSingleResult(Class<T> type) {
         List<T> list;
 
         list = getResultList(type);
 
-        if (list.isEmpty())
-        {
+        if (list.isEmpty()) {
             return null;
         }
 
         return list.get(0);
     }
 
-    public int executeUpdate()
-    {
+    public int executeUpdate() {
         try (Connection connection = tableManager.getDataSource().getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql))
-        {
-            for (Map.Entry<Integer, Object> entry : parameters.entrySet())
-            {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
+            for (Map.Entry<Integer, Object> entry : parameters.entrySet()) {
                 ps.setObject(entry.getKey(), entry.getValue());
             }
 
             return ps.executeUpdate();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Map<Integer, Object> getParameters()
-    {
+    public Map<Integer, Object> getParameters() {
         return parameters;
     }
 
-    public Object getParameter(int index)
-    {
+    public Object getParameter(int index) {
         return parameters.get(index);
     }
 
-    public Query setParameter(int index, Object value)
-    {
+    public Query setParameter(int index, Object value) {
         parameters.put(index, value);
 
         return this;

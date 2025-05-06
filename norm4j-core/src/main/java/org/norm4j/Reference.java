@@ -27,8 +27,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Reference
-{
+public @interface Reference {
     Class<?> table();
+
     String[] columns();
 }

@@ -29,71 +29,82 @@ import org.norm4j.Join;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public interface SQLDialect
-{
-    public boolean isDialect(String productName);
-    public boolean isTupleSupported();
-    public boolean isArraySupported();
-    public boolean isSequenceSupported();
-    public boolean isGeneratedKeysForSequenceSupported();
-    public String createForeignKeyName(TableMetadata table, 
-            TableMetadata referenceTable,
-            Join foreignKey);
-    public default String getTableName(TableMetadata table)
-    {
-        return getTableName(table.getSchema(), table.getTableName());
-    }
-    public String getTableName(String schema, String tableName);
-    public String getSequenceName(TableMetadata table, 
-            ColumnMetadata column);
-    public String createSequenceName(TableMetadata table, 
-            ColumnMetadata column);
-    public String createSequence(String schema, 
-            String sequenceName, 
-            int initialValue);
-    public String createTable(TableMetadata table);
-    public String createSequenceTable(String schema, 
-            String tableName, 
-            String pkColumnName, 
-            String valueColumnName);
-    public String alterTable(TableMetadata table, 
-            TableMetadata referenceTable,
-            Join foreignKey,
-            String foreignKeyName);
-    public boolean sequenceExists(Connection connection, 
-            String schema, 
-            String sequenceName);
-    public boolean tableExists(Connection connection, 
-            String schema, 
-            String tableName);
-    public PreparedStatement createPersistStatement(Connection connection, 
-            TableMetadata table);
-    public Object fromSqlValue(ColumnMetadata column, Object value);
-    public Object toSqlValue(ColumnMetadata column, Object value);
-    public String limitSelect(int offset, int limit);
+public interface SQLDialect {
+        public boolean isDialect(String productName);
 
-    public static SQLDialect detectDialect(Connection connection)
-    {
-        String productName;
+        public boolean isTupleSupported();
 
-        try
-        {
-            productName = connection.getMetaData()
-                .getDatabaseProductName().toLowerCase();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
+        public boolean isArraySupported();
+
+        public boolean isSequenceSupported();
+
+        public boolean isGeneratedKeysForSequenceSupported();
+
+        public String createForeignKeyName(TableMetadata table,
+                        TableMetadata referenceTable,
+                        Join foreignKey);
+
+        public default String getTableName(TableMetadata table) {
+                return getTableName(table.getSchema(), table.getTableName());
         }
 
-        for (SQLDialect dialect : ServiceLoader.load(SQLDialect.class))
-        {
-            if (dialect.isDialect(productName))
-            {
-                return dialect;
-            }
-        }
+        public String getTableName(String schema, String tableName);
 
-        throw new RuntimeException("No supported dialect for the product name.");
-    }
+        public String getSequenceName(TableMetadata table,
+                        ColumnMetadata column);
+
+        public String createSequenceName(TableMetadata table,
+                        ColumnMetadata column);
+
+        public String createSequence(String schema,
+                        String sequenceName,
+                        int initialValue);
+
+        public String createTable(TableMetadata table);
+
+        public String createSequenceTable(String schema,
+                        String tableName,
+                        String pkColumnName,
+                        String valueColumnName);
+
+        public String alterTable(TableMetadata table,
+                        TableMetadata referenceTable,
+                        Join foreignKey,
+                        String foreignKeyName);
+
+        public boolean sequenceExists(Connection connection,
+                        String schema,
+                        String sequenceName);
+
+        public boolean tableExists(Connection connection,
+                        String schema,
+                        String tableName);
+
+        public PreparedStatement createPersistStatement(Connection connection,
+                        TableMetadata table);
+
+        public Object fromSqlValue(ColumnMetadata column, Object value);
+
+        public Object toSqlValue(ColumnMetadata column, Object value);
+
+        public String limitSelect(int offset, int limit);
+
+        public static SQLDialect detectDialect(Connection connection) {
+                String productName;
+
+                try {
+                        productName = connection.getMetaData()
+                                        .getDatabaseProductName().toLowerCase();
+                } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                }
+
+                for (SQLDialect dialect : ServiceLoader.load(SQLDialect.class)) {
+                        if (dialect.isDialect(productName)) {
+                                return dialect;
+                        }
+                }
+
+                throw new RuntimeException("No supported dialect for the product name.");
+        }
 }

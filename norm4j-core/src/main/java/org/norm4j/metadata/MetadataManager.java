@@ -40,8 +40,7 @@ import java.util.stream.Collectors;
 
 import static org.norm4j.metadata.helpers.TableCreationHelper.validateJoins;
 
-public class MetadataManager
-{
+public class MetadataManager {
     private final Map<Class<?>, TableMetadata> metadataMap;
     private SQLDialect dialect;
     private final Map<FieldGetter<?, ?>, FieldGetterMetadata> getterCache = new ConcurrentHashMap<>();
@@ -53,42 +52,33 @@ public class MetadataManager
             SequenceGenerator.class,
             TableGenerator.class,
             Temporal.class,
-            Enumerated.class
-    );
+            Enumerated.class);
 
-    public MetadataManager()
-    {
+    public MetadataManager() {
         metadataMap = new HashMap<>();
     }
 
-    public SQLDialect getDialect()
-    {
+    public SQLDialect getDialect() {
         return dialect;
     }
 
-    public SQLDialect getDialect(Connection connection)
-    {
-        if (dialect == null)
-        {
+    public SQLDialect getDialect(Connection connection) {
+        if (dialect == null) {
             dialect = SQLDialect.detectDialect(connection);
         }
 
         return dialect;
     }
 
-    public void registerPackage(String packageName)
-    {
-        for (Class c : getPackageClasses(packageName))
-        {
-            if (c.isAnnotationPresent(Table.class))
-            {
+    public void registerPackage(String packageName) {
+        for (Class c : getPackageClasses(packageName)) {
+            if (c.isAnnotationPresent(Table.class)) {
                 registerTable(c);
             }
         }
     }
 
-    private List<Class> getPackageClasses(String packageName)
-    {
+    private List<Class> getPackageClasses(String packageName) {
         InputStream inputStream;
         BufferedReader reader;
 
@@ -102,22 +92,17 @@ public class MetadataManager
                 .map(line -> getClass(line, packageName))
                 .collect(Collectors.toList());
     }
- 
-    private Class getClass(String className, String packageName)
-    {
-        try
-        {
+
+    private Class getClass(String className, String packageName) {
+        try {
             return Class.forName(packageName + "."
                     + className.substring(0, className.lastIndexOf('.')));
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void registerTable(Class<?> tableClass)
-    {
+    public void registerTable(Class<?> tableClass) {
         if (!tableClass.isAnnotationPresent(Table.class)) {
             throw new IllegalArgumentException("Class " + tableClass.getName()
                     + " is not annotated with @Table");
@@ -141,8 +126,7 @@ public class MetadataManager
                 tableName,
                 schema,
                 idClass,
-                joins
-        );
+                joins);
 
         for (Field field : tableClass.getDeclaredFields()) {
             Map<Class<?>, Object> annotations = new HashMap<>();
@@ -160,20 +144,17 @@ public class MetadataManager
         metadataMap.put(tableClass, tableMetadata);
     }
 
-    public TableMetadata getMetadata(Class<?> tableClass)
-    {
+    public TableMetadata getMetadata(Class<?> tableClass) {
         return metadataMap.get(tableClass);
     }
 
-    public ColumnMetadata getMetadata(Class<?> tableClass, String columnName)
-    {
+    public ColumnMetadata getMetadata(Class<?> tableClass, String columnName) {
         TableMetadata tableMetadata;
 
         tableMetadata = getMetadata(tableClass);
 
-        if (tableMetadata == null)
-        {
-            throw new IllegalArgumentException("No metadata found for class " 
+        if (tableMetadata == null) {
+            throw new IllegalArgumentException("No metadata found for class "
                     + tableClass.getName());
         }
 
@@ -183,15 +164,13 @@ public class MetadataManager
                 .orElseThrow(() -> new NoSuchElementException("Column not found: " + columnName));
     }
 
-    public List<ColumnMetadata> getMetadata(Class<?> tableClass, String[] columnNames)
-    {
+    public List<ColumnMetadata> getMetadata(Class<?> tableClass, String[] columnNames) {
         return Arrays.stream(columnNames)
                 .map(name -> getMetadata(tableClass, name))
                 .collect(Collectors.toList());
     }
 
-    public <T, R> ColumnMetadata getMetadata(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> ColumnMetadata getMetadata(FieldGetter<T, R> fieldGetter) {
         FieldGetterMetadata fieldGetterMetadata;
         TableMetadata tableMetadata;
 
@@ -199,9 +178,8 @@ public class MetadataManager
 
         tableMetadata = getMetadata(fieldGetterMetadata.getTableClass());
 
-        if (tableMetadata == null)
-        {
-            throw new IllegalArgumentException("No metadata found for class " 
+        if (tableMetadata == null) {
+            throw new IllegalArgumentException("No metadata found for class "
                     + fieldGetterMetadata.getTableClass().getName());
         }
 
@@ -212,44 +190,33 @@ public class MetadataManager
                         + fieldGetterMetadata.getFieldName()));
     }
 
-    public <T, R> boolean compareColumns(TableMetadata table, 
-            Join join, 
-            FieldGetter<T, R>... fieldGetters)
-    {
-        for (FieldGetter<T, R> fieldGetter : fieldGetters)
-        {
+    public <T, R> boolean compareColumns(TableMetadata table,
+            Join join,
+            FieldGetter<T, R>... fieldGetters) {
+        for (FieldGetter<T, R> fieldGetter : fieldGetters) {
             ColumnMetadata column;
 
             column = getMetadata(fieldGetter);
 
-            if (table.getTableName().equals(column.getTable().getTableName()))
-            {
-                if (!Arrays.asList(join.columns()).contains(column.getColumnName()))
-                {
+            if (table.getTableName().equals(column.getTable().getTableName())) {
+                if (!Arrays.asList(join.columns()).contains(column.getColumnName())) {
                     return false;
                 }
-            }
-            else
-            {
+            } else {
                 TableMetadata referenceTableMetadata;
 
                 referenceTableMetadata = getMetadata(join.reference().table());
 
-                if (referenceTableMetadata == null)
-                {
-                    throw new IllegalArgumentException("No metadata found for class " 
+                if (referenceTableMetadata == null) {
+                    throw new IllegalArgumentException("No metadata found for class "
                             + join.reference().table().getName());
                 }
 
-                if (referenceTableMetadata.getTableName().equals(column.getTable().getTableName()))
-                {
-                    if (!Arrays.asList(join.reference().columns()).contains(column.getColumnName()))
-                    {
+                if (referenceTableMetadata.getTableName().equals(column.getTable().getTableName())) {
+                    if (!Arrays.asList(join.reference().columns()).contains(column.getColumnName())) {
                         return false;
                     }
-                }
-                else
-                {
+                } else {
                     return false;
                 }
             }
@@ -258,8 +225,7 @@ public class MetadataManager
         return true;
     }
 
-    public void createTables(DataSource dataSource)
-    {
+    public void createTables(DataSource dataSource) {
         try (Connection connection = dataSource.getConnection()) {
             SQLDialect dialect = getDialect(connection);
             TableCreationHelper helper = new TableCreationHelper(metadataMap, this::executeUpdate);
@@ -288,8 +254,7 @@ public class MetadataManager
         }
     }
 
-    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter)
-    {
+    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
         return FieldGetterMetadata.extractMetadata(getter);
     }
 }

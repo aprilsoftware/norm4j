@@ -33,8 +33,7 @@ import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
-public class Test13 extends BaseTest
-{
+public class Test13 extends BaseTest {
     private TableManager tableManager;
     private Tenant tenant;
     private Author author1;
@@ -42,13 +41,11 @@ public class Test13 extends BaseTest
     private Book book1;
     private Book book2;
 
-    public Test13()
-    {
+    public Test13() {
     }
 
     @BeforeEach
-    public void setup()
-    {
+    public void setup() {
         MetadataManager metadataManager;
 
         dropTable(null, "book");
@@ -108,8 +105,7 @@ public class Test13 extends BaseTest
     }
 
     @Test
-    public void test13()
-    {
+    public void test13() {
         List<Book> books;
         List<Author> authors;
 
@@ -117,7 +113,7 @@ public class Test13 extends BaseTest
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class, Book::getAuthorId)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(2, books.size());
 
@@ -125,7 +121,7 @@ public class Test13 extends BaseTest
                 .select(Book.class)
                 .from(Book.class)
                 .innerJoin(Author.class, Book::getSecondAuthorId)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(1, books.size());
 
@@ -136,7 +132,7 @@ public class Test13 extends BaseTest
                 .from(Author.class)
                 .innerJoin(Book.class, Author::getId)
                 .groupBy(Author.class)
-            .getResultList(Author.class);
+                .getResultList(Author.class);
 
         assertEquals(1, authors.size());
 
@@ -147,7 +143,7 @@ public class Test13 extends BaseTest
                 .from(Author.class)
                 .innerJoin(Book.class, Book::getSecondAuthorId)
                 .groupBy(Author.class)
-            .getResultList(Author.class);
+                .getResultList(Author.class);
 
         assertEquals(1, authors.size());
 
@@ -177,8 +173,7 @@ public class Test13 extends BaseTest
     }
 
     @AfterEach
-    void cleanup()
-    {
+    void cleanup() {
         dropTable(null, "book");
         dropTable(null, "author");
         dropTable(null, "tenant");

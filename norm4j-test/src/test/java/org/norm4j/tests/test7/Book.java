@@ -39,22 +39,11 @@ import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 
 @Table(name = "book")
-@Join
-(
-    columns = "tenant_id", 
-    reference = @Reference(table = Tenant.class, 
-            columns = "id")
-)
-@Join
-(
-    name = "test_ref",
-    columns = {"tenant_id", "author_id"}, 
-    reference = @Reference(table = Author.class, 
-            columns = {"tenant_id", "id"})
-)
+@Join(columns = "tenant_id", reference = @Reference(table = Tenant.class, columns = "id"))
+@Join(name = "test_ref", columns = { "tenant_id",
+        "author_id" }, reference = @Reference(table = Author.class, columns = { "tenant_id", "id" }))
 @IdClass(value = RowId.class)
-public class Book
-{
+public class Book {
     @Id
     @Column(name = "tenant_id")
     private UUID tenantId;
@@ -65,7 +54,7 @@ public class Book
 
     @Column(nullable = false)
     private String name;
-    
+
     @Column(name = "author_id")
     private UUID authorId;
 
@@ -85,103 +74,83 @@ public class Book
     @Column(length = 255)
     private String[] ids2;
 
-    public Book()
-    {
+    public Book() {
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public UUID getAuthorId()
-    {
+    public UUID getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(UUID authorId)
-    {
+    public void setAuthorId(UUID authorId) {
         this.authorId = authorId;
     }
 
-    public BookType getBookType()
-    {
+    public BookType getBookType() {
         return bookType;
     }
 
-    public void setBookType(BookType bookType)
-    {
+    public void setBookType(BookType bookType) {
         this.bookType = bookType;
     }
 
-    public Date getPublishDate()
-    {
+    public Date getPublishDate() {
         return publishDate;
     }
 
-    public void setPublishDate(Date publishDate)
-    {
+    public void setPublishDate(Date publishDate) {
         this.publishDate = publishDate;
     }
 
-    public float[] getEmbedding()
-    {
+    public float[] getEmbedding() {
         return embedding;
     }
 
-    public void setEmbedding(float[] embedding)
-    {
+    public void setEmbedding(float[] embedding) {
         this.embedding = embedding;
     }
 
-    public int[] getIds1()
-    {
+    public int[] getIds1() {
         return ids1;
     }
 
-    public void setIds1(int[] ids1)
-    {
+    public void setIds1(int[] ids1) {
         this.ids1 = ids1;
     }
 
-    public String[] getIds2()
-    {
+    public String[] getIds2() {
         return ids2;
     }
 
-    public void setIds2(String[] ids2)
-    {
+    public void setIds2(String[] ids2) {
         this.ids2 = ids2;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -194,8 +163,7 @@ public class Book
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -207,20 +175,16 @@ public class Book
 
         Book other = (Book) obj;
 
-        if (tenantId == null)
-        {
+        if (tenantId == null) {
             if (other.tenantId != null)
                 return false;
-        }
-        else if (!tenantId.equals(other.tenantId))
+        } else if (!tenantId.equals(other.tenantId))
             return false;
 
-        if (id == null)
-        {
+        if (id == null) {
             if (other.id != null)
                 return false;
-        }
-        else if (!id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
 
         return true;

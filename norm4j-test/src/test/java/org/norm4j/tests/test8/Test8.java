@@ -31,15 +31,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class Test8 extends BaseTest
-{
-    public Test8()
-    {
+public class Test8 extends BaseTest {
+    public Test8() {
     }
 
     @Test
-    public void test8()
-    {
+    public void test8() {
         MetadataManager metadataManager;
         TableManager tableManager;
         List<Object[]> objects;
@@ -50,7 +47,6 @@ public class Test8 extends BaseTest
         Book book1;
         Book book2;
         Query query;
-        
 
         dropTable(null, "book");
         dropTable(null, "author");
@@ -107,7 +103,7 @@ public class Test8 extends BaseTest
                 .orderBy(Book::getName)
                 .orderBy(Author::getName)
                 .limit(1)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(1, books.size());
 
@@ -121,31 +117,24 @@ public class Test8 extends BaseTest
                 .innerJoin(Author.class, "a")
                 .orderBy(Book::getName, "b")
                 .orderBy(Author::getName, "a")
-            .getResultList(Book.class, Author.class);
+                .getResultList(Book.class, Author.class);
 
         assertEquals(1, objects.size());
 
-        for (Object[] row : objects)
-        {
+        for (Object[] row : objects) {
             assertEquals(3, row.length);
 
-            for (int i = 0; i < row.length; i++)
-            {
-                if (i == 0)
-                {
+            for (int i = 0; i < row.length; i++) {
+                if (i == 0) {
                     assertInstanceOf(Book.class, row[i]);
-                }
-                else if (i == 1)
-                {
+                } else if (i == 1) {
                     assertInstanceOf(Author.class, row[i]);
-                }
-                else if (i == 2)
-                {
+                } else if (i == 2) {
                     assertInstanceOf(String.class, row[i]);
                 }
             }
         }
-        
+
         sql = new StringBuilder();
         sql.append("select * from book ");
         sql.append("where tenant_id = ? and id = ?");
@@ -174,18 +163,13 @@ public class Test8 extends BaseTest
 
         assertEquals(1, objects.size());
 
-        for (Object[] row : objects)
-        {
+        for (Object[] row : objects) {
             assertEquals(2, row.length);
 
-            for (int i = 0; i < row.length; i++)
-            {
-                if (i == 0)
-                {
+            for (int i = 0; i < row.length; i++) {
+                if (i == 0) {
                     assertInstanceOf(Book.class, row[i]);
-                }
-                else if (i == 1)
-                {
+                } else if (i == 1) {
                     assertInstanceOf(Author.class, row[i]);
                 }
             }
@@ -193,7 +177,7 @@ public class Test8 extends BaseTest
 
         tableManager.remove(book1);
         tableManager.remove(book2);
-        tableManager.remove(Author.class, 
+        tableManager.remove(Author.class,
                 new RowId(author.getTenantId(), author.getId()));
 
         dropTable(null, "book");

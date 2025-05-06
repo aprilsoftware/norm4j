@@ -24,20 +24,18 @@ import java.util.List;
 
 import org.norm4j.FieldGetter;
 
-public class RelationMapping<P, S, T>
-{
+public class RelationMapping<P, S, T> {
     private final FieldGetter<P, ?> targetGetter;
     private final Class<S> sourceClass;
     private final Class<T> targetClass;
     private final List<FieldMapping<S, T>> fieldMappings;
     private final List<RelationMapping<T, ?, ?>> childRelationMappings;
-    
+
     public RelationMapping(FieldGetter<P, ?> targetGetter,
             Class<S> sourceClass,
             Class<T> targetClass,
             List<FieldMapping<S, T>> fieldMappings,
-            List<RelationMapping<?, ?, ?>> childRelationMappings)
-    {
+            List<RelationMapping<?, ?, ?>> childRelationMappings) {
         this.targetGetter = targetGetter;
 
         this.sourceClass = sourceClass;
@@ -47,34 +45,28 @@ public class RelationMapping<P, S, T>
         this.fieldMappings = fieldMappings;
 
         @SuppressWarnings("unchecked")
-        List<RelationMapping<T, ?, ?>> relations = (List<RelationMapping<T, ?, ?>>)
-                (List<?>) childRelationMappings;
+        List<RelationMapping<T, ?, ?>> relations = (List<RelationMapping<T, ?, ?>>) (List<?>) childRelationMappings;
 
         this.childRelationMappings = relations;
     }
 
-    public FieldGetter<P, ?> getTargetGetter()
-    {
+    public FieldGetter<P, ?> getTargetGetter() {
         return targetGetter;
     }
 
-    public Class<S> getSourceClass()
-    {
+    public Class<S> getSourceClass() {
         return sourceClass;
     }
 
-    public Class<T> getTargetClass()
-    {
+    public Class<T> getTargetClass() {
         return targetClass;
     }
 
-    public List<FieldMapping<S, T>> getFieldMappings()
-    {
+    public List<FieldMapping<S, T>> getFieldMappings() {
         return fieldMappings;
     }
 
-    public List<RelationMapping<T, ?, ?>> getChildRelationMappings()
-    {
+    public List<RelationMapping<T, ?, ?>> getChildRelationMappings() {
         return childRelationMappings;
     }
 }

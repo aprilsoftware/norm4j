@@ -20,8 +20,7 @@
  */
 package org.norm4j;
 
-public enum ArrayType
-{
+public enum ArrayType {
     Array,
     Vector
 }

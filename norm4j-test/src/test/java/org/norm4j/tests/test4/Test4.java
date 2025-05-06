@@ -27,15 +27,12 @@ import org.norm4j.tests.BaseTest;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class Test4 extends BaseTest
-{
-    public Test4()
-    {
+public class Test4 extends BaseTest {
+    public Test4() {
     }
 
     @Test
-    public void test4()
-    {
+    public void test4() {
         MetadataManager metadataManager;
         TableManager tableManager;
         Author author;

@@ -62,8 +62,7 @@ public class TableCreationHelper {
                 }
 
                 TableIdGenerator idGenerator = new TableIdGenerator(
-                        (TableGenerator) column.getAnnotations().get(TableGenerator.class)
-                );
+                        (TableGenerator) column.getAnnotations().get(TableGenerator.class));
 
                 String generatorTableName = dialect.getTableName(idGenerator.getSchema(), idGenerator.getTable());
 
@@ -76,8 +75,7 @@ public class TableCreationHelper {
                             idGenerator.getSchema(),
                             idGenerator.getTable(),
                             idGenerator.getPkColumnName(),
-                            idGenerator.getValueColumnName()
-                    );
+                            idGenerator.getValueColumnName());
                     sqlExecutor.execute(connection, sql);
                 }
 
@@ -100,7 +98,7 @@ public class TableCreationHelper {
     }
 
     public void createTablesAndSequences(Connection connection, SQLDialect dialect,
-                                         List<TableMetadata> existingTables) throws SQLException {
+            List<TableMetadata> existingTables) throws SQLException {
         for (TableMetadata tableMetadata : metadataMap.values()) {
             if (tableExists(tableMetadata, existingTables)) {
                 continue;
@@ -118,7 +116,7 @@ public class TableCreationHelper {
     }
 
     public void createSequencesForTable(Connection connection, SQLDialect dialect,
-                                        TableMetadata tableMetadata) throws SQLException {
+            TableMetadata tableMetadata) throws SQLException {
         for (ColumnMetadata column : tableMetadata.getColumns()) {
             if (!column.getAnnotations().containsKey(GeneratedValue.class)) {
                 continue;
@@ -135,13 +133,13 @@ public class TableCreationHelper {
                 sqlExecutor.execute(connection, dialect.createSequence(
                         sequenceMetadata.schema,
                         sequenceMetadata.name,
-                        sequenceMetadata.initialValue
-                ));
+                        sequenceMetadata.initialValue));
             }
         }
     }
 
-    private SequenceMetadata getSequenceMetadataInfo(ColumnMetadata column, SQLDialect dialect, TableMetadata tableMetadata) {
+    private SequenceMetadata getSequenceMetadataInfo(ColumnMetadata column, SQLDialect dialect,
+            TableMetadata tableMetadata) {
         String schema = "";
         String sequenceName = "";
         int initialValue = 1;
@@ -163,7 +161,7 @@ public class TableCreationHelper {
     }
 
     public void addForeignKeyConstraints(Connection connection, SQLDialect dialect,
-                                         List<TableMetadata> existingTables) throws SQLException {
+            List<TableMetadata> existingTables) throws SQLException {
         for (Map.Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet()) {
             TableMetadata tableMetadata = metadataMap.get(entry.getKey());
             Map<String, List<Join>> foreignKeyMap = new HashMap<>();
@@ -181,19 +179,18 @@ public class TableCreationHelper {
                 }
 
                 if (join.name().isEmpty()) {
-                        foreignKeyName =  dialect.createForeignKeyName(tableMetadata, 
-                        metadataMap.get(join.reference().table()), 
-                        join);
+                    foreignKeyName = dialect.createForeignKeyName(tableMetadata,
+                            metadataMap.get(join.reference().table()),
+                            join);
                 } else {
                     namedForeignKeys.add(join);
 
                     continue;
                 }
-            
+
                 if (foreignKeyMap.containsKey(foreignKeyName)) {
                     foreignKeyMap.get(foreignKeyName).add(join);
-                }
-                else {
+                } else {
                     List<Join> foreignKeys = new ArrayList<>();
 
                     foreignKeys.add(join);
@@ -211,8 +208,7 @@ public class TableCreationHelper {
                             tableMetadata,
                             metadataMap.get(foreignKey.reference().table()),
                             foreignKey,
-                            foreignKey.name()
-                    ));
+                            foreignKey.name()));
                 }
             }
 
@@ -226,8 +222,7 @@ public class TableCreationHelper {
                             tableMetadata,
                             metadataMap.get(join.reference().table()),
                             join,
-                            foreignKeyName
-                    ));
+                            foreignKeyName));
                 } else {
                     for (int i = 0; i < foreignKeys.size(); i++) {
                         Join join = foreignKeys.get(i);
@@ -236,8 +231,7 @@ public class TableCreationHelper {
                                 tableMetadata,
                                 metadataMap.get(join.reference().table()),
                                 join,
-                                foreignKeyName + "_" + (i + 1)
-                        ));
+                                foreignKeyName + "_" + (i + 1)));
                     }
                 }
             }
@@ -256,12 +250,14 @@ public class TableCreationHelper {
     }
 
     public static String decapitalize(String name) {
-        if (name == null || name.isEmpty()) return name;
+        if (name == null || name.isEmpty())
+            return name;
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
     // Helper record to simplify sequence information handling
     private record SequenceMetadata(String schema,
-                                    String name,
-                                    int initialValue) {}
+            String name,
+            int initialValue) {
+    }
 }

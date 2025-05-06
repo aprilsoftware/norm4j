@@ -22,28 +22,23 @@ package org.norm4j;
 
 import org.norm4j.metadata.TableMetadata;
 
-public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder>
-{
+public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder> {
     private final StringBuilder fromClause;
 
-    public DeleteQueryBuilder(TableManager tableManager)
-    {
+    public DeleteQueryBuilder(TableManager tableManager) {
         super(tableManager);
 
         fromClause = new StringBuilder();
     }
 
-    protected DeleteQueryBuilder self()
-    {
+    protected DeleteQueryBuilder self() {
         return this;
     }
 
-    public DeleteQueryBuilder from(Class<?> tableClass)
-    {
+    public DeleteQueryBuilder from(Class<?> tableClass) {
         TableMetadata table;
 
-        if (!fromClause.isEmpty())
-        {
+        if (!fromClause.isEmpty()) {
             throw new RuntimeException("from(...) must be called only once.");
         }
 
@@ -55,8 +50,7 @@ public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder>
         return this;
     }
 
-    public String build()
-    {
+    public String build() {
         StringBuilder statement;
 
         statement = new StringBuilder();
@@ -64,22 +58,19 @@ public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder>
         statement.append("DELETE FROM ");
         statement.append(fromClause.toString());
 
-        if (!getWhereClause().isEmpty())
-        {
+        if (!getWhereClause().isEmpty()) {
             statement.append(getWhereClause().toString());
         }
 
         return statement.toString();
     }
 
-    public int executeUpdate()
-    {
+    public int executeUpdate() {
         Query query;
 
         query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < getParameters().size(); i++)
-        {
+        for (int i = 0; i < getParameters().size(); i++) {
             query.setParameter(i + 1, getParameters().get(i));
         }
 

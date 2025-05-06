@@ -36,8 +36,7 @@ import org.norm4j.mappings.RecordMapperBuilder;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
-public class Test14 extends BaseTest
-{
+public class Test14 extends BaseTest {
     private TableManager tableManager;
     private Tenant tenant;
     private Author author1;
@@ -45,13 +44,11 @@ public class Test14 extends BaseTest
     private Book book1;
     private Book book2;
 
-    public Test14()
-    {
+    public Test14() {
     }
 
     @BeforeEach
-    public void setup()
-    {
+    public void setup() {
         MetadataManager metadataManager;
 
         dropTable(null, "book");
@@ -110,8 +107,7 @@ public class Test14 extends BaseTest
     }
 
     @Test
-    public void test14()
-    {
+    public void test14() {
         RecordMapper<Book, BookDTO> bookMapper;
         RecordMapper<Author, AuthorDTO> authorMapper;
         List<BookDTO> booksDTO;
@@ -120,7 +116,7 @@ public class Test14 extends BaseTest
         BookDTO bookDTO;
 
         // basic mapping
-        authorDTO = RecordMapper.from(Author.class, 
+        authorDTO = RecordMapper.from(Author.class,
                 AuthorDTO.class).map(author1);
 
         assertEquals(true, authorDTO.getId().equals(author1.getId()));
@@ -131,8 +127,8 @@ public class Test14 extends BaseTest
                 .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
                 .endJoin()
                 .join(AuthorDTO::getBookIds, Book.class, UUID.class)
-                    .map(Book::getId).toObject()
-            .build(tableManager);
+                .map(Book::getId).toObject()
+                .build(tableManager);
 
         authorDTO = authorMapper.map(author1);
 
@@ -147,10 +143,10 @@ public class Test14 extends BaseTest
         // bookMapper
         bookMapper = RecordMapperBuilder.from(Book.class, BookDTO.class)
                 .join(BookDTO::getAuthor, Author.class, AuthorDTO.class)
-                    .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
-                    .endJoin()
+                .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
                 .endJoin()
-            .build(tableManager);
+                .endJoin()
+                .build(tableManager);
 
         bookDTO = bookMapper.map(book1);
 
@@ -159,14 +155,13 @@ public class Test14 extends BaseTest
         books = tableManager.createSelectQueryBuilder()
                 .select()
                 .from(Book.class)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         booksDTO = bookMapper.mapList(books);
 
         assertEquals(2, booksDTO.size());
 
-        for (BookDTO b : booksDTO)
-        {
+        for (BookDTO b : booksDTO) {
             assertEquals(2, b.getAuthor().getBooks().size());
 
             assertEquals(0, b.getAuthor().getBookIds().size());
@@ -174,8 +169,7 @@ public class Test14 extends BaseTest
     }
 
     @AfterEach
-    void cleanup()
-    {
+    void cleanup() {
         dropTable(null, "book");
         dropTable(null, "author");
         dropTable(null, "tenant");

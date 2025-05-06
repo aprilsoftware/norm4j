@@ -33,17 +33,14 @@ import org.norm4j.TableManager;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.tests.BaseTest;
 
-public class Test11 extends BaseTest
-{
+public class Test11 extends BaseTest {
     private TableManager tableManager;
 
-    public Test11()
-    {
+    public Test11() {
     }
 
     @BeforeEach
-    public void setup()
-    {
+    public void setup() {
         MetadataManager metadataManager;
         Tenant tenant;
         Author author;
@@ -99,8 +96,7 @@ public class Test11 extends BaseTest
     }
 
     @Test
-    public void test11()
-    {
+    public void test11() {
         List<Book> books;
 
         books = tableManager.createSelectQueryBuilder()
@@ -108,7 +104,7 @@ public class Test11 extends BaseTest
                 .from(Book.class)
                 .where(Book::getPublishDate, "<>", new Date())
                 .orderByDesc(Book::getName)
-            .getResultList(Book.class);
+                .getResultList(Book.class);
 
         assertEquals(0, books.size());
 
@@ -117,15 +113,14 @@ public class Test11 extends BaseTest
                 .from(Book.class)
                 .where(Book::getPriceDate, "<>", new Date())
                 .and(q -> q.condition(Book::getPriceDate, ">=", new Date())
-                    .or(Functions.coalesce(new Date()), "is", (Object)null))
-            .getResultList(Book.class);
+                        .or(Functions.coalesce(new Date()), "is", (Object) null))
+                .getResultList(Book.class);
 
         assertEquals(0, books.size());
     }
 
     @AfterEach
-    void cleanup()
-    {
+    void cleanup() {
         dropTable(null, "book");
         dropTable(null, "author");
         dropTable(null, "tenant");

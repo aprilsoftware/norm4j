@@ -32,15 +32,9 @@ import org.norm4j.Reference;
 import org.norm4j.Table;
 
 @Table(name = "author")
-@Join
-(
-    columns = "tenant_id", 
-    reference = @Reference(table = Tenant.class, 
-            columns = "id")
-)
+@Join(columns = "tenant_id", reference = @Reference(table = Tenant.class, columns = "id"))
 @IdClass(value = RowId.class)
-public class Author
-{
+public class Author {
     @Id
     @Column(name = "tenant_id")
     private UUID tenantId;
@@ -52,43 +46,35 @@ public class Author
     @Column(nullable = false)
     private String name;
 
-    public Author()
-    {
+    public Author() {
     }
 
-    public UUID getTenantId()
-    {
+    public UUID getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(UUID tenantId)
-    {
+    public void setTenantId(UUID tenantId) {
         this.tenantId = tenantId;
     }
 
-    public UUID getId()
-    {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id)
-    {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
 
         int result = 1;
@@ -101,8 +87,7 @@ public class Author
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
 
@@ -114,20 +99,16 @@ public class Author
 
         Author other = (Author) obj;
 
-        if (tenantId == null)
-        {
+        if (tenantId == null) {
             if (other.tenantId != null)
                 return false;
-        }
-        else if (!tenantId.equals(other.tenantId))
+        } else if (!tenantId.equals(other.tenantId))
             return false;
 
-        if (id == null)
-        {
+        if (id == null) {
             if (other.id != null)
                 return false;
-        }
-        else if (!id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
 
         return true;

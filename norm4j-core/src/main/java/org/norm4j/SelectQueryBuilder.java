@@ -27,8 +27,7 @@ import java.util.Map;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
-{
+public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder> {
     private final List<FromClauseTable> fromClauseTables;
     private final StringBuilder selectClause;
     private final StringBuilder fromClause;
@@ -37,8 +36,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
     private int offset;
     private int limit;
 
-    public SelectQueryBuilder(TableManager tableManager)
-    {
+    public SelectQueryBuilder(TableManager tableManager) {
         super(tableManager);
 
         fromClauseTables = new ArrayList<>();
@@ -52,15 +50,12 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         groupByClause = new StringBuilder();
     }
 
-    protected SelectQueryBuilder self()
-    {
+    protected SelectQueryBuilder self() {
         return this;
     }
 
-    public SelectQueryBuilder count()
-    {
-        if (!selectClause.isEmpty())
-        {
+    public SelectQueryBuilder count() {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -69,22 +64,18 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter) {
         return count(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter, String alias)
-    {
+    public <T, R> SelectQueryBuilder count(FieldGetter<T, R> fieldGetter, String alias) {
         appendAggregateFunction(fieldGetter, alias, "count");
 
         return this;
     }
 
-    public <T, R> SelectQueryBuilder count(SelectQueryBuilder builder)
-    {
-        if (!selectClause.isEmpty())
-        {
+    public <T, R> SelectQueryBuilder count(SelectQueryBuilder builder) {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -95,65 +86,55 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter) {
         return sum(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter, String alias)
-    {
+    public <T, R> SelectQueryBuilder sum(FieldGetter<T, R> fieldGetter, String alias) {
         appendAggregateFunction(fieldGetter, alias, "sum");
 
         return this;
     }
 
-    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter) {
         return avg(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter, String alias)
-    {
+    public <T, R> SelectQueryBuilder avg(FieldGetter<T, R> fieldGetter, String alias) {
         appendAggregateFunction(fieldGetter, alias, "avg");
 
         return this;
     }
 
-    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter) {
         return min(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter, String alias)
-    {
+    public <T, R> SelectQueryBuilder min(FieldGetter<T, R> fieldGetter, String alias) {
         appendAggregateFunction(fieldGetter, alias, "min");
 
         return this;
     }
 
-    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter) {
         return max(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter, String alias)
-    {
+    public <T, R> SelectQueryBuilder max(FieldGetter<T, R> fieldGetter, String alias) {
         appendAggregateFunction(fieldGetter, alias, "max");
 
         return this;
     }
 
-    private <T, R> void appendAggregateFunction(FieldGetter<T, R> fieldGetter, 
-            String alias, 
-            String aggregateFunction)
-    {
+    private <T, R> void appendAggregateFunction(FieldGetter<T, R> fieldGetter,
+            String alias,
+            String aggregateFunction) {
         ColumnMetadata column;
 
         column = getTableManager().getMetadataManager()
                 .getMetadata(fieldGetter);
 
-        if (!selectClause.isEmpty())
-        {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -165,10 +146,8 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         selectClause.append(")");
     }
 
-    public SelectQueryBuilder select()
-    {
-        if (!selectClause.isEmpty())
-        {
+    public SelectQueryBuilder select() {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -177,15 +156,12 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter) {
         return select(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter, String alias)
-    {
-        if (!selectClause.isEmpty())
-        {
+    public <T, R> SelectQueryBuilder select(FieldGetter<T, R> fieldGetter, String alias) {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -194,21 +170,17 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder select(Class<?> tableClass)
-    {
+    public SelectQueryBuilder select(Class<?> tableClass) {
         return select(tableClass, null);
     }
 
-    public SelectQueryBuilder select(Class<?> tableClass, String alias)
-    {
+    public SelectQueryBuilder select(Class<?> tableClass, String alias) {
         TableMetadata table;
 
         table = getTable(tableClass);
 
-        for (ColumnMetadata column : table.getColumns())
-        {
-            if (!selectClause.isEmpty())
-            {
+        for (ColumnMetadata column : table.getColumns()) {
+            if (!selectClause.isEmpty()) {
                 selectClause.append(", ");
             }
 
@@ -218,10 +190,8 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder select(SelectQueryBuilder builder)
-    {
-        if (!selectClause.isEmpty())
-        {
+    public SelectQueryBuilder select(SelectQueryBuilder builder) {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -234,10 +204,8 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder select(String expression)
-    {
-        if (!selectClause.isEmpty())
-        {
+    public SelectQueryBuilder select(String expression) {
+        if (!selectClause.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -246,17 +214,14 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder from(Class<?> tableClass)
-    {
+    public SelectQueryBuilder from(Class<?> tableClass) {
         return from(tableClass, null);
     }
 
-    public SelectQueryBuilder from(Class<?> tableClass, String alias)
-    {
+    public SelectQueryBuilder from(Class<?> tableClass, String alias) {
         TableMetadata table;
 
-        if (!fromClause.isEmpty())
-        {
+        if (!fromClause.isEmpty()) {
             throw new RuntimeException("from(...) must be called only once.");
         }
 
@@ -265,8 +230,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         fromClause.append(getTableManager().getDialect()
                 .getTableName(table));
 
-        if (alias != null)
-        {
+        if (alias != null) {
             fromClause.append(" AS ");
             fromClause.append(alias);
         }
@@ -276,10 +240,8 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder from(SelectQueryBuilder builder, String alias)
-    {
-        if (!fromClause.isEmpty())
-        {
+    public SelectQueryBuilder from(SelectQueryBuilder builder, String alias) {
+        if (!fromClause.isEmpty()) {
             throw new RuntimeException("from(...) must be called only once.");
         }
 
@@ -294,33 +256,27 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder from(String expression)
-    {
+    public SelectQueryBuilder from(String expression) {
         return from(expression, null, null);
     }
 
-    public SelectQueryBuilder from(String expression, List<Object> parameters)
-    {
+    public SelectQueryBuilder from(String expression, List<Object> parameters) {
         return from(expression, null, parameters);
     }
 
-    public SelectQueryBuilder from(String expression, String alias, List<Object> parameters)
-    {
-        if (!fromClause.isEmpty())
-        {
+    public SelectQueryBuilder from(String expression, String alias, List<Object> parameters) {
+        if (!fromClause.isEmpty()) {
             throw new RuntimeException("from(...) must be called only once.");
         }
 
         fromClause.append(expression);
 
-        if (alias != null)
-        {
+        if (alias != null) {
             fromClause.append(" AS ");
             fromClause.append(alias);
         }
 
-        if (parameters != null)
-        {
+        if (parameters != null) {
             getParameters().addAll(parameters);
         }
 
@@ -329,18 +285,15 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
     @SafeVarargs
     public final <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass,
-            FieldGetter<T, R>... fieldGetters)
-    {
+            FieldGetter<T, R>... fieldGetters) {
         return innerJoin(tableClass, null, fieldGetters);
     }
 
     @SafeVarargs
-    public final <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass, 
+    public final <T, R> SelectQueryBuilder innerJoin(Class<?> tableClass,
             String alias,
-            FieldGetter<T, R>... fieldGetters)
-    {
-        if (fromClause.isEmpty())
-        {
+            FieldGetter<T, R>... fieldGetters) {
+        if (fromClause.isEmpty()) {
             throw new RuntimeException("Call from(...) before innerJoin(...).");
         }
 
@@ -349,12 +302,10 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder innerJoin(SelectQueryBuilder builder, 
-            String alias, 
-            String joinExpression)
-    {
-        if (fromClause.isEmpty())
-        {
+    public SelectQueryBuilder innerJoin(SelectQueryBuilder builder,
+            String alias,
+            String joinExpression) {
+        if (fromClause.isEmpty()) {
             throw new RuntimeException("Call from(...) before innerJoin(...).");
         }
 
@@ -364,19 +315,16 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
     }
 
     @SafeVarargs
-    public final <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass, 
-            FieldGetter<T, R>... fieldGetters)
-    {
+    public final <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass,
+            FieldGetter<T, R>... fieldGetters) {
         return leftJoin(tableClass, null, fieldGetters);
     }
 
     @SafeVarargs
-    public final <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass, 
+    public final <T, R> SelectQueryBuilder leftJoin(Class<?> tableClass,
             String alias,
-            FieldGetter<T, R>... fieldGetters)
-    {
-        if (fromClause.isEmpty())
-        {
+            FieldGetter<T, R>... fieldGetters) {
+        if (fromClause.isEmpty()) {
             throw new RuntimeException("Call from(...) before leftJoin(...).");
         }
 
@@ -385,12 +333,10 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder leftJoin(SelectQueryBuilder builder, 
-            String alias, 
-            String joinExpression)
-    {
-        if (fromClause.isEmpty())
-        {
+    public SelectQueryBuilder leftJoin(SelectQueryBuilder builder,
+            String alias,
+            String joinExpression) {
+        if (fromClause.isEmpty()) {
             throw new RuntimeException("Call from(...) before leftJoin(...).");
         }
 
@@ -401,18 +347,15 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
     @SafeVarargs
     public final <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass,
-            FieldGetter<T, R>... fieldGetters)
-    {
+            FieldGetter<T, R>... fieldGetters) {
         return rightJoin(tableClass, null, fieldGetters);
     }
 
     @SafeVarargs
-    public final <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass, 
-            String alias, 
-            FieldGetter<T, R>... fieldGetters)
-    {
-        if (fromClause.isEmpty())
-        {
+    public final <T, R> SelectQueryBuilder rightJoin(Class<?> tableClass,
+            String alias,
+            FieldGetter<T, R>... fieldGetters) {
+        if (fromClause.isEmpty()) {
             throw new RuntimeException("Call from(...) before rightJoin(...).");
         }
 
@@ -421,12 +364,10 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder rightJoin(SelectQueryBuilder builder, 
-            String alias, 
-            String joinExpression)
-    {
-        if (fromClause.isEmpty())
-        {
+    public SelectQueryBuilder rightJoin(SelectQueryBuilder builder,
+            String alias,
+            String joinExpression) {
+        if (fromClause.isEmpty()) {
             throw new RuntimeException("Call from(...) before rightJoin(...).");
         }
 
@@ -435,11 +376,10 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    private <T, R> void join(Class<?> tableClass, 
-            String alias, 
-            String joinType, 
-            FieldGetter<T, R>... fieldGetters)
-    {
+    private <T, R> void join(Class<?> tableClass,
+            String alias,
+            String joinType,
+            FieldGetter<T, R>... fieldGetters) {
         TableMetadata table;
 
         table = getTable(tableClass);
@@ -450,8 +390,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         fromClause.append(getTableManager().getDialect()
                 .getTableName(table));
 
-        if (alias != null)
-        {
+        if (alias != null) {
             fromClause.append(" AS ");
             fromClause.append(alias);
         }
@@ -462,28 +401,21 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         fromClauseTables.add(new FromClauseTable(table, alias));
     }
 
-    private <T, R> String getJoinExpression(TableMetadata table, String alias, FieldGetter<T, R>... fieldGetters)
-    {
-        for (Join join : table.getJoins())
-        {
-            if (fieldGetters.length > 0)
-            {
-                if (!getTableManager().getMetadataManager().compareColumns(table, join, fieldGetters))
-                {
+    private <T, R> String getJoinExpression(TableMetadata table, String alias, FieldGetter<T, R>... fieldGetters) {
+        for (Join join : table.getJoins()) {
+            if (fieldGetters.length > 0) {
+                if (!getTableManager().getMetadataManager().compareColumns(table, join, fieldGetters)) {
                     continue;
                 }
             }
 
-            for (FromClauseTable fromClauseTable : fromClauseTables)
-            {
-                if (join.reference().table().equals(fromClauseTable.table.getTableClass()))
-                {
+            for (FromClauseTable fromClauseTable : fromClauseTables) {
+                if (join.reference().table().equals(fromClauseTable.table.getTableClass())) {
                     StringBuilder expression;
 
                     expression = new StringBuilder();
 
-                    for (int i = 0; i < join.columns().length; i++)
-                    {
+                    for (int i = 0; i < join.columns().length; i++) {
                         ColumnMetadata leftColumn;
                         ColumnMetadata rightColumn;
                         String leftColumnNane;
@@ -502,20 +434,16 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
                                         .equals(rightColumnName))
                                 .findFirst().get();
 
-                        if (!expression.isEmpty())
-                        {
+                        if (!expression.isEmpty()) {
                             expression.append(" AND ");
                         }
 
-                        if (alias == null)
-                        {
+                        if (alias == null) {
                             expression.append(getTableManager().getDialect()
                                     .getTableName(table));
                             expression.append(".");
                             expression.append(leftColumn.getColumnName());
-                        }
-                        else
-                        {
+                        } else {
                             expression.append(alias);
                             expression.append(".");
                             expression.append(leftColumn.getColumnName());
@@ -523,15 +451,12 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
                         expression.append(" = ");
 
-                        if (fromClauseTable.alias == null)
-                        {
+                        if (fromClauseTable.alias == null) {
                             expression.append(getTableManager().getDialect()
                                     .getTableName(fromClauseTable.table));
                             expression.append(".");
                             expression.append(rightColumn.getColumnName());
-                        }
-                        else
-                        {
+                        } else {
                             expression.append(fromClauseTable.alias);
                             expression.append(".");
                             expression.append(rightColumn.getColumnName());
@@ -543,28 +468,22 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
             }
         }
 
-        for (FromClauseTable fromClauseTable : fromClauseTables)
-        {
-            for (Join join : fromClauseTable.table.getJoins())
-            {
-                if (join.reference().table().equals(table.getTableClass()))
-                {
+        for (FromClauseTable fromClauseTable : fromClauseTables) {
+            for (Join join : fromClauseTable.table.getJoins()) {
+                if (join.reference().table().equals(table.getTableClass())) {
                     StringBuilder expression;
 
-                    if (fieldGetters.length > 0)
-                    {
-                        if (!getTableManager().getMetadataManager().compareColumns(fromClauseTable.table, 
-                                join, 
-                                fieldGetters))
-                        {
+                    if (fieldGetters.length > 0) {
+                        if (!getTableManager().getMetadataManager().compareColumns(fromClauseTable.table,
+                                join,
+                                fieldGetters)) {
                             continue;
                         }
                     }
 
                     expression = new StringBuilder();
 
-                    for (int i = 0; i < join.columns().length; i++)
-                    {
+                    for (int i = 0; i < join.columns().length; i++) {
                         ColumnMetadata leftColumn;
                         ColumnMetadata rightColumn;
                         String leftColumnName;
@@ -583,20 +502,16 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
                                         .equals(rightColumnName))
                                 .findFirst().get();
 
-                        if (!expression.isEmpty())
-                        {
+                        if (!expression.isEmpty()) {
                             expression.append(" AND ");
                         }
 
-                        if (alias == null)
-                        {
+                        if (alias == null) {
                             expression.append(getTableManager().getDialect()
                                     .getTableName(table));
                             expression.append(".");
                             expression.append(leftColumn.getColumnName());
-                        }
-                        else
-                        {
+                        } else {
                             expression.append(alias);
                             expression.append(".");
                             expression.append(leftColumn.getColumnName());
@@ -604,15 +519,12 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
 
                         expression.append(" = ");
 
-                        if (fromClauseTable.alias == null)
-                        {
+                        if (fromClauseTable.alias == null) {
                             expression.append(getTableManager().getDialect()
                                     .getTableName(fromClauseTable.table));
                             expression.append(".");
                             expression.append(rightColumn.getColumnName());
-                        }
-                        else
-                        {
+                        } else {
                             expression.append(fromClauseTable.alias);
                             expression.append(".");
                             expression.append(rightColumn.getColumnName());
@@ -629,11 +541,10 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
                 + ".");
     }
 
-    private void join(SelectQueryBuilder builder, 
-            String alias, 
-            String joinExpression, 
-            String joinType)
-    {
+    private void join(SelectQueryBuilder builder,
+            String alias,
+            String joinExpression,
+            String joinType) {
         fromClause.append(" ");
         fromClause.append(joinType);
         fromClause.append(" (");
@@ -646,15 +557,12 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         getParameters().addAll(builder.getParameters());
     }
 
-    public <T, R> SelectQueryBuilder orderBy(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder orderBy(FieldGetter<T, R> fieldGetter) {
         return orderBy(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder orderBy(FieldGetter<T, R> fieldGetter, String alias)
-    {
-        if (!orderByClause.isEmpty())
-        {
+    public <T, R> SelectQueryBuilder orderBy(FieldGetter<T, R> fieldGetter, String alias) {
+        if (!orderByClause.isEmpty()) {
             orderByClause.append(", ");
         }
 
@@ -663,13 +571,11 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder orderByDesc(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder orderByDesc(FieldGetter<T, R> fieldGetter) {
         return orderByDesc(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder orderByDesc(FieldGetter<T, R> fieldGetter, String alias)
-    {
+    public <T, R> SelectQueryBuilder orderByDesc(FieldGetter<T, R> fieldGetter, String alias) {
         orderBy(fieldGetter, alias);
 
         orderByClause.append(" DESC");
@@ -677,10 +583,8 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder orderBy(SelectQueryBuilder builder)
-    {
-        if (!orderByClause.isEmpty())
-        {
+    public SelectQueryBuilder orderBy(SelectQueryBuilder builder) {
+        if (!orderByClause.isEmpty()) {
             orderByClause.append(", ");
         }
 
@@ -693,8 +597,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder orderByDesc(SelectQueryBuilder builder)
-    {
+    public <T, R> SelectQueryBuilder orderByDesc(SelectQueryBuilder builder) {
         orderBy(builder);
 
         orderByClause.append(" DESC");
@@ -702,39 +605,32 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder orderBy(String expression)
-    {
+    public SelectQueryBuilder orderBy(String expression) {
         return orderBy(expression, null);
     }
 
-    public SelectQueryBuilder orderBy(String expression, 
-            List<Object> expressionParameters)
-    {
-        if (!orderByClause.isEmpty())
-        {
+    public SelectQueryBuilder orderBy(String expression,
+            List<Object> expressionParameters) {
+        if (!orderByClause.isEmpty()) {
             orderByClause.append(", ");
         }
 
         orderByClause.append(expression);
 
-        if (expressionParameters != null)
-        {
+        if (expressionParameters != null) {
             getParameters().addAll(expressionParameters);
         }
 
         return this;
     }
 
-    public <T, R> SelectQueryBuilder groupBy(FieldGetter<T, R> fieldGetter)
-    {
+    public <T, R> SelectQueryBuilder groupBy(FieldGetter<T, R> fieldGetter) {
         return groupBy(fieldGetter, null);
     }
 
-    public <T, R> SelectQueryBuilder groupBy(FieldGetter<T, R> fieldGetter, 
-            String alias)
-    {
-        if (!groupByClause.isEmpty())
-        {
+    public <T, R> SelectQueryBuilder groupBy(FieldGetter<T, R> fieldGetter,
+            String alias) {
+        if (!groupByClause.isEmpty()) {
             groupByClause.append(", ");
         }
 
@@ -743,22 +639,18 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public <T, R> SelectQueryBuilder groupBy(Class<T> tableClass)
-    {
+    public <T, R> SelectQueryBuilder groupBy(Class<T> tableClass) {
         return groupBy(tableClass, null);
     }
 
-    public <T, R> SelectQueryBuilder groupBy(Class<T> tableClass, 
-            String alias)
-    {
+    public <T, R> SelectQueryBuilder groupBy(Class<T> tableClass,
+            String alias) {
         TableMetadata table;
 
         table = getTable(tableClass);
 
-        for (ColumnMetadata column : table.getColumns())
-        {
-            if (!groupByClause.isEmpty())
-            {
+        for (ColumnMetadata column : table.getColumns()) {
+            if (!groupByClause.isEmpty()) {
                 groupByClause.append(", ");
             }
 
@@ -768,45 +660,38 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return this;
     }
 
-    public SelectQueryBuilder groupBy(String expression)
-    {
+    public SelectQueryBuilder groupBy(String expression) {
         return groupBy(expression, null);
     }
 
-    public SelectQueryBuilder groupBy(String expression, 
-            List<Object> expressionParameters)
-    {
-        if (!groupByClause.isEmpty())
-        {
+    public SelectQueryBuilder groupBy(String expression,
+            List<Object> expressionParameters) {
+        if (!groupByClause.isEmpty()) {
             groupByClause.append(", ");
         }
 
         groupByClause.append(expression);
 
-        if (expressionParameters != null)
-        {
+        if (expressionParameters != null) {
             getParameters().addAll(expressionParameters);
         }
 
         return this;
     }
 
-    public SelectQueryBuilder offset(int offset)
-    {
+    public SelectQueryBuilder offset(int offset) {
         this.offset = offset;
 
         return this;
     }
 
-    public SelectQueryBuilder limit(int limit)
-    {
+    public SelectQueryBuilder limit(int limit) {
         this.limit = limit;
 
         return this;
     }
 
-    public String build()
-    {
+    public String build() {
         StringBuilder statement;
 
         statement = new StringBuilder();
@@ -816,25 +701,21 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         statement.append(" FROM ");
         statement.append(fromClause.toString());
 
-        if (!getWhereClause().isEmpty())
-        {
+        if (!getWhereClause().isEmpty()) {
             statement.append(getWhereClause().toString());
         }
 
-        if (!groupByClause.isEmpty())
-        {
+        if (!groupByClause.isEmpty()) {
             statement.append(" GROUP BY ");
             statement.append(groupByClause.toString());
         }
 
-        if (!orderByClause.isEmpty())
-        {
+        if (!orderByClause.isEmpty()) {
             statement.append(" ORDER BY ");
             statement.append(orderByClause.toString());
         }
 
-        if (limit > 0)
-        {
+        if (limit > 0) {
             statement.append(" ");
             statement.append(getTableManager().getDialect()
                     .limitSelect(offset, limit));
@@ -843,57 +724,47 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder>
         return statement.toString();
     }
 
-    public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType)
-    {
+    public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType) {
         return createQuery().mapResultList(keyType, valueType);
     }
 
-    public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType)
-    {
+    public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType) {
         return createQuery().mapSingleResult(keyType, valueType);
     }
 
-    public <T> List<T> getResultList(Class<T> type)
-    {
+    public <T> List<T> getResultList(Class<T> type) {
         return createQuery().getResultList(type);
     }
 
-    public List<Object[]> getResultList(Class<?>... tableClasses)
-    {
+    public List<Object[]> getResultList(Class<?>... tableClasses) {
         return createQuery().getResultList(tableClasses);
     }
 
-    public <T> T getSingleResult(Class<T> type)
-    {
+    public <T> T getSingleResult(Class<T> type) {
         return createQuery().getSingleResult(type);
     }
 
-    public Object[] getSingleResult(Class<?>... tableClasses)
-    {
+    public Object[] getSingleResult(Class<?>... tableClasses) {
         return createQuery().getSingleResult(tableClasses);
     }
 
-    private Query createQuery()
-    {
+    private Query createQuery() {
         Query query;
 
         query = getTableManager().createQuery(build());
 
-        for (int i = 0; i < getParameters().size(); i++)
-        {
+        for (int i = 0; i < getParameters().size(); i++) {
             query.setParameter(i + 1, getParameters().get(i));
         }
 
         return query;
     }
 
-    private class FromClauseTable
-    {
+    private class FromClauseTable {
         private final TableMetadata table;
         private final String alias;
 
-        public FromClauseTable(TableMetadata table, String alias)
-        {
+        public FromClauseTable(TableMetadata table, String alias) {
             this.table = table;
 
             this.alias = alias;

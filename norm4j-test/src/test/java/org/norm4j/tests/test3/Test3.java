@@ -27,22 +27,18 @@ import org.norm4j.tests.BaseTest;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class Test3 extends BaseTest
-{
-    public Test3()
-    {
+public class Test3 extends BaseTest {
+    public Test3() {
     }
 
     @Test
-    public void test3()
-    {
+    public void test3() {
         MetadataManager metadataManager;
         TableManager tableManager;
         Author author;
         Book book;
 
-        if (!isSequenceSupported())
-        {
+        if (!isSequenceSupported()) {
             return;
         }
 

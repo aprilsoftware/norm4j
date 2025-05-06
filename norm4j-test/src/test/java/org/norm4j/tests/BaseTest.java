@@ -33,32 +33,25 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.norm4j.dialects.SQLDialect;
 
-public abstract class BaseTest
-{
+public abstract class BaseTest {
     private static BasicDataSource dataSource;
 
-    public BaseTest()
-    {
+    public BaseTest() {
     }
 
-    public DataSource getDataSource()
-    {
+    public DataSource getDataSource() {
         return dataSource;
     }
 
     @BeforeAll
-    public static void initialize()
-    {
+    public static void initialize() {
         Properties properties;
 
         properties = new Properties();
 
-        try (FileInputStream fis = new FileInputStream("src/test/resources/application-test.properties"))
-        {
+        try (FileInputStream fis = new FileInputStream("src/test/resources/application-test.properties")) {
             properties.load(fis);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException("Failed to load database properties", e);
         }
 
@@ -75,60 +68,42 @@ public abstract class BaseTest
         dataSource.setMinIdle(1);
     }
 
-    protected SQLDialect getDialect()
-    {
-        try (Connection connection = dataSource.getConnection())
-        {
+    protected SQLDialect getDialect() {
+        try (Connection connection = dataSource.getConnection()) {
             return SQLDialect.detectDialect(connection);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected boolean isArraySupported()
-    {
-        try (Connection connection = dataSource.getConnection())
-        {
+    protected boolean isArraySupported() {
+        try (Connection connection = dataSource.getConnection()) {
             return SQLDialect.detectDialect(connection).isArraySupported();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected boolean isSequenceSupported()
-    {
-        try (Connection connection = dataSource.getConnection())
-        {
+    protected boolean isSequenceSupported() {
+        try (Connection connection = dataSource.getConnection()) {
             return SQLDialect.detectDialect(connection).isSequenceSupported();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected void dropSequence(String schema, String sequenceName)
-    {
-        try (Connection connection = dataSource.getConnection())
-        {
+    protected void dropSequence(String schema, String sequenceName) {
+        try (Connection connection = dataSource.getConnection()) {
             SQLDialect dialect;
 
             dialect = SQLDialect.detectDialect(connection);
 
-            if (dialect.sequenceExists(connection, schema, sequenceName))
-            {
-                if (schema == null || schema.isEmpty())
-                {
+            if (dialect.sequenceExists(connection, schema, sequenceName)) {
+                if (schema == null || schema.isEmpty()) {
                     executeUpdate(connection, "DROP SEQUENCE "
                             + sequenceName
                             + ";");
-                }
-                else
-                {
+                } else {
                     executeUpdate(connection, "DROP SEQUENCE "
                             + schema
                             + "."
@@ -136,42 +111,31 @@ public abstract class BaseTest
                             + ";");
                 }
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected void dropTable(String schema, String tableName)
-    {
-        try (Connection connection = dataSource.getConnection())
-        {
+    protected void dropTable(String schema, String tableName) {
+        try (Connection connection = dataSource.getConnection()) {
             SQLDialect dialect;
 
             dialect = SQLDialect.detectDialect(connection);
 
-            if (dialect.tableExists(connection, schema, tableName))
-            {
+            if (dialect.tableExists(connection, schema, tableName)) {
                 executeUpdate(connection, "DROP TABLE "
                         + dialect.getTableName(schema, tableName)
                         + ";");
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected void executeUpdate(Connection connection, String sql)
-    {
-        try (Statement stmt = connection.createStatement())
-        {
+    protected void executeUpdate(Connection connection, String sql) {
+        try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(sql);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

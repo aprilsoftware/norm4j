@@ -27,9 +27,10 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SequenceGenerator
-{
+public @interface SequenceGenerator {
     String sequenceName() default "";
+
     String schema() default "";
+
     int initialValue() default 1;
 }

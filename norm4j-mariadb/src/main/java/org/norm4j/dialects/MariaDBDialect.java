@@ -37,68 +37,54 @@ import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 
-public class MariaDBDialect extends GenericDialect
-{
-    public MariaDBDialect()
-    {
+public class MariaDBDialect extends GenericDialect {
+    public MariaDBDialect() {
     }
 
-    public boolean isDialect(String productName)
-    {
+    public boolean isDialect(String productName) {
         productName = productName.toLowerCase();
 
         return productName.contains("mariadb") ||
                 productName.contains("mysql");
     }
 
-    public boolean isTupleSupported()
-    {
+    public boolean isTupleSupported() {
         return true;
     }
 
-    public boolean isSequenceSupported()
-    {
+    public boolean isSequenceSupported() {
         return false;
     }
 
-    public boolean isGeneratedKeysForSequenceSupported()
-    {
+    public boolean isGeneratedKeysForSequenceSupported() {
         return false;
     }
 
-    public String getTableName(String schema, String tableName)
-    {
+    public String getTableName(String schema, String tableName) {
         if (schema == null ||
-            schema.isEmpty())
-        {
+                schema.isEmpty()) {
             return tableName;
-        }
-        else
-        {
+        } else {
             return schema
                     + "_"
                     + tableName;
         }
     }
 
-    public String getSequenceName(TableMetadata table, ColumnMetadata column)
-    {
+    public String getSequenceName(TableMetadata table, ColumnMetadata column) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
-    public String createSequenceName(TableMetadata table, 
-            ColumnMetadata column)
-    {
+    public String createSequenceName(TableMetadata table,
+            ColumnMetadata column) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
-    public String createSequence(String schema, String sequenceName, int initialValue)
-    {
+    public String createSequence(String schema, String sequenceName, int initialValue) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
-    public String createTable(TableMetadata table)
-    {
+    public String createTable(TableMetadata table) {
         List<ColumnMetadata> primaryKeys;
         List<ColumnMetadata> columns;
         StringBuilder ddl;
@@ -113,21 +99,19 @@ public class MariaDBDialect extends GenericDialect
 
         primaryKeys = new ArrayList<>();
 
-        for (int i = 0; i < columns.size(); i++)
-        {
+        for (int i = 0; i < columns.size(); i++) {
             GeneratedValue generatedValueAnnotation;
             ColumnMetadata column;
             Column columnAnnotation;
 
             column = columns.get(i);
 
-            columnAnnotation = (Column)column.getAnnotations().get(Column.class);
+            columnAnnotation = (Column) column.getAnnotations().get(Column.class);
 
-            generatedValueAnnotation = (GeneratedValue)column
+            generatedValueAnnotation = (GeneratedValue) column
                     .getAnnotations().get(GeneratedValue.class);
 
-            if (i > 0)
-            {
+            if (i > 0) {
                 ddl.append(", ");
             }
 
@@ -135,47 +119,35 @@ public class MariaDBDialect extends GenericDialect
             ddl.append(" ");
 
             if (columnAnnotation == null ||
-                columnAnnotation.columnDefinition().isEmpty())
-            {
+                    columnAnnotation.columnDefinition().isEmpty()) {
                 ddl.append(getSqlType(column));
-            }
-            else
-            {
+            } else {
                 ddl.append(columnAnnotation.columnDefinition());
             }
 
-            if (generatedValueAnnotation == null)
-            {
+            if (generatedValueAnnotation == null) {
                 if (column.getField().getType().isPrimitive() ||
                         (columnAnnotation != null && !columnAnnotation.nullable()) ||
-                        column.isPrimaryKey())
-                {
+                        column.isPrimaryKey()) {
                     ddl.append(" NOT NULL");
                 }
-            }
-            else
-            {
+            } else {
                 if (generatedValueAnnotation.strategy() == GenerationType.AUTO ||
-                    generatedValueAnnotation.strategy() == GenerationType.IDENTITY)
-                {
+                        generatedValueAnnotation.strategy() == GenerationType.IDENTITY) {
                     ddl.append(" AUTO_INCREMENT");
                 }
             }
 
-            if (column.isPrimaryKey())
-            {
+            if (column.isPrimaryKey()) {
                 primaryKeys.add(column);
             }
         }
 
-        if (!primaryKeys.isEmpty())
-        {
+        if (!primaryKeys.isEmpty()) {
             ddl.append(", PRIMARY KEY (");
 
-            for (int i = 0; i < primaryKeys.size(); i++)
-            {
-                if (i > 0)
-                {
+            for (int i = 0; i < primaryKeys.size(); i++) {
+                if (i > 0) {
                     ddl.append(", ");
                 }
 
@@ -190,11 +162,10 @@ public class MariaDBDialect extends GenericDialect
         return ddl.toString();
     }
 
-    public String createSequenceTable(String schema, 
-            String tableName, 
-            String pkColumnName, 
-            String valueColumnName)
-    {
+    public String createSequenceTable(String schema,
+            String tableName,
+            String pkColumnName,
+            String valueColumnName) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
@@ -212,112 +183,77 @@ public class MariaDBDialect extends GenericDialect
         return ddl.toString();
     }
 
-    public boolean sequenceExists(Connection connection, 
-            String schema, 
-            String sequenceName)
-    {
+    public boolean sequenceExists(Connection connection,
+            String schema,
+            String sequenceName) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
-    public boolean tableExists(Connection connection, 
-                String schema, 
-                String tableName)
-    {
+    public boolean tableExists(Connection connection,
+            String schema,
+            String tableName) {
         DatabaseMetaData dbMetaData;
 
-        try
-        {
+        try {
             dbMetaData = connection.getMetaData();
 
-            try (ResultSet rs = dbMetaData.getTables(null, 
-                    null, 
-                    getTableName(schema, tableName), 
-                    new String[] {"TABLE", "VIEW"}))
-            {
+            try (ResultSet rs = dbMetaData.getTables(null,
+                    null,
+                    getTableName(schema, tableName),
+                    new String[] { "TABLE", "VIEW" })) {
                 return rs.next();
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String limitSelect(int offset, int limit)
-    {
+    public String limitSelect(int offset, int limit) {
         return "LIMIT "
-            + limit
-            + " OFFSET "
-            + offset;
+                + limit
+                + " OFFSET "
+                + offset;
     }
 
-    private String getSqlType(ColumnMetadata column)
-    {
+    private String getSqlType(ColumnMetadata column) {
         Column columnAnnotation;
         Class<?> fieldType;
-        
+
         fieldType = column.getField().getType();
 
-        columnAnnotation = (Column)column.getAnnotations().get(Column.class);
+        columnAnnotation = (Column) column.getAnnotations().get(Column.class);
 
-        if (fieldType == String.class)
-        {
+        if (fieldType == String.class) {
             return "VARCHAR(" + columnAnnotation.length() + ")";
-        }
-        else if (fieldType == boolean.class || fieldType == Boolean.class)
-        {
+        } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BOOLEAN";
-        }
-        else if (fieldType == int.class || fieldType == Integer.class)
-        {
+        } else if (fieldType == int.class || fieldType == Integer.class) {
             return "INT";
-        }
-        else if (fieldType == long.class || fieldType == Long.class)
-        {
+        } else if (fieldType == long.class || fieldType == Long.class) {
             return "BIGINT";
-        }
-        else if (fieldType == float.class || fieldType == Float.class)
-        {
+        } else if (fieldType == float.class || fieldType == Float.class) {
             return "FLOAT";
-        }
-        else if (fieldType == double.class || fieldType == Double.class)
-        {
+        } else if (fieldType == double.class || fieldType == Double.class) {
             return "DOUBLE";
-        }
-        else if (fieldType == BigDecimal.class)
-        {
+        } else if (fieldType == BigDecimal.class) {
             return "DECIMAL";
-        }
-        else if (fieldType == java.util.Date.class || fieldType == java.sql.Date.class)
-        {
+        } else if (fieldType == java.util.Date.class || fieldType == java.sql.Date.class) {
             return "DATETIME";
-        }
-        else if (fieldType == UUID.class)
-        {
+        } else if (fieldType == UUID.class) {
             return "CHAR(36)";
-        }
-        else if (column.getField().getType().isEnum())
-        {
+        } else if (column.getField().getType().isEnum()) {
             Enumerated enumeratedAnnotation;
 
-            enumeratedAnnotation = (Enumerated)column.getAnnotations().get(Enumerated.class);
+            enumeratedAnnotation = (Enumerated) column.getAnnotations().get(Enumerated.class);
 
-            if (enumeratedAnnotation == null)
-            {
+            if (enumeratedAnnotation == null) {
                 return "INT";
-            }
-            else
-            {
-                if (enumeratedAnnotation.value() == EnumType.ORDINAL)
-                {
+            } else {
+                if (enumeratedAnnotation.value() == EnumType.ORDINAL) {
                     return "INT";
-                }
-                else if (enumeratedAnnotation.value() == EnumType.STRING)
-                {
+                } else if (enumeratedAnnotation.value() == EnumType.STRING) {
                     return "VARCHAR(255)";
-                }
-                else
-                {
+                } else {
                     throw new RuntimeException("Unsupported enum type.");
                 }
             }

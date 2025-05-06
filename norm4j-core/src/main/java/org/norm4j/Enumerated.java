@@ -27,7 +27,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Enumerated
-{
+public @interface Enumerated {
     EnumType value() default EnumType.ORDINAL;
 }

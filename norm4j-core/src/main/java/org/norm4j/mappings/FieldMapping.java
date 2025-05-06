@@ -22,25 +22,21 @@ package org.norm4j.mappings;
 
 import org.norm4j.FieldGetter;
 
-public class FieldMapping<S, T>
-{
+public class FieldMapping<S, T> {
     private final FieldGetter<S, ?> sourceGetter;
     private final FieldGetter<T, ?> targetGetter;
 
-    public FieldMapping(FieldGetter<S, ?> sourceGetter, FieldGetter<T, ?> targetGetter)
-    {
+    public FieldMapping(FieldGetter<S, ?> sourceGetter, FieldGetter<T, ?> targetGetter) {
         this.sourceGetter = sourceGetter;
 
         this.targetGetter = targetGetter;
     }
 
-    public FieldGetter<S, ?> getSourceGetter()
-    {
+    public FieldGetter<S, ?> getSourceGetter() {
         return sourceGetter;
     }
 
-    public FieldGetter<T, ?> getTargetGetter()
-    {
+    public FieldGetter<T, ?> getTargetGetter() {
         return targetGetter;
     }
 }
