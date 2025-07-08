@@ -40,6 +40,8 @@ import org.norm4j.metadata.MetadataManager;
 import org.norm4j.metadata.TableIdGenerator;
 import org.norm4j.metadata.TableMetadata;
 
+import com.fasterxml.uuid.Generators;
+
 public class TableManager {
     private final MetadataManager metadataManager;
     private final DataSource dataSource;
@@ -125,7 +127,11 @@ public class TableManager {
                                                     + "_"
                                                     + column.getColumnName()));
                         } else if (generatedValue.strategy() == GenerationType.UUID) {
-                            setRecordValue(record, column, UUID.randomUUID());
+                            UUID id;
+
+                            id = Generators.timeBasedEpochGenerator().generate();
+
+                            setRecordValue(record, column, id);
                         }
                     }
 
