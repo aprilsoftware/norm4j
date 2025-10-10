@@ -39,7 +39,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-postgresql</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.13</version>
 </dependency>
 <dependency>
     <groupId>org.postgresql</groupId>
