@@ -21,5 +21,5 @@
 package org.norm4j;
 
 public interface Expression {
-    public String build(QueryBuilder queryBuilder);
+    public String build(QueryBuilder<?> queryBuilder);
 }

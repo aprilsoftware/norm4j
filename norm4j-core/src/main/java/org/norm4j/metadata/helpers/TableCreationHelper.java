@@ -255,7 +255,6 @@ public class TableCreationHelper {
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
-    // Helper record to simplify sequence information handling
     private record SequenceMetadata(String schema,
             String name,
             int initialValue) {

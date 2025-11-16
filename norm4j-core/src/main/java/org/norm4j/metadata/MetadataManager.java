@@ -20,7 +20,18 @@
  */
 package org.norm4j.metadata;
 
-import org.norm4j.*;
+import org.norm4j.Array;
+import org.norm4j.Column;
+import org.norm4j.Enumerated;
+import org.norm4j.FieldGetter;
+import org.norm4j.GeneratedValue;
+import org.norm4j.Id;
+import org.norm4j.IdClass;
+import org.norm4j.Join;
+import org.norm4j.SequenceGenerator;
+import org.norm4j.Table;
+import org.norm4j.TableGenerator;
+import org.norm4j.Temporal;
 import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.helpers.TableCreationHelper;
 
@@ -34,7 +45,11 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -71,14 +86,14 @@ public class MetadataManager {
     }
 
     public void registerPackage(String packageName) {
-        for (Class c : getPackageClasses(packageName)) {
+        for (Class<?> c : getPackageClasses(packageName)) {
             if (c.isAnnotationPresent(Table.class)) {
                 registerTable(c);
             }
         }
     }
 
-    private List<Class> getPackageClasses(String packageName) {
+    private List<Class<?>> getPackageClasses(String packageName) {
         InputStream inputStream;
         BufferedReader reader;
 
@@ -93,7 +108,7 @@ public class MetadataManager {
                 .collect(Collectors.toList());
     }
 
-    private Class getClass(String className, String packageName) {
+    private Class<?> getClass(String className, String packageName) {
         try {
             return Class.forName(packageName + "."
                     + className.substring(0, className.lastIndexOf('.')));
@@ -103,16 +118,23 @@ public class MetadataManager {
     }
 
     public void registerTable(Class<?> tableClass) {
+        registerTable(tableClass, null, null);
+    }
+
+    public void registerTable(Class<?> tableClass, String schema, String tableName) {
         if (!tableClass.isAnnotationPresent(Table.class)) {
             throw new IllegalArgumentException("Class " + tableClass.getName()
                     + " is not annotated with @Table");
         }
 
         Table tableAnnotation = tableClass.getAnnotation(Table.class);
-        String tableName = tableAnnotation.name().isEmpty()
-                ? tableClass.getSimpleName().toLowerCase()
-                : tableAnnotation.name();
-        String schema = tableAnnotation.schema();
+
+        tableName = (tableName != null && !tableName.isEmpty()) ? tableName
+                : tableAnnotation.name().isEmpty()
+                        ? tableClass.getSimpleName().toLowerCase()
+                        : tableAnnotation.name();
+
+        schema = (schema != null && !schema.isEmpty()) ? schema : tableAnnotation.schema();
 
         Class<?> idClass = tableClass.isAnnotationPresent(IdClass.class)
                 ? tableClass.getAnnotation(IdClass.class).value()
@@ -190,7 +212,8 @@ public class MetadataManager {
                         + fieldGetterMetadata.getFieldName()));
     }
 
-    public <T, R> boolean compareColumns(TableMetadata table,
+    @SafeVarargs
+    public final <T, R> boolean compareColumns(TableMetadata table,
             Join join,
             FieldGetter<T, R>... fieldGetters) {
         for (FieldGetter<T, R> fieldGetter : fieldGetters) {
@@ -227,19 +250,23 @@ public class MetadataManager {
 
     public void createTables(DataSource dataSource) {
         try (Connection connection = dataSource.getConnection()) {
-            SQLDialect dialect = getDialect(connection);
-            TableCreationHelper helper = new TableCreationHelper(metadataMap, this::executeUpdate);
+            createTables(connection);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-            // Create sequence tables for table generators
+    public void createTables(Connection connection) {
+        SQLDialect dialect = getDialect(connection);
+        TableCreationHelper helper = new TableCreationHelper(metadataMap, this::executeUpdate);
+
+        try {
             helper.createSequenceTables(connection, dialect);
 
-            // Identify existing tables
             List<TableMetadata> existingTables = helper.getExistingTables(connection, dialect);
 
-            // Create tables and sequences
             helper.createTablesAndSequences(connection, dialect, existingTables);
 
-            // Add foreign key constraints
             helper.addForeignKeyConstraints(connection, dialect, existingTables);
         } catch (SQLException e) {
             throw new RuntimeException(e);

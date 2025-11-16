@@ -27,11 +27,11 @@ import java.util.function.Consumer;
 import org.norm4j.metadata.ColumnMetadata;
 
 public class ConditionBuilder {
-        private final QueryBuilder queryBuilder;
+        private final QueryBuilder<?> queryBuilder;
         private final StringBuilder condition;
         private final List<Object> parameters;
 
-        public ConditionBuilder(QueryBuilder queryBuilder) {
+        public ConditionBuilder(QueryBuilder<?> queryBuilder) {
                 this.queryBuilder = queryBuilder;
 
                 this.condition = new StringBuilder();

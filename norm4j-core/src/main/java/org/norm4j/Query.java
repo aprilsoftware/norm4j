@@ -47,6 +47,7 @@ public class Query {
         parameters = new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
     public <K, V> Map<K, List<V>> mapResultList(Class<K> keyType, Class<V> valueType) {
         Map<K, List<V>> map;
         List<Object[]> rows;
@@ -84,6 +85,7 @@ public class Query {
         return map;
     }
 
+    @SuppressWarnings("unchecked")
     public <K, V> Map<K, V> mapSingleResult(Class<K> keyType, Class<V> valueType) {
         Map<K, V> map;
         List<Object[]> rows;
@@ -104,13 +106,26 @@ public class Query {
     }
 
     public <T> List<T> getResultList(Class<T> type) {
+        return getResultList(null, type);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public <T> List<T> getResultList(Connection connection, Class<T> type) {
         List<Object[]> rows;
 
         if (tableManager.getMetadataManager()
                 .getMetadata(type) == null) {
-            rows = getResultList();
+            if (connection == null) {
+                rows = getResultList();
+            } else {
+                rows = getResultList(connection);
+            }
         } else {
-            rows = getResultList(new Class[] { type });
+            if (connection == null) {
+                rows = getResultList(new Class[] { type });
+            } else {
+                rows = getResultList(connection, new Class[] { type });
+            }
         }
 
         if (rows.isEmpty()) {
@@ -156,8 +171,15 @@ public class Query {
     }
 
     public List<Object[]> getResultList(Class<?>... types) {
-        try (Connection connection = tableManager.getDataSource().getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = tableManager.getDataSource().getConnection()) {
+            return getResultList(connection, types);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Object[]> getResultList(Connection connection, Class<?>... types) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             SQLDialect dialect;
 
             dialect = tableManager.getMetadataManager().getDialect(connection);
@@ -259,6 +281,18 @@ public class Query {
         return list.get(0);
     }
 
+    public Object[] getSingleResult(Connection connection, Class<?>... tableClasses) {
+        List<Object[]> list;
+
+        list = getResultList(connection, tableClasses);
+
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        return list.get(0);
+    }
+
     public <T> T getSingleResult(Class<T> type) {
         List<T> list;
 
@@ -271,9 +305,28 @@ public class Query {
         return list.get(0);
     }
 
+    public <T> T getSingleResult(Connection connection, Class<T> type) {
+        List<T> list;
+
+        list = getResultList(connection, type);
+
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        return list.get(0);
+    }
+
     public int executeUpdate() {
-        try (Connection connection = tableManager.getDataSource().getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = tableManager.getDataSource().getConnection()) {
+            return executeUpdate(connection);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int executeUpdate(Connection connection) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             for (Map.Entry<Integer, Object> entry : parameters.entrySet()) {
                 ps.setObject(entry.getKey(), entry.getValue());
             }

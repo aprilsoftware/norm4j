@@ -1022,6 +1022,7 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>> {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     protected void appendValue(Object value,
             StringBuilder clause,
             ColumnMetadata column) {

@@ -20,6 +20,8 @@
  */
 package org.norm4j;
 
+import java.sql.Connection;
+
 import org.norm4j.metadata.TableMetadata;
 
 public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder> {
@@ -66,6 +68,10 @@ public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder> {
     }
 
     public int executeUpdate() {
+        return executeUpdate(null);
+    }
+
+    public int executeUpdate(Connection connection) {
         Query query;
 
         query = getTableManager().createQuery(build());
@@ -74,6 +80,10 @@ public class DeleteQueryBuilder extends QueryBuilder<DeleteQueryBuilder> {
             query.setParameter(i + 1, getParameters().get(i));
         }
 
-        return query.executeUpdate();
+        if (connection == null) {
+            return query.executeUpdate();
+        } else {
+            return query.executeUpdate(connection);
+        }
     }
 }

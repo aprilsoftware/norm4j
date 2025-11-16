@@ -20,6 +20,7 @@
  */
 package org.norm4j;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -376,6 +377,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder> {
         return this;
     }
 
+    @SafeVarargs
     private <T, R> void join(Class<?> tableClass,
             String alias,
             String joinType,
@@ -401,6 +403,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder> {
         fromClauseTables.add(new FromClauseTable(table, alias));
     }
 
+    @SafeVarargs
     private <T, R> String getJoinExpression(TableMetadata table, String alias, FieldGetter<T, R>... fieldGetters) {
         for (Join join : table.getJoins()) {
             if (fieldGetters.length > 0) {
@@ -736,16 +739,32 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder> {
         return createQuery().getResultList(type);
     }
 
+    public <T> List<T> getResultList(Connection connection, Class<T> type) {
+        return createQuery().getResultList(connection, type);
+    }
+
     public List<Object[]> getResultList(Class<?>... tableClasses) {
         return createQuery().getResultList(tableClasses);
+    }
+
+    public List<Object[]> getResultList(Connection connection, Class<?>... tableClasses) {
+        return createQuery().getResultList(connection, tableClasses);
     }
 
     public <T> T getSingleResult(Class<T> type) {
         return createQuery().getSingleResult(type);
     }
 
+    public <T> T getSingleResult(Connection connection, Class<T> type) {
+        return createQuery().getSingleResult(connection, type);
+    }
+
     public Object[] getSingleResult(Class<?>... tableClasses) {
         return createQuery().getSingleResult(tableClasses);
+    }
+
+    public Object[] getSingleResult(Connection connection, Class<?>... tableClasses) {
+        return createQuery().getSingleResult(connection, tableClasses);
     }
 
     private Query createQuery() {

@@ -26,7 +26,7 @@ public class Functions {
 
     public static <T, R> Expression coalesce(final Object... values) {
         return new Expression() {
-            public String build(QueryBuilder queryBuilder) {
+            public String build(QueryBuilder<?> queryBuilder) {
                 StringBuilder expression;
                 boolean onlyNull = true;
 

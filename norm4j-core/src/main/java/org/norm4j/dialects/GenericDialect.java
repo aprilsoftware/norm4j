@@ -204,6 +204,7 @@ public abstract class GenericDialect implements SQLDialect {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Object fromSqlValue(ColumnMetadata column, Object value) {
         if (value != null) {
             if (column.getField().getType().isEnum()) {
