@@ -26,7 +26,7 @@ import org.norm4j.GenerationType;
 import org.norm4j.Id;
 import org.norm4j.Table;
 
-@Table(name = "author", schema = "test1")
+@Table(name = "author")
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -28,7 +28,7 @@ import org.norm4j.Id;
 import org.norm4j.Reference;
 import org.norm4j.Table;
 
-@Table(name = "book", schema = "test1")
+@Table(name = "book")
 @Join(columns = "author_id", reference = @Reference(table = Author.class, columns = "id"))
 public class Book {
     @Id

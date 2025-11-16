@@ -39,8 +39,6 @@ public class Test15 extends BaseTest {
         tableManager = new TableManager(getDataSource());
 
         new SchemaSynchronizer(tableManager)
-                .schemaVersionTable("test_version")
-                .schema("test1")
                 .version()
                 .name("v0.1")
                 .init(null)
@@ -57,8 +55,6 @@ public class Test15 extends BaseTest {
                 .apply();
 
         new SchemaSynchronizer(tableManager)
-                .schemaVersionTable("test_version")
-                .schema("test1")
                 .version()
                 .name("v0.3")
                 .end()
@@ -67,10 +63,14 @@ public class Test15 extends BaseTest {
 
     @Test
     public void test15() {
-        System.out.println("Test");
     }
 
     @AfterEach
     void cleanup() {
+        dropTable(null, "bookorderitem");
+        dropTable(null, "bookorder");
+        dropTable(null, "book");
+        dropTable(null, "author");
+        dropTable(null, "schema_version");
     }
 }

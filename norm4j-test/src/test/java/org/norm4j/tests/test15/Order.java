@@ -30,7 +30,7 @@ import org.norm4j.Table;
 import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 
-@Table(name = "bookorder", schema = "test1")
+@Table(name = "bookorder")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
