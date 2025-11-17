@@ -430,6 +430,9 @@ public class TableManagerFactory
         metadataManager.registerTable(Book.class);
         metadataManager.registerTable(Author.class);
 
+        // or register all tables in a package
+        // metadataManager.registerPackage("com.company.records");
+
         metadataManager.createTables(dataSource);
 
         tableManager = new TableManager(dataSource, metadataManager);
