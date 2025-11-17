@@ -28,7 +28,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-core</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.14</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-postgresql</artifactId>
-    <version>1.1.13</version>
+    <version>1.1.14</version>
 </dependency>
 <dependency>
     <groupId>org.postgresql</groupId>
@@ -53,7 +53,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-mariadb</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.14</version>
 </dependency>
 <dependency>
     <groupId>org.mariadb.jdbc</groupId>
@@ -67,7 +67,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-sqlserver</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.14</version>
 </dependency>
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
@@ -81,7 +81,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-oracle</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.14</version>
 </dependency>
 ```
 
@@ -253,6 +253,95 @@ List<Book> books = query.getResultList(Book.class);
 ```
 
 ---
+
+## 🧬 Schema Versioning & Migrations
+
+norm4j provides a small helper, `SchemaSynchronizer`, to manage schema versions in a **code-first** way.
+
+- Each version has a unique **name** (`"v0.1"`, `"v0.2"`, `"add-orders-2025-11-17"`, …).
+- Applied versions are stored in a `schema_version` table (or a custom table name).
+- A version can:
+  - register one or more entity classes,
+  - run **initialize** SQL *before* table creation,
+  - run **finalize** SQL *after* table creation,
+  - load SQL from classpath resources.
+
+You can safely run the synchronizer on every startup; already-applied versions are automatically skipped based on their `name`.
+
+### Basic example
+
+```java
+TableManager tableManager = new TableManager(getDataSource());
+
+new SchemaSynchronizer(tableManager)
+        .version()
+            .name("v0.1")
+            .description("Initial author & book tables")
+            .tables(Author.class, Book.class)
+        .endVersion()
+        .version()
+            .name("v0.2")
+            .description("Add order tables")
+            .tables(Order.class, OrderItem.class)
+        .endVersion()
+    .apply();
+```
+
+By default, a `schema_version` table is created in the default schema.  
+You can override the schema or table name:
+
+```java
+new SchemaSynchronizer(tableManager)
+        .schema("test1")
+        .schemaVersionTable("schema_version")
+        .version()
+            .name("v0.1")
+            .tables(Author.class, Book.class)
+        .endVersion()
+    .apply();
+```
+
+### Running SQL before/after a version
+
+A version can also execute arbitrary SQL, either as raw strings, `Query` objects, or classpath resources:
+
+```java
+new SchemaSynchronizer(tableManager)
+        .version()
+            .name("v0.3")
+            .description("Seed initial orders")
+
+            // 1) Plain SQL string executed before table creation
+            .initialize("insert into bookorder (orderdate) values ('2025-11-17');")
+
+            // 2) Query object executed after table creation
+            .finalize(tableManager.createQuery("delete from bookorder;"))
+
+            // 3) SQL loaded from a classpath resource
+            .finalizeResource("db/test15/v0.3/test.sql")
+        .endVersion()
+    .apply();
+```
+
+Available methods on `VersionBuilder`:
+
+- `name(String name)` – unique version identifier.
+- `description(String description)` – optional human description.
+- `table(Class<?> tableClass)` / `tables(Class<?>... tableClasses)` / `tables(List<Class<?>>)` – entities created in this version.
+- `initialize(String sql)` / `initialize(Query query)` – init SQL, executed **before** `createTables`.
+- `initializeResource(String resourcePath)` – init SQL loaded from a classpath resource.
+- `finalize(String sql)` / `finalize(Query query)` – finalize SQL, executed **after** `createTables`.
+- `finalizeResource(String resourcePath)` – finalize SQL loaded from a classpath resource.
+- `endVersion()` – closes the current version and returns the `SchemaSynchronizer`.
+
+`initializeResource(...)` / `finalizeResource(...)` read the file from the classpath.  
+If the dialect supports multi-statements, the whole file is executed as one statement; otherwise it is split using `Dialect.parseMultiStatements(...)`.
+
+All operations for all versions are executed in a **single transaction**.  
+A database lock is taken on the `schema_version` table so that concurrent application startups don’t run the same migration multiple times.
+
+---
+
 ## 🔨 Domain Object Mapping
 
 ### Basic DTO
@@ -375,8 +464,45 @@ public class AuthorService
 ```
 ---
 
+#### Using SchemaSynchronizer at startup (optional)
+
+Instead of calling `createTables(...)` manually, you can let `SchemaSynchronizer` manage both table creation and schema versions:
+
+```java
+@ApplicationScoped
+public class TableManagerFactory {
+
+    @Resource(name = "jdbc/norm_test")
+    private DataSource dataSource;
+
+    private TableManager tableManager;
+
+    @PostConstruct
+    public void initialize() {
+        MetadataManager metadataManager = new MetadataManager();
+        tableManager = new TableManager(dataSource, metadataManager);
+
+        new SchemaSynchronizer(tableManager)
+                .version()
+                    .name("v0.1")
+                    .description("Initial schema")
+                    .tables(Book.class, Author.class)
+                .endVersion()
+            .apply();
+    }
+
+    @Produces
+    public TableManager getTableManager() {
+        return tableManager;
+    }
+}
+```
+
+---
+
 ## 📚 Advanced Features
 
+- **Schema Versioning & Migrations** with `SchemaSynchronizer`
 - **Composite Primary Keys** via `@IdClass`
 - **Join with Multiple Columns** using `@Join(columns = {...})`
 - **Enumerated Fields** with `@Enumerated(EnumType.STRING|ORDINAL)`
