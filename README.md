@@ -530,6 +530,7 @@ public class TableManagerFactory {
 1. [Norm4j: A SQL-First, High-Performance Alternative to JPA](https://medium.com/@cedric.nanni/norm4j-a-sql-first-high-performance-alternative-to-jpa-4d96bdf8ecbd)
 2. [Why Norm4j takes a Code-First Approach (vs. Database-First Tools Like jOOQ)](https://medium.com/@cedric.nanni/why-norm4j-takes-a-code-first-approach-vs-database-first-tools-like-jooq-9f0bc4344696)
 3. [Norm4j: Simplifying Entity-to-DTO Mapping with a Powerful DSL](https://medium.com/@cedric.nanni/norm4j-simplifying-entity-to-dto-mapping-with-a-powerful-dsl-c1c478d45288)
+4. [Schema Versioning in norm4j: Keeping Your SQL-First World in Sync](https://medium.com/@cedric.nanni/schema-versioning-in-norm4j-keeping-your-sql-first-world-in-sync-3098eda88572)
 
 ---
 
