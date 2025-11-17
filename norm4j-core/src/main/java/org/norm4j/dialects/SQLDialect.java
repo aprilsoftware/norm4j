@@ -23,6 +23,7 @@ package org.norm4j.dialects;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ServiceLoader;
 
 import org.norm4j.Join;
@@ -39,6 +40,10 @@ public interface SQLDialect {
         public boolean isSequenceSupported();
 
         public boolean isGeneratedKeysForSequenceSupported();
+
+        public boolean isMultiStatementsSupported();
+
+        public List<String> parseMultiStatements(String sql);
 
         public String createForeignKeyName(TableMetadata table,
                         TableMetadata referenceTable,

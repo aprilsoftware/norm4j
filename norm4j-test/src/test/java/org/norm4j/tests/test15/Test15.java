@@ -20,10 +20,13 @@
  */
 package org.norm4j.tests.test15;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.norm4j.TableManager;
 import org.norm4j.schema.SchemaSynchronizer;
 import org.norm4j.tests.BaseTest;
@@ -41,36 +44,43 @@ public class Test15 extends BaseTest {
         new SchemaSynchronizer(tableManager)
                 .version()
                 .name("v0.1")
-                .init(null)
-                .finalize(null)
                 .table(Author.class)
                 .table(Book.class)
-                .end()
+                .endVersion()
                 .apply()
                 .version()
                 .name("v0.2")
                 .table(Order.class)
                 .table(OrderItem.class)
-                .end()
+                .endVersion()
                 .apply();
 
         new SchemaSynchronizer(tableManager)
                 .version()
                 .name("v0.3")
-                .end()
+                .initialize("insert into bookorder (orderdate) values ('2025-11-17');")
+                .finalize(tableManager.createQuery("delete from bookorder;"))
+                .finalizeResource("db/test15/v0.3/test.sql")
+                .endVersion()
                 .apply();
     }
 
     @Test
     public void test15() {
+        List<Order> orders = tableManager.createSelectQueryBuilder()
+                .select()
+                .from(Order.class)
+                .getResultList(Order.class);
+
+        assertEquals(1, orders.size());
     }
 
     @AfterEach
     void cleanup() {
-        dropTable(null, "bookorderitem");
-        dropTable(null, "bookorder");
-        dropTable(null, "book");
-        dropTable(null, "author");
-        dropTable(null, "schema_version");
+        dropTable("bookorderitem");
+        dropTable("bookorder");
+        dropTable("book");
+        dropTable("author");
+        dropTable("schema_version");
     }
 }

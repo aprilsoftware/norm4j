@@ -116,6 +116,10 @@ public abstract class BaseTest {
         }
     }
 
+    protected void dropTable(String tableName) {
+        dropTable(null, tableName);
+    }
+
     protected void dropTable(String schema, String tableName) {
         try (Connection connection = dataSource.getConnection()) {
             SQLDialect dialect;

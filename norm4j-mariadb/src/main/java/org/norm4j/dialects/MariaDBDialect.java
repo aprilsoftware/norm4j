@@ -60,6 +60,10 @@ public class MariaDBDialect extends GenericDialect {
         return false;
     }
 
+    public boolean isMultiStatementsSupported() {
+        return false;
+    }
+
     public String getTableName(String schema, String tableName) {
         if (schema == null ||
                 schema.isEmpty()) {

@@ -24,7 +24,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 
 import org.norm4j.EnumType;
@@ -52,6 +54,95 @@ public abstract class GenericDialect implements SQLDialect {
 
     public boolean isGeneratedKeysForSequenceSupported() {
         return true;
+    }
+
+    public boolean isMultiStatementsSupported() {
+        return true;
+    }
+
+    public List<String> parseMultiStatements(String sql) {
+        List<String> statements = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        boolean inLineComment = false;
+        boolean inBlockComment = false;
+
+        int length = sql.length();
+
+        for (int i = 0; i < length; i++) {
+            char c = sql.charAt(i);
+            char next = (i + 1 < length) ? sql.charAt(i + 1) : '\0';
+
+            if (inLineComment) {
+                if (c == '\n' || c == '\r') {
+                    inLineComment = false;
+                }
+                continue;
+            }
+
+            if (inBlockComment) {
+                if (c == '*' && next == '/') {
+                    inBlockComment = false;
+                    i++;
+                }
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '-' && next == '-') {
+                    inLineComment = true;
+                    i++;
+                    continue;
+                }
+
+                if (c == '/' && next == '*') {
+                    inBlockComment = true;
+                    i++;
+                    continue;
+                }
+            }
+
+            if (!inDoubleQuote && c == '\'') {
+                current.append(c);
+                if (inSingleQuote) {
+                    if (next == '\'') {
+                        current.append(next);
+                        i++;
+                    } else {
+                        inSingleQuote = false;
+                    }
+                } else {
+                    inSingleQuote = true;
+                }
+                continue;
+            }
+
+            if (!inSingleQuote && c == '"') {
+                inDoubleQuote = !inDoubleQuote;
+                current.append(c);
+                continue;
+            }
+
+            if (c == ';' && !inSingleQuote && !inDoubleQuote) {
+                String stmt = current.toString().trim();
+                if (!stmt.isEmpty()) {
+                    statements.add(stmt);
+                }
+                current.setLength(0);
+                continue;
+            }
+
+            current.append(c);
+        }
+
+        String last = current.toString().trim();
+        if (!last.isEmpty()) {
+            statements.add(last);
+        }
+
+        return statements;
     }
 
     public String getTableName(String schema, String tableName) {

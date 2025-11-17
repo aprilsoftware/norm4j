@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -824,6 +825,22 @@ public class TableManager {
 
             return records;
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void execute(String sql) {
+        try (Connection connection = getDataSource().getConnection()) {
+            execute(connection, sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void execute(Connection connection, String sql) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

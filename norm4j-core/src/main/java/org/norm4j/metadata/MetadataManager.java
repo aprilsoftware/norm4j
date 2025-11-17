@@ -97,7 +97,7 @@ public class MetadataManager {
         InputStream inputStream;
         BufferedReader reader;
 
-        inputStream = ClassLoader.getSystemClassLoader()
+        inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(packageName.replaceAll("[.]", "/"));
 
         reader = new BufferedReader(new InputStreamReader(inputStream));
