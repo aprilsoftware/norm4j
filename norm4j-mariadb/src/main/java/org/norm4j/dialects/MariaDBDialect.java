@@ -216,15 +216,21 @@ public class MariaDBDialect extends GenericDialect {
     }
 
     private String getSqlType(ColumnMetadata column) {
-        Column columnAnnotation;
         Class<?> fieldType;
 
         fieldType = column.getField().getType();
 
-        columnAnnotation = (Column) column.getAnnotations().get(Column.class);
-
         if (fieldType == String.class) {
-            return "VARCHAR(" + columnAnnotation.length() + ")";
+            Column columnAnnotation;
+
+            columnAnnotation = (Column) column.getAnnotations().get(Column.class);
+
+            if (columnAnnotation == null) {
+                return "VARCHAR(255)";
+            } else {
+                return "VARCHAR(" + columnAnnotation.length() + ")";
+            }
+
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BOOLEAN";
         } else if (fieldType == int.class || fieldType == Integer.class) {

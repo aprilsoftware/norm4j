@@ -204,6 +204,15 @@ public abstract class GenericDialect implements SQLDialect {
         }
     }
 
+    public PreparedStatement createLockStatement(Connection connection, TableMetadata table) {
+        try {
+            return connection.prepareStatement(
+                    "SELECT * FROM " + getTableName(table) + " FOR UPDATE");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public Object fromSqlValue(ColumnMetadata column, Object value) {
         if (value != null) {

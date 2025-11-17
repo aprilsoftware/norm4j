@@ -83,6 +83,8 @@ public interface SQLDialect {
         public PreparedStatement createPersistStatement(Connection connection,
                         TableMetadata table);
 
+        public PreparedStatement createLockStatement(Connection connection, TableMetadata table);
+
         public Object fromSqlValue(ColumnMetadata column, Object value);
 
         public Object toSqlValue(ColumnMetadata column, Object value);

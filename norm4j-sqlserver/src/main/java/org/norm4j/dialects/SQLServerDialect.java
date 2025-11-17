@@ -233,15 +233,20 @@ public class SQLServerDialect extends GenericDialect {
     }
 
     private String getSqlType(ColumnMetadata column) {
-        Column columnAnnotation;
         Class<?> fieldType;
 
         fieldType = column.getField().getType();
 
-        columnAnnotation = (Column) column.getAnnotations().get(Column.class);
-
         if (fieldType == String.class) {
-            return "NVARCHAR(" + columnAnnotation.length() + ")";
+            Column columnAnnotation;
+
+            columnAnnotation = (Column) column.getAnnotations().get(Column.class);
+
+            if (columnAnnotation == null) {
+                return "NVARCHAR(255)";
+            } else {
+                return "NVARCHAR(" + columnAnnotation.length() + ")";
+            }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BIT";
         } else if (fieldType == int.class || fieldType == Integer.class) {
@@ -357,6 +362,15 @@ public class SQLServerDialect extends GenericDialect {
             return connection.prepareStatement(sql.toString(),
                     Statement.RETURN_GENERATED_KEYS);
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public PreparedStatement createLockStatement(Connection connection, TableMetadata table) {
+        try {
+            return connection.prepareStatement(
+                    "SELECT * FROM " + getTableName(table) + " WITH (TABLOCKX)");
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

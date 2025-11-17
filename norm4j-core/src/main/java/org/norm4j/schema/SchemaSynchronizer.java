@@ -75,9 +75,8 @@ public class SchemaSynchronizer {
 
             tableManager.getMetadataManager().createTables(connection);
 
-            try (PreparedStatement lockStatement = connection
-                    .prepareStatement(
-                            "SELECT * FROM " + tableManager.getDialect().getTableName(table) + " FOR UPDATE")) {
+            try (PreparedStatement lockStatement = tableManager.getDialect()
+                    .createLockStatement(connection, table)) {
                 lockStatement.executeQuery();
 
                 for (VersionBuilder versionBuilder : versionBuilders) {
