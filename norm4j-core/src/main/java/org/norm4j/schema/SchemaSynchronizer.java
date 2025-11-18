@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,25 +89,28 @@ public class SchemaSynchronizer {
                     .createLockStatement(connection, column.getTable())) {
                 lockStatement.executeQuery();
 
-                for (VersionBuilder versionBuilder : versionBuilders) {
-                    if (isAlreadyApplied(tableManager, connection, versionBuilder.name))
-                        continue;
+                boolean hasAnyVersion = hasAnyAppliedVersion(tableManager, connection);
 
-                    for (Object statement : versionBuilder.statements) {
-                        executeQuery(tableManager, connection, statement);
+                if (!hasAnyVersion && !versionBuilders.isEmpty()) {
+                    VersionBuilder last = versionBuilders.get(versionBuilders.size() - 1);
+
+                    if (!isAlreadyApplied(tableManager, connection, last.name)) {
+                        for (Object statement : last.initialStatements) {
+                            executeQuery(tableManager, connection, statement);
+                        }
+
+                        insertSchemaVersionRow(connection, column, last);
                     }
+                } else {
+                    for (VersionBuilder versionBuilder : versionBuilders) {
+                        if (isAlreadyApplied(tableManager, connection, versionBuilder.name))
+                            continue;
 
-                    try (PreparedStatement insertStatement = connection.prepareStatement(
-                            "INSERT INTO "
-                                    + tableManager.getDialect().getTableName(column.getTable())
-                                    + " (name, description, creationdate)"
-                                    + " VALUES (?, ?, ?)")) {
-                        insertStatement.setString(1, versionBuilder.name);
-                        insertStatement.setString(2, versionBuilder.description);
-                        insertStatement.setObject(3,
-                                tableManager.getDialect().toSqlValue(column,
-                                        new Date(System.currentTimeMillis())));
-                        insertStatement.executeUpdate();
+                        for (Object statement : versionBuilder.statements) {
+                            executeQuery(tableManager, connection, statement);
+                        }
+
+                        insertSchemaVersionRow(connection, column, versionBuilder);
                     }
                 }
             }
@@ -119,6 +123,22 @@ public class SchemaSynchronizer {
         versionBuilders.clear();
 
         return this;
+    }
+
+    private void insertSchemaVersionRow(Connection connection, ColumnMetadata column, VersionBuilder versionBuilder)
+            throws SQLException {
+        try (PreparedStatement insertStatement = connection.prepareStatement(
+                "INSERT INTO "
+                        + tableManager.getDialect().getTableName(column.getTable())
+                        + " (name, description, creationdate)"
+                        + " VALUES (?, ?, ?)")) {
+            insertStatement.setString(1, versionBuilder.name);
+            insertStatement.setString(2, versionBuilder.description);
+            insertStatement.setObject(3,
+                    tableManager.getDialect().toSqlValue(column,
+                            new Date(System.currentTimeMillis())));
+            insertStatement.executeUpdate();
+        }
     }
 
     private void executeQuery(TableManager tableManager, Connection connection, Object statement) {
@@ -147,14 +167,28 @@ public class SchemaSynchronizer {
         }
     }
 
+    private boolean hasAnyAppliedVersion(TableManager tableManager, Connection connection) {
+        SchemaVersion version = new SelectQueryBuilder(tableManager)
+                .select()
+                .from(SchemaVersion.class)
+                .limit(1)
+                .orderBy(SchemaVersion::getCreationDate)
+                .getSingleResult(connection, SchemaVersion.class);
+
+        return version != null;
+    }
+
     public class VersionBuilder {
         private final SchemaSynchronizer synchronizer;
+        private final List<Object> initialStatements;
         private final List<Object> statements;
         private String name;
         private String description;
 
         public VersionBuilder(SchemaSynchronizer synchronizer) {
             this.synchronizer = synchronizer;
+
+            this.initialStatements = new ArrayList<>();
 
             statements = new ArrayList<>();
         }
@@ -205,6 +239,44 @@ public class SchemaSynchronizer {
                     tableManager.getDialect().getClass().equals(dialect)) {
                 for (String statement : readSqlFromResource(resourcePath)) {
                     statements.add(statement);
+                }
+            }
+            return this;
+        }
+
+        public VersionBuilder executeIfInitial(String statement) {
+            return executeIfInitial(statement, null);
+        }
+
+        public VersionBuilder executeIfInitial(String statement, Class<? extends SQLDialect> dialect) {
+            if (dialect == null ||
+                    tableManager.getDialect().getClass().equals(dialect)) {
+                initialStatements.add(statement);
+            }
+            return this;
+        }
+
+        public VersionBuilder executeIfInitial(Query statement) {
+            return executeIfInitial(statement, null);
+        }
+
+        public VersionBuilder executeIfInitial(Query statement, Class<? extends SQLDialect> dialect) {
+            if (dialect == null ||
+                    tableManager.getDialect().getClass().equals(dialect)) {
+                initialStatements.add(statement);
+            }
+            return this;
+        }
+
+        public VersionBuilder executeResourceIfInitial(String resourcePath) {
+            return executeResourceIfInitial(resourcePath, null);
+        }
+
+        public VersionBuilder executeResourceIfInitial(String resourcePath, Class<? extends SQLDialect> dialect) {
+            if (dialect == null ||
+                    tableManager.getDialect().getClass().equals(dialect)) {
+                for (String statement : readSqlFromResource(resourcePath)) {
+                    initialStatements.add(statement);
                 }
             }
             return this;
