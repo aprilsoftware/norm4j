@@ -474,7 +474,7 @@ A typical setup using the **Author/Book** example and PostgreSQL might look like
 2. Use `SchemaSynchronizer` at startup to apply the schema and seed initial data:
 
    ```java
-   TableManager tableManager = new TableManager(getDataSource());
+   TableManager tableManager = new TableManager(getDataSource(), metadataManager);
 
    new SchemaSynchronizer(tableManager)
            .version()
