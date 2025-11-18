@@ -44,7 +44,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
-    <version>42.7.5</version>
+    <version>42.7.2</version>
 </dependency>
 ```
 
@@ -72,7 +72,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
     <artifactId>mssql-jdbc</artifactId>
-    <version>12.10.0.jre11</version>
+    <version>12.10.2.jre11</version>
 </dependency>
 ```
 
