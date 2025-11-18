@@ -28,6 +28,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.norm4j.TableManager;
+import org.norm4j.dialects.MariaDBDialect;
+import org.norm4j.dialects.OracleDialect;
+import org.norm4j.dialects.PostgreSQLDialect;
+import org.norm4j.dialects.SQLServerDialect;
+import org.norm4j.metadata.MetadataManager;
 import org.norm4j.schema.SchemaSynchronizer;
 import org.norm4j.tests.BaseTest;
 
@@ -39,28 +44,28 @@ public class Test15 extends BaseTest {
 
     @BeforeEach
     public void setup() {
-        tableManager = new TableManager(getDataSource());
+        MetadataManager metadataManager;
+
+        metadataManager = new MetadataManager();
+
+        metadataManager.registerPackage("org.norm4j.tests.test15");
+
+        tableManager = new TableManager(getDataSource(), metadataManager);
 
         new SchemaSynchronizer(tableManager)
                 .version()
                 .name("v0.1")
-                .table(Author.class)
-                .table(Book.class)
+                .executeResource("db/v0.1/mariadb/ddl.sql", MariaDBDialect.class)
+                .executeResource("db/v0.1/oracle/ddl.sql", OracleDialect.class)
+                .executeResource("db/v0.1/postgresql/ddl.sql", PostgreSQLDialect.class)
+                .executeResource("db/v0.1/sqlserver/ddl.sql", SQLServerDialect.class)
                 .endVersion()
                 .apply()
                 .version()
                 .name("v0.2")
-                .table(Order.class)
-                .table(OrderItem.class)
-                .endVersion()
-                .apply();
-
-        new SchemaSynchronizer(tableManager)
-                .version()
-                .name("v0.3")
-                .initialize("insert into bookorder (orderdate) values ('2025-11-17');")
-                .finalize(tableManager.createQuery("delete from bookorder;"))
-                .finalizeResource("db/test15/v0.3/test.sql")
+                .execute("insert into bookorder (orderdate) values ('2025-11-17');")
+                .execute(tableManager.createQuery("delete from bookorder;"))
+                .executeResource("db/test15/v0.2/test.sql")
                 .endVersion()
                 .apply();
     }

@@ -4,9 +4,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.norm4j</groupId>
-  <artifactId>norm4j-test</artifactId>
+  <artifactId>norm4j-maven-plugin</artifactId>
   <version>1.1.15</version>
-  <packaging>jar</packaging>
+  <packaging>maven-plugin</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
 
@@ -14,7 +14,7 @@
       norm4j (Not an ORM for Java) is a lightweight, SQL-centric alternative to JPA
   </description>
 
-  <url>https://www.norm4j.org</url>
+  <url>http://www.norm4j.org</url>
 
   <licenses>
     <license>
@@ -41,8 +41,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
-    <junit.jupiter.version>5.12.1</junit.jupiter.version>
-    <norm4j.schema.version>v0.1</norm4j.schema.version>
   </properties>
 
   <dependencies>
@@ -51,121 +49,144 @@
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-core</artifactId>
         <version>1.1.15</version>
-        <scope>test</scope>
     </dependency>
-  
+
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-postgresql</artifactId>
         <version>1.1.15</version>
-        <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.7.7</version>
-      <scope>test</scope>
     </dependency>
     
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-mariadb</artifactId>
         <version>1.1.15</version>
-        <scope>test</scope>
-    </dependency>
-
-    <dependency>
-        <groupId>org.mariadb.jdbc</groupId>
-        <artifactId>mariadb-java-client</artifactId>
-        <version>3.5.2</version>
-        <scope>test</scope>
     </dependency>
     
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-sqlserver</artifactId>
         <version>1.1.15</version>
-        <scope>test</scope>
-    </dependency>
-
-    <dependency>
-        <groupId>com.microsoft.sqlserver</groupId>
-        <artifactId>mssql-jdbc</artifactId>
-        <version>12.10.2.jre11</version>
-        <scope>test</scope>
     </dependency>
 
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-oracle</artifactId>
         <version>1.1.15</version>
-        <scope>test</scope>
+    </dependency>
+   
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.13.0</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.9.9</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.12.1</version>
-        <scope>test</scope>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.2.1</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.12.1</version>
-        <scope>test</scope>
-    </dependency>
-
-    <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-dbcp2</artifactId>
-        <version>2.13.0</version>
-        <scope>test</scope>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>2.2.1</version>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
 
   <build>
     <plugins>
-
+    
       <plugin>
-        <groupId>org.norm4j</groupId>
-        <artifactId>norm4j-maven-plugin</artifactId>
-        <version>1.1.15</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.13.0</version>
         <configuration>
-          <packages>
-            <package>org.norm4j.tests.test15</package>
-          </packages>
-          <dialects>
-            <dialect>mariadb</dialect>
-            <dialect>oracle</dialect>
-            <dialect>postgresql</dialect>
-            <dialect>sqlserver</dialect>
-          </dialects>
-          <version>${norm4j.schema.version}</version>
-          <outputDirectory>${project.basedir}/src/test/resources/db</outputDirectory>
+          <goalPrefix>norm4j</goalPrefix>
         </configuration>
         <executions>
           <execution>
-            <?m2e execute onConfiguration,onIncremental?>
-            <id>generate-ddl</id>
-            <phase>process-test-classes</phase>
+            <id>default-descriptor</id>
             <goals>
-              <goal>generate-ddl</goal>
+              <goal>descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.6.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
+          <waitUntil>uploaded</waitUntil>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
 
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.1.2</version>
-            <configuration>
-                <useModulePath>false</useModulePath>
-            </configuration>
-        </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.11.2</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.2.7</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <keyname>${gpg.keyname}</keyname>
+          <passphraseServerId>${gpg.keyname}</passphraseServerId>
+          <gpgArguments>
+            <arg>--pinentry-mode</arg>
+            <arg>loopback</arg>
+          </gpgArguments>
+        </configuration>
+      </plugin>
 
     </plugins>
 
@@ -199,9 +220,7 @@
           <artifactId>maven-deploy-plugin</artifactId>
           <version>3.1.4</version>
         </plugin>
-
       </plugins>
-
     </pluginManagement>
 
   </build>

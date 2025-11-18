@@ -33,27 +33,39 @@ import org.norm4j.Table;
 import org.norm4j.TableGenerator;
 import org.norm4j.Temporal;
 import org.norm4j.dialects.SQLDialect;
+import org.norm4j.metadata.helpers.DdlHelper;
 import org.norm4j.metadata.helpers.TableCreationHelper;
 
 import javax.sql.DataSource;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
-
-import static org.norm4j.metadata.helpers.TableCreationHelper.validateJoins;
 
 public class MetadataManager {
     private final Map<Class<?>, TableMetadata> metadataMap;
@@ -71,6 +83,12 @@ public class MetadataManager {
 
     public MetadataManager() {
         metadataMap = new HashMap<>();
+    }
+
+    public MetadataManager(SQLDialect dialect) {
+        this();
+
+        this.dialect = dialect;
     }
 
     public SQLDialect getDialect() {
@@ -117,6 +135,75 @@ public class MetadataManager {
         }
     }
 
+    public void registerPackageFromClassPath(String packageName) {
+        registerPackageFromClassPath(packageName, Thread.currentThread().getContextClassLoader());
+    }
+
+    public void registerPackageFromClassPath(String packageName, ClassLoader classLoader) {
+        for (Class<?> c : getPackageClassesFromClassPath(packageName, classLoader)) {
+            if (c.isAnnotationPresent(Table.class)) {
+                registerTable(c);
+            }
+        }
+    }
+
+    private List<Class<?>> getPackageClassesFromClassPath(String packageName, ClassLoader cl) {
+        String path = packageName.replace('.', '/');
+        List<Class<?>> classes = new ArrayList<>();
+
+        try {
+            Enumeration<URL> resources = cl.getResources(path);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                String protocol = url.getProtocol();
+
+                if ("file".equals(protocol)) {
+                    File dir = new File(url.toURI());
+                    if (dir.isDirectory()) {
+                        File[] files = dir.listFiles();
+                        if (files != null) {
+                            for (File f : files) {
+                                String name = f.getName();
+                                if (name.endsWith(".class") && !name.contains("$")) {
+                                    String simpleName = name.substring(0, name.length() - 6);
+                                    String fqcn = packageName + "." + simpleName;
+                                    classes.add(Class.forName(fqcn, false, cl));
+                                }
+                            }
+                        }
+                    }
+                } else if ("jar".equals(protocol)) {
+                    String urlPath = url.getPath();
+                    int bang = urlPath.indexOf('!');
+                    if (bang != -1) {
+                        String jarPath = urlPath.substring("file:".length(), bang);
+                        try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
+                            String prefix = path + "/";
+                            Enumeration<JarEntry> entries = jar.entries();
+                            while (entries.hasMoreElements()) {
+                                JarEntry entry = entries.nextElement();
+                                String name = entry.getName();
+                                if (name.startsWith(prefix)
+                                        && name.endsWith(".class")
+                                        && !name.contains("$")
+                                        && name.indexOf('/', prefix.length()) == -1) {
+
+                                    String fqcn = name.substring(0, name.length() - 6)
+                                            .replace('/', '.');
+                                    classes.add(Class.forName(fqcn, false, cl));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return classes;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to scan package " + packageName, e);
+        }
+    }
+
     public void registerTable(Class<?> tableClass) {
         registerTable(tableClass, null, null);
     }
@@ -141,7 +228,7 @@ public class MetadataManager {
                 : null;
 
         Join[] joins = tableClass.getAnnotationsByType(Join.class);
-        validateJoins(joins);
+        DdlHelper.validateJoins(joins);
 
         TableMetadata tableMetadata = new TableMetadata(
                 tableClass,
@@ -246,6 +333,53 @@ public class MetadataManager {
         }
 
         return true;
+    }
+
+    public void createDdlAsResource(String resourcePath) {
+        Path file = Paths.get(resourcePath);
+
+        try {
+            Path parent = file.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create directories for DDL resource: " + file, e);
+        }
+
+        DdlHelper helper = new DdlHelper(metadataMap);
+        List<String> statements = new ArrayList<>();
+
+        for (String sql : helper.createSequenceTables(dialect)) {
+            statements.add(sql);
+        }
+
+        for (TableMetadata tableMetadata : metadataMap.values()) {
+            for (String sql : helper.createSequences(dialect, tableMetadata)) {
+                statements.add(sql);
+            }
+
+            statements.add(dialect.createTable(tableMetadata));
+        }
+
+        for (String sql : helper.createForeignKeyConstraints(dialect)) {
+            statements.add(sql);
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+            for (String statement : statements) {
+                writer.write(statement);
+
+                if (!statement.endsWith(";")) {
+                    writer.write(";");
+                }
+
+                writer.newLine();
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write DDL resource to: " + file, e);
+        }
     }
 
     public void createTables(DataSource dataSource) {

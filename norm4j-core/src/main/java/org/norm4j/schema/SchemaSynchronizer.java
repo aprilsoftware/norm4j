@@ -26,12 +26,12 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.norm4j.Query;
 import org.norm4j.SelectQueryBuilder;
 import org.norm4j.TableManager;
+import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.ColumnMetadata;
 
 public class SchemaSynchronizer {
@@ -76,7 +76,13 @@ public class SchemaSynchronizer {
         try (Connection connection = tableManager.getDataSource().getConnection()) {
             connection.setAutoCommit(false);
 
-            tableManager.getMetadataManager().createTables(connection);
+            if (!tableManager.getMetadataManager().getDialect()
+                    .tableExists(connection, column.getTable().getSchema(),
+                            column.getTable().getTableName())) {
+                executeQuery(tableManager,
+                        connection,
+                        tableManager.getDialect().createTable(column.getTable()));
+            }
 
             try (PreparedStatement lockStatement = tableManager.getDialect()
                     .createLockStatement(connection, column.getTable())) {
@@ -86,17 +92,7 @@ public class SchemaSynchronizer {
                     if (isAlreadyApplied(tableManager, connection, versionBuilder.name))
                         continue;
 
-                    for (Object statement : versionBuilder.initStatements) {
-                        executeQuery(tableManager, connection, statement);
-                    }
-
-                    for (Class<?> tableClass : versionBuilder.tableClasses) {
-                        tableManager.getMetadataManager().registerTable(tableClass);
-                    }
-
-                    tableManager.getMetadataManager().createTables(connection);
-
-                    for (Object statement : versionBuilder.finalizeStatements) {
+                    for (Object statement : versionBuilder.statements) {
                         executeQuery(tableManager, connection, statement);
                     }
 
@@ -153,20 +149,14 @@ public class SchemaSynchronizer {
 
     public class VersionBuilder {
         private final SchemaSynchronizer synchronizer;
-        private final List<Object> initStatements;
-        private final List<Class<?>> tableClasses;
-        private final List<Object> finalizeStatements;
+        private final List<Object> statements;
         private String name;
         private String description;
 
         public VersionBuilder(SchemaSynchronizer synchronizer) {
             this.synchronizer = synchronizer;
 
-            tableClasses = new ArrayList<>();
-
-            initStatements = new ArrayList<>();
-
-            finalizeStatements = new ArrayList<>();
+            statements = new ArrayList<>();
         }
 
         public VersionBuilder name(String name) {
@@ -179,52 +169,43 @@ public class SchemaSynchronizer {
             return this;
         }
 
-        public VersionBuilder table(Class<?> tableClass) {
-            tableClasses.add(tableClass);
+        public VersionBuilder execute(String statement) {
+            execute(statement, null);
             return this;
         }
 
-        public VersionBuilder tables(Class<?>... tableClasses) {
-            this.tableClasses.addAll(Arrays.asList(tableClasses));
-            return this;
-        }
-
-        public VersionBuilder tables(List<Class<?>> tableClasses) {
-            this.tableClasses.addAll(tableClasses);
-            return this;
-        }
-
-        public VersionBuilder initialize(String statement) {
-            initStatements.add(statement);
-            return this;
-        }
-
-        public VersionBuilder initialize(Query statement) {
-
-            initStatements.add(statement);
-            return this;
-        }
-
-        public VersionBuilder initializeResource(String resourcePath) {
-            for (String statement : readSqlFromResource(resourcePath)) {
-                initStatements.add(statement);
+        public VersionBuilder execute(String statement, Class<? extends SQLDialect> dialect) {
+            if (dialect == null ||
+                    tableManager.getDialect().getClass().equals(dialect)) {
+                statements.add(statement);
             }
             return this;
         }
 
-        public VersionBuilder finalize(String statement) {
-            finalizeStatements.add(statement);
+        public VersionBuilder execute(Query statement) {
+            execute(statement, null);
             return this;
         }
 
-        public VersionBuilder finalize(Query statement) {
-            finalizeStatements.add(statement);
+        public VersionBuilder execute(Query statement, Class<? extends SQLDialect> dialect) {
+            if (dialect == null ||
+                    tableManager.getDialect().getClass().equals(dialect)) {
+                statements.add(statement);
+            }
             return this;
         }
 
-        public VersionBuilder finalizeResource(String resourcePath) {
-            for (String statement : readSqlFromResource(resourcePath)) {
-                finalizeStatements.add(statement);
+        public VersionBuilder executeResource(String resourcePath) {
+            executeResource(resourcePath, null);
+            return this;
+        }
+
+        public VersionBuilder executeResource(String resourcePath, Class<? extends SQLDialect> dialect) {
+            if (dialect == null ||
+                    tableManager.getDialect().getClass().equals(dialect)) {
+                for (String statement : readSqlFromResource(resourcePath)) {
+                    statements.add(statement);
+                }
             }
             return this;
         }

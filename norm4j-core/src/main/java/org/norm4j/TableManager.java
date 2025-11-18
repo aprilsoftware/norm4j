@@ -47,10 +47,6 @@ public class TableManager {
     private final MetadataManager metadataManager;
     private final DataSource dataSource;
 
-    public TableManager(DataSource dataSource) {
-        this(dataSource, new MetadataManager());
-    }
-
     public TableManager(DataSource dataSource, MetadataManager metadataManager) {
         this.dataSource = dataSource;
 
