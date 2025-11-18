@@ -493,6 +493,7 @@ A typical setup using the **Author/Book** example and PostgreSQL might look like
                .description("Seed initial author & book data")
 
                // When this version is used as the first version on a brand-new DB:
+               .executeResourceIfInitial("db/v0.2/postgresql/ddl.sql", PostgreSQLDialect.class)
                .executeIfInitial("insert into author (name) values ('Author A');")
                .executeIfInitial("insert into book (name, author_id) values ('Book A', 1);")
 
