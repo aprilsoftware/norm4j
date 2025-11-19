@@ -199,8 +199,6 @@ public class MetadataManager {
                 }
             }
 
-            classes.sort(Comparator.comparing(Class::getName));
-
             return classes;
         } catch (Exception e) {
             throw new RuntimeException("Failed to scan package " + packageName, e);
@@ -352,22 +350,47 @@ public class MetadataManager {
 
         DdlHelper helper = new DdlHelper(metadataMap);
         List<String> statements = new ArrayList<>();
+        List<String> ddl = new ArrayList<>();
 
         for (String sql : helper.createSequenceTables(dialect)) {
-            statements.add(sql);
+            ddl.add(sql);
         }
+
+        ddl.sort(String::compareTo);
+
+        statements.addAll(ddl);
+
+        ddl.clear();
 
         for (TableMetadata tableMetadata : metadataMap.values()) {
+            List<String> sequenceDdl = new ArrayList<>();
+
             for (String sql : helper.createSequences(dialect, tableMetadata)) {
-                statements.add(sql);
+                sequenceDdl.add(sql);
             }
 
-            statements.add(dialect.createTable(tableMetadata));
+            sequenceDdl.sort(String::compareTo);
+
+            statements.addAll(sequenceDdl);
+
+            ddl.add(dialect.createTable(tableMetadata));
         }
 
+        ddl.sort(String::compareTo);
+
+        statements.addAll(ddl);
+
+        ddl.clear();
+
         for (String sql : helper.createForeignKeyConstraints(dialect)) {
-            statements.add(sql);
+            ddl.add(sql);
         }
+
+        ddl.sort(String::compareTo);
+
+        statements.addAll(ddl);
+
+        ddl.clear();
 
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             for (String statement : statements) {

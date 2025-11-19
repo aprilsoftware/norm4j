@@ -90,9 +90,7 @@ public class DdlHelper {
     }
 
     public List<String> createSequences(SQLDialect dialect, TableMetadata tableMetadata) {
-        List<String> ddl;
-
-        ddl = new ArrayList<>();
+        List<String> ddl = new ArrayList<>();
 
         for (ColumnMetadata column : tableMetadata.getColumns()) {
             if (!column.getAnnotations().containsKey(GeneratedValue.class)) {
@@ -120,9 +118,7 @@ public class DdlHelper {
     }
 
     public List<String> createForeignKeyConstraints(SQLDialect dialect, List<TableMetadata> existingTables) {
-        List<String> ddl;
-
-        ddl = new ArrayList<>();
+        List<String> ddl = new ArrayList<>();
 
         for (Map.Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet()) {
             TableMetadata tableMetadata = metadataMap.get(entry.getKey());
