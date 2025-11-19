@@ -62,6 +62,7 @@ public class Test15 extends BaseTest {
                 .endVersion()
                 .version()
                 .name("v0.2")
+
                 .executeResourceIfInitial("db/v0.2/mariadb/ddl.sql", MariaDBDialect.class)
                 .executeResourceIfInitial("db/v0.2/oracle/ddl.sql", OracleDialect.class)
                 .executeResourceIfInitial("db/v0.2/postgresql/ddl.sql", PostgreSQLDialect.class)
@@ -69,9 +70,11 @@ public class Test15 extends BaseTest {
                 .executeIfInitial("insert into bookorder (orderdate) values ('2025-11-17');")
                 .executeIfInitial(tableManager.createQuery("delete from bookorder;"))
                 .executeResourceIfInitial("db/test15/v0.2/test.sql")
+
                 .execute("insert into bookorder (orderdate) values ('2025-11-17');")
                 .execute(tableManager.createQuery("delete from bookorder;"))
                 .executeResource("db/test15/v0.2/test.sql")
+
                 .endVersion()
                 .apply();
     }

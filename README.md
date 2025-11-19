@@ -359,6 +359,68 @@ List<Book> books = query.getResultList(Book.class);
 
 ---
 
+## 🔨 Domain Object Mapping
+
+### Basic DTO
+```java
+AuthorDTO authorDTO;
+
+authorDTO = RecordMapper.from(Author.class, AuthorDTO.class).map(author);
+```
+
+### DTO with relations
+**One to Many**
+
+```java
+RecordMapper<Author, AuthorDTO> authorMapper;
+List<BookDTO> books;
+
+authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
+        .map(Author::getId).to(AuthorDTO::getId) // Automactivally mapped, but can be overriden
+        .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
+        .endJoin()
+    .build(tableManager);
+
+authorDTO = authorMapper.map(author);
+
+books = authorDTO.getBooks();
+```
+
+**Many to One**
+
+```java
+RecordMapper<Author, AuthorDTO> authorMapper;
+AuthorDTO authorDTO;
+BookDTO bookDTO;
+
+bookMapper = RecordMapperBuilder.from(Book.class, BookDTO.class)
+        .join(BookDTO::getAuthor, Author.class, AuthorDTO.class)
+        .endJoin()
+    .build(tableManager);
+
+bookDTO = bookMapper.map(book);
+
+authorDTO = bookDTO.getAuthor();
+```
+
+**Map a specific field of the related object**
+
+```java
+RecordMapper<Author, AuthorDTO> authorMapper;
+List<UUID> bookIds;
+
+authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
+        .join(AuthorDTO::getBookIds, Book.class, UUID.class)
+            .map(Book::getId).toObject()
+    .build(tableManager);
+
+authorDTO = authorMapper.map(author);
+
+bookIds = authorDTO.getBookIds();
+```
+
+---
+
 ## 🧬 Schema Versioning & Migrations
 
 norm4j provides a small helper, `SchemaSynchronizer`, to manage schema versions in a **code-first** way.
@@ -515,68 +577,6 @@ In this example:
   - its `executeIfInitial*` statements are ignored.
 
 You can extend this pattern with more versions (`v0.3`, `v0.4`, …) and use the dialect-specific overloads when you need vendor-specific syntax.
-
----
-
-## 🔨 Domain Object Mapping
-
-### Basic DTO
-```java
-AuthorDTO authorDTO;
-
-authorDTO = RecordMapper.from(Author.class, AuthorDTO.class).map(author);
-```
-
-### DTO with relations
-**One to Many**
-
-```java
-RecordMapper<Author, AuthorDTO> authorMapper;
-List<BookDTO> books;
-
-authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
-        .map(Author::getId).to(AuthorDTO::getId) // Automactivally mapped, but can be overriden
-        .join(AuthorDTO::getBooks, Book.class, BookDTO.class)
-        .endJoin()
-    .build(tableManager);
-
-authorDTO = authorMapper.map(author);
-
-books = authorDTO.getBooks();
-```
-
-**Many to One**
-
-```java
-RecordMapper<Author, AuthorDTO> authorMapper;
-AuthorDTO authorDTO;
-BookDTO bookDTO;
-
-bookMapper = RecordMapperBuilder.from(Book.class, BookDTO.class)
-        .join(BookDTO::getAuthor, Author.class, AuthorDTO.class)
-        .endJoin()
-    .build(tableManager);
-
-bookDTO = bookMapper.map(book);
-
-authorDTO = bookDTO.getAuthor();
-```
-
-**Map a specific field of the related object**
-
-```java
-RecordMapper<Author, AuthorDTO> authorMapper;
-List<UUID> bookIds;
-
-authorMapper = RecordMapperBuilder.from(Author.class, AuthorDTO.class)
-        .join(AuthorDTO::getBookIds, Book.class, UUID.class)
-            .map(Book::getId).toObject()
-    .build(tableManager);
-
-authorDTO = authorMapper.map(author);
-
-bookIds = authorDTO.getBookIds();
-```
 
 ---
 
