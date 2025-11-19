@@ -57,6 +57,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -249,6 +250,8 @@ public class MetadataManager {
 
             tableMetadata.getColumns().add(new ColumnMetadata(tableMetadata, annotations, field));
         }
+
+        tableMetadata.getColumns().sort(Comparator.comparing(ColumnMetadata::getColumnName));
 
         metadataMap.put(tableClass, tableMetadata);
     }

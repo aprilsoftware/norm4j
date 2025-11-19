@@ -1,10 +1,10 @@
 CREATE TABLE author (id INT IDENTITY(1,1), name NVARCHAR(255) NOT NULL, PRIMARY KEY (id));
 
-CREATE TABLE book (id INT IDENTITY(1,1), name NVARCHAR(255) NOT NULL, author_id INT NOT NULL, PRIMARY KEY (id));
+CREATE TABLE book (author_id INT NOT NULL, id INT IDENTITY(1,1), name NVARCHAR(255) NOT NULL, PRIMARY KEY (id));
 
 CREATE TABLE bookorder (id INT IDENTITY(1,1), orderDate DATETIME NOT NULL, PRIMARY KEY (id));
 
-CREATE TABLE bookorderitem (id INT IDENTITY(1,1), order_id INT NOT NULL, book_id INT NOT NULL, PRIMARY KEY (id));
+CREATE TABLE bookorderitem (book_id INT NOT NULL, id INT IDENTITY(1,1), order_id INT NOT NULL, PRIMARY KEY (id));
 
 ALTER TABLE book ADD CONSTRAINT fk_book_author FOREIGN KEY (author_id) REFERENCES author (id);
 
