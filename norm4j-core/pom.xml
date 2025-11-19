@@ -5,13 +5,13 @@
 
   <groupId>org.norm4j</groupId>
   <artifactId>norm4j-core</artifactId>
-  <version>1.1.16</version>
+  <version>1.1.17</version>
   <packaging>jar</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
 
   <description>
-      norm4j (Not an ORM for Java) is a lightweight, SQL-centric alternative to JPA
+      norm4j (Not an ORM for Java) is a lightweight, SQL-centric persistence library that keeps SQL and database schema as first-class citizens
   </description>
 
   <url>http://www.norm4j.org</url>
