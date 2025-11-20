@@ -53,6 +53,8 @@ public class Test15 extends BaseTest {
         tableManager = new TableManager(getDataSource(), metadataManager);
 
         new SchemaSynchronizer(tableManager)
+                .forceInsertVersion("v0.1")
+
                 .version("v0.1")
                 .executeResourceIfInitial("db/v0.1/mariadb/ddl.sql", MariaDBDialect.class)
                 .executeResourceIfInitial("db/v0.1/oracle/ddl.sql", OracleDialect.class)
@@ -70,6 +72,7 @@ public class Test15 extends BaseTest {
                 .executeIfInitial(tableManager.createQuery("delete from bookorder;"))
                 .executeResourceIfInitial("db/test15/v0.2/test.sql")
 
+                .migrateFromPreviousVersion(true)
                 .execute("insert into bookorder (orderdate) values ('2025-11-17');")
                 .execute(tableManager.createQuery("delete from bookorder;"))
                 .executeResource("db/test15/v0.2/test.sql")

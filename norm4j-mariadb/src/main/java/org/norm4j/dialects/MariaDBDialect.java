@@ -36,8 +36,9 @@ import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.Schema;
 
-public class MariaDBDialect extends GenericDialect {
+public class MariaDBDialect extends AbstractDialect {
     public MariaDBDialect() {
     }
 
@@ -270,5 +271,21 @@ public class MariaDBDialect extends GenericDialect {
         }
 
         throw new RuntimeException("Unsupported SQL type.");
+    }
+
+    public String createTable(Schema.Table table) {
+        return null;
+    }
+
+    public String addColumn(String tableSchema, String tableName, Schema.Column column) {
+        return null;
+    }
+
+    public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+        return null;
+    }
+
+    public String createSequence(Schema.Sequence sequence) {
+        return null;
     }
 }

@@ -30,6 +30,7 @@ import org.norm4j.Join;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.Schema;
 
 public interface SQLDialect {
         public boolean isDialect(String productName);
@@ -92,6 +93,14 @@ public interface SQLDialect {
 
         public String limitSelect(int offset, int limit);
 
+        public String createTable(Schema.Table table);
+
+        public String addColumn(String tableSchema, String tableName, Schema.Column column);
+
+        public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey);
+
+        public String createSequence(Schema.Sequence sequence);
+
         public static SQLDialect detectDialect(Connection connection) {
                 String productName;
 
@@ -102,6 +111,10 @@ public interface SQLDialect {
                         throw new RuntimeException(e);
                 }
 
+                return getDialectByProductName(productName);
+        }
+
+        public static SQLDialect getDialectByProductName(String productName) {
                 for (SQLDialect dialect : ServiceLoader.load(SQLDialect.class)) {
                         if (dialect.isDialect(productName)) {
                                 return dialect;

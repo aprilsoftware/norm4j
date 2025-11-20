@@ -1,0 +1,69 @@
+{
+  "version" : "v0.1",
+  "schemaModelVersion" : 1,
+  "tables" : [ {
+    "schema" : "",
+    "name" : "book",
+    "columns" : [ {
+      "name" : "author_id",
+      "type" : "int",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : null,
+      "sequenceName" : "book_author_id_seq"
+    }, {
+      "name" : "id",
+      "type" : "int",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : "IDENTITY",
+      "sequenceName" : "book_id_seq"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : null,
+      "sequenceName" : "book_name_seq"
+    } ],
+    "primaryKey" : {
+      "columns" : [ "id" ]
+    },
+    "foreignKeys" : [ {
+      "name" : "fk_book_author",
+      "columns" : [ "author_id" ],
+      "referenceSchema" : "",
+      "referenceTable" : "author",
+      "referenceColumns" : [ "id" ],
+      "cascadeDelete" : false
+    } ]
+  }, {
+    "schema" : "",
+    "name" : "author",
+    "columns" : [ {
+      "name" : "id",
+      "type" : "int",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : "IDENTITY",
+      "sequenceName" : "author_id_seq"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : null,
+      "sequenceName" : "author_name_seq"
+    } ],
+    "primaryKey" : {
+      "columns" : [ "id" ]
+    },
+    "foreignKeys" : [ ]
+  } ],
+  "sequences" : [ ]
+}

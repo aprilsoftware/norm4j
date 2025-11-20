@@ -51,7 +51,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -96,7 +95,7 @@ public class MetadataManager {
         return dialect;
     }
 
-    public SQLDialect getDialect(Connection connection) {
+    public SQLDialect initDialect(Connection connection) {
         if (dialect == null) {
             dialect = SQLDialect.detectDialect(connection);
         }
@@ -354,18 +353,7 @@ public class MetadataManager {
         return true;
     }
 
-    public void createDdlAsResource(String resourcePath) {
-        Path file = Paths.get(resourcePath);
-
-        try {
-            Path parent = file.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directories for DDL resource: " + file, e);
-        }
-
+    public void createDdlAsResource(Path resourcePath) {
         DdlHelper helper = new DdlHelper(metadataMap);
         List<String> statements = new ArrayList<>();
         List<String> ddl = new ArrayList<>();
@@ -410,7 +398,7 @@ public class MetadataManager {
 
         ddl.clear();
 
-        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(resourcePath, StandardCharsets.UTF_8)) {
             for (String statement : statements) {
                 writer.write(statement);
 
@@ -422,7 +410,7 @@ public class MetadataManager {
                 writer.newLine();
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write DDL resource to: " + file, e);
+            throw new RuntimeException("Failed to write DDL resource to: " + resourcePath, e);
         }
     }
 
@@ -435,7 +423,8 @@ public class MetadataManager {
     }
 
     public void createTables(Connection connection) {
-        SQLDialect dialect = getDialect(connection);
+        initDialect(connection);
+
         TableCreationHelper helper = new TableCreationHelper(metadataMap, this::executeUpdate);
 
         try {

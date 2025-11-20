@@ -42,7 +42,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
     <junit.jupiter.version>5.12.1</junit.jupiter.version>
-    <norm4j.schema.version>v0.2</norm4j.schema.version>
   </properties>
 
   <dependencies>
@@ -143,7 +142,7 @@
             <dialect>postgresql</dialect>
             <dialect>sqlserver</dialect>
           </dialects>
-          <version>${norm4j.schema.version}</version>
+          <version>v0.2</version>
           <outputDirectory>${project.basedir}/src/test/resources/db</outputDirectory>
         </configuration>
         <executions>

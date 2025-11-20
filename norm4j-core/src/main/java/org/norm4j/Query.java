@@ -182,7 +182,7 @@ public class Query {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             SQLDialect dialect;
 
-            dialect = tableManager.getMetadataManager().getDialect(connection);
+            dialect = tableManager.getMetadataManager().initDialect(connection);
 
             for (Map.Entry<Integer, Object> entry : parameters.entrySet()) {
                 ps.setObject(entry.getKey(), entry.getValue());

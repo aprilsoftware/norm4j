@@ -37,8 +37,9 @@ import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.Schema;
 
-public class OracleDialect extends GenericDialect {
+public class OracleDialect extends AbstractDialect {
     public OracleDialect() {
     }
 
@@ -349,5 +350,21 @@ public class OracleDialect extends GenericDialect {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String createTable(Schema.Table table) {
+        return null;
+    }
+
+    public String addColumn(String tableSchema, String tableName, Schema.Column column) {
+        return null;
+    }
+
+    public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+        return null;
+    }
+
+    public String createSequence(Schema.Sequence sequence) {
+        return null;
     }
 }

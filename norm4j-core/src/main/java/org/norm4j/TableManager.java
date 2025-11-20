@@ -64,7 +64,7 @@ public class TableManager {
     public SQLDialect getDialect() {
         if (metadataManager.getDialect() == null) {
             try (Connection connection = dataSource.getConnection()) {
-                return metadataManager.getDialect(connection);
+                return metadataManager.initDialect(connection);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -93,7 +93,7 @@ public class TableManager {
         try (Connection connection = dataSource.getConnection()) {
             SQLDialect dialect;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             try (PreparedStatement ps = dialect.createPersistStatement(connection, table)) {
                 for (ColumnMetadata column : table.getColumns()) {
@@ -210,7 +210,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -295,7 +295,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -352,7 +352,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -406,7 +406,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -632,7 +632,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             sql = new StringBuilder();
 

@@ -51,10 +51,8 @@ public class DdlHelper {
     }
 
     public List<String> createSequenceTables(SQLDialect dialect) {
-        List<String> existingTableGenerators = new ArrayList<>();
-        List<String> ddl;
-
-        ddl = new ArrayList<>();
+        List<String> tableGenerators = new ArrayList<>();
+        List<String> ddl = new ArrayList<>();
 
         for (TableMetadata tableMetadata : metadataMap.values()) {
             for (ColumnMetadata column : tableMetadata.getColumns()) {
@@ -72,7 +70,7 @@ public class DdlHelper {
 
                 String generatorTableName = dialect.getTableName(idGenerator.getSchema(), idGenerator.getTable());
 
-                if (existingTableGenerators.contains(generatorTableName)) {
+                if (tableGenerators.contains(generatorTableName)) {
                     continue;
                 }
 
@@ -84,7 +82,7 @@ public class DdlHelper {
 
                 ddl.add(sql);
 
-                existingTableGenerators.add(generatorTableName);
+                tableGenerators.add(generatorTableName);
             }
         }
 

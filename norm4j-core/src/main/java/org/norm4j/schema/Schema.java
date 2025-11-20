@@ -21,9 +21,14 @@
 package org.norm4j.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Schema {
@@ -31,6 +36,11 @@ public class Schema {
     private int schemaModelVersion;
     private List<Table> tables;
     private List<Sequence> sequences;
+
+    public Schema() {
+        tables = new ArrayList<>();
+        sequences = new ArrayList<>();
+    }
 
     public String getVersion() {
         return version;
@@ -81,12 +91,29 @@ public class Schema {
         }
     }
 
+    public void write(Path path) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        try (OutputStream os = Files.newOutputStream(path)) {
+            mapper.writeValue(os, this);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to write schema: " + path.toString(), e);
+        }
+    }
+
     public static class Table {
         private String schema;
         private String name;
         private List<Column> columns;
         private PrimaryKey primaryKey;
         private List<ForeignKey> foreignKeys;
+
+        public Table() {
+            columns = new ArrayList<>();
+            foreignKeys = new ArrayList<>();
+        }
 
         public String getSchema() {
             return schema;
@@ -131,14 +158,15 @@ public class Schema {
 
     public static class Column {
         private String name;
-        private String logicalType;
-        private Integer length;
-        private Integer precision;
-        private Integer scale;
+        private String type;
         private boolean nullable;
-        private String defaultValue;
-        private Identity identity;
-        private boolean array;
+        private String columnDefinition;
+        private int length;
+        private String generationStrategy;
+        private String sequenceName;
+
+        public Column() {
+        }
 
         public String getName() {
             return name;
@@ -148,36 +176,12 @@ public class Schema {
             this.name = name;
         }
 
-        public String getLogicalType() {
-            return logicalType;
+        public String getType() {
+            return type;
         }
 
-        public void setLogicalType(String logicalType) {
-            this.logicalType = logicalType;
-        }
-
-        public Integer getLength() {
-            return length;
-        }
-
-        public void setLength(Integer length) {
-            this.length = length;
-        }
-
-        public Integer getPrecision() {
-            return precision;
-        }
-
-        public void setPrecision(Integer precision) {
-            this.precision = precision;
-        }
-
-        public Integer getScale() {
-            return scale;
-        }
-
-        public void setScale(Integer scale) {
-            this.scale = scale;
+        public void setType(String type) {
+            this.type = type;
         }
 
         public boolean isNullable() {
@@ -188,41 +192,28 @@ public class Schema {
             this.nullable = nullable;
         }
 
-        public String getDefaultValue() {
-            return defaultValue;
+        public String getColumnDefinition() {
+            return columnDefinition;
         }
 
-        public void setDefaultValue(String defaultValue) {
-            this.defaultValue = defaultValue;
+        public void setColumnDefinition(String columnDefinition) {
+            this.columnDefinition = columnDefinition;
         }
 
-        public Identity getIdentity() {
-            return identity;
+        public int getLength() {
+            return length;
         }
 
-        public void setIdentity(Identity identity) {
-            this.identity = identity;
+        public void setLength(int length) {
+            this.length = length;
         }
 
-        public boolean isArray() {
-            return array;
+        public String getGenerationStrategy() {
+            return generationStrategy;
         }
 
-        public void setArray(boolean array) {
-            this.array = array;
-        }
-    }
-
-    public static class Identity {
-        private String strategy;
-        private String sequenceName;
-
-        public String getStrategy() {
-            return strategy;
-        }
-
-        public void setStrategy(String strategy) {
-            this.strategy = strategy;
+        public void setGenerationStrategy(String generationStrategy) {
+            this.generationStrategy = generationStrategy;
         }
 
         public String getSequenceName() {
@@ -235,15 +226,10 @@ public class Schema {
     }
 
     public static class PrimaryKey {
-        private String name;
         private List<String> columns;
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
+        public PrimaryKey() {
+            columns = new ArrayList<>();
         }
 
         public List<String> getColumns() {
@@ -262,6 +248,12 @@ public class Schema {
         private String referenceTable;
         private List<String> referenceColumns;
         private boolean cascadeDelete;
+
+        public ForeignKey() {
+            columns = new ArrayList<>();
+
+            referenceColumns = new ArrayList<>();
+        }
 
         public String getName() {
             return name;
@@ -316,6 +308,9 @@ public class Schema {
         private String schema;
         private String name;
         private int initialValue;
+
+        public Sequence() {
+        }
 
         public String getSchema() {
             return schema;

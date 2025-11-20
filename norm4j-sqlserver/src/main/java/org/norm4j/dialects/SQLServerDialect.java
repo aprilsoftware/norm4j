@@ -38,14 +38,17 @@ import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.Schema;
 
-public class SQLServerDialect extends GenericDialect {
+public class SQLServerDialect extends AbstractDialect {
     public SQLServerDialect() {
     }
 
     public boolean isDialect(String productName) {
-        return productName.toLowerCase()
-                .contains("sql server");
+        productName = productName.toLowerCase();
+
+        return productName.contains("sql server") ||
+                productName.contains("sqlserver");
     }
 
     public boolean isTupleSupported() {
@@ -373,5 +376,21 @@ public class SQLServerDialect extends GenericDialect {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String createTable(Schema.Table table) {
+        return null;
+    }
+
+    public String addColumn(String tableSchema, String tableName, Schema.Column column) {
+        return null;
+    }
+
+    public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+        return null;
+    }
+
+    public String createSequence(Schema.Sequence sequence) {
+        return null;
     }
 }

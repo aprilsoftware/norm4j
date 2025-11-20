@@ -40,10 +40,11 @@ import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.Schema;
 import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.PGobject;
 
-public class PostgreSQLDialect extends GenericDialect {
+public class PostgreSQLDialect extends AbstractDialect {
     public PostgreSQLDialect() {
     }
 
@@ -511,5 +512,21 @@ public class PostgreSQLDialect extends GenericDialect {
         }
 
         return pgObject;
+    }
+
+    public String createTable(Schema.Table table) {
+        return null;
+    }
+
+    public String addColumn(String tableSchema, String tableName, Schema.Column column) {
+        return null;
+    }
+
+    public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+        return null;
+    }
+
+    public String createSequence(Schema.Sequence sequence) {
+        return null;
     }
 }

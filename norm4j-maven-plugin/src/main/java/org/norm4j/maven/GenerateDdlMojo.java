@@ -24,6 +24,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +36,10 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import org.norm4j.dialects.MariaDBDialect;
-import org.norm4j.dialects.OracleDialect;
-import org.norm4j.dialects.PostgreSQLDialect;
-import org.norm4j.dialects.SQLServerDialect;
+import org.norm4j.dialects.GenericDialect;
+import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.MetadataManager;
+import org.norm4j.schema.SchemaGenerator;
 
 @Mojo(name = "generate-ddl", threadSafe = true)
 public class GenerateDdlMojo extends AbstractMojo {
@@ -54,6 +54,12 @@ public class GenerateDdlMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${norm4j.schema.version}")
     private String version;
+
+    @Parameter(defaultValue = "true")
+    private String schema;
+
+    @Parameter(defaultValue = "true")
+    private String ddl;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -72,38 +78,54 @@ public class GenerateDdlMojo extends AbstractMojo {
             projectClassLoader = buildProjectClassLoader();
             Thread.currentThread().setContextClassLoader(projectClassLoader);
 
-            for (String dialect : dialects) {
-                MetadataManager metadataManager;
+            if (packages == null || packages.isEmpty()) {
+                getLog().warn("No <packages> configured for norm4j-maven-plugin; no tables will be discovered.");
+                return;
+            }
 
-                if ("mariadb".equalsIgnoreCase(dialect)) {
-                    metadataManager = new MetadataManager(new MariaDBDialect());
-                } else if ("oracle".equalsIgnoreCase(dialect)) {
-                    metadataManager = new MetadataManager(new OracleDialect());
-                } else if ("postgresql".equalsIgnoreCase(dialect)) {
-                    metadataManager = new MetadataManager(new PostgreSQLDialect());
-                } else if ("sqlserver".equalsIgnoreCase(dialect)) {
-                    metadataManager = new MetadataManager(new SQLServerDialect());
-                } else {
-                    throw new RuntimeException("Unknown dialect.");
+            if (Boolean.parseBoolean(schema)) {
+                MetadataManager genericMetadataManager = new MetadataManager(new GenericDialect());
+
+                for (String pkg : packages) {
+                    genericMetadataManager.registerPackageFromClassPath(pkg);
                 }
 
-                if (packages == null || packages.isEmpty()) {
-                    getLog().warn("No <packages> configured for norm4j-maven-plugin; no tables will be discovered.");
-                } else {
-                    for (String pkg : packages) {
-                        getLog().info("Registering package: " + pkg);
-                        metadataManager.registerPackageFromClassPath(pkg);
-                    }
-                }
-
-                Path out = outputDirectory.toPath()
+                Path schemaPath = outputDirectory.toPath()
                         .resolve(version)
-                        .resolve(dialect)
-                        .resolve("ddl.sql");
+                        .resolve("schema.json");
+                Files.createDirectories(schemaPath.getParent());
 
-                getLog().info("Generating DDL to: " + out);
+                new SchemaGenerator(genericMetadataManager).generate(version).write(schemaPath);
 
-                metadataManager.createDdlAsResource(out.toString());
+                getLog().info("Generated schema: " + schemaPath);
+            }
+
+            if (Boolean.parseBoolean(ddl)) {
+                for (String dialect : dialects) {
+                    MetadataManager metadataManager;
+
+                    metadataManager = new MetadataManager(SQLDialect.getDialectByProductName(dialect));
+
+                    if (packages == null || packages.isEmpty()) {
+                        getLog().warn(
+                                "No <packages> configured for norm4j-maven-plugin; no tables will be discovered.");
+                    } else {
+                        for (String pkg : packages) {
+                            getLog().info("Registering package: " + pkg);
+                            metadataManager.registerPackageFromClassPath(pkg);
+                        }
+                    }
+
+                    Path ddlPath = outputDirectory.toPath()
+                            .resolve(version)
+                            .resolve(dialect)
+                            .resolve("ddl.sql");
+                    Files.createDirectories(ddlPath.getParent());
+
+                    getLog().info("Generating DDL to: " + ddlPath);
+
+                    metadataManager.createDdlAsResource(ddlPath);
+                }
             }
 
             getLog().info("norm4j:generate-ddl finished successfully");
