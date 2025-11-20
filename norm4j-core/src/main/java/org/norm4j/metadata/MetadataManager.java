@@ -306,6 +306,10 @@ public class MetadataManager {
                         + fieldGetterMetadata.getFieldName()));
     }
 
+    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
+        return FieldGetterMetadata.extractMetadata(getter);
+    }
+
     public List<SequenceMetadata> getSequenceMetadata(TableMetadata tableMetadata) {
         return new DdlHelper(metadataMap).getSequences(tableMetadata, dialect);
     }
@@ -453,10 +457,6 @@ public class MetadataManager {
         } catch (SQLException e) {
             throw new RuntimeException("Error executing SQL: " + sql, e);
         }
-    }
-
-    private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
-        return FieldGetterMetadata.extractMetadata(getter);
     }
 
     private void validateJoins(Join[] joins) {

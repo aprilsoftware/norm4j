@@ -36,14 +36,14 @@ public class SchemaComparator {
     public SchemaComparator() {
     }
 
-    public static List<MigrationOperation> compare(Schema from, Schema to) {
+    public List<MigrationOperation> compare(Schema from, Schema to) {
         List<MigrationOperation> operations = new ArrayList<>();
 
         Map<String, Schema.Table> fromTables = indexTables(from);
         Map<String, Schema.Table> toTables = indexTables(to);
 
         for (Schema.Table toTable : toTables.values()) {
-            String key = key(toTable.getSchema(), toTable.getName());
+            String key = getKey(toTable.getSchema(), toTable.getName());
             Schema.Table fromTable = fromTables.get(key);
 
             if (fromTable == null) {
@@ -57,7 +57,7 @@ public class SchemaComparator {
         Map<String, Schema.Sequence> toSequences = indexSequences(to);
 
         for (Schema.Sequence sequence : toSequences.values()) {
-            String key = key(sequence.getSchema(), sequence.getName());
+            String key = getKey(sequence.getSchema(), sequence.getName());
             if (!fromSequences.containsKey(key)) {
                 operations.add(new AddSequenceOperation(sequence));
             }
@@ -66,34 +66,34 @@ public class SchemaComparator {
         return operations;
     }
 
-    private static Map<String, Schema.Table> indexTables(Schema schema) {
+    private Map<String, Schema.Table> indexTables(Schema schema) {
         if (schema.getTables() == null) {
             return Collections.emptyMap();
         }
         return schema.getTables().stream()
                 .collect(Collectors.toMap(
-                        t -> key(t.getSchema(), t.getName()),
+                        t -> getKey(t.getSchema(), t.getName()),
                         t -> t));
     }
 
-    private static Map<String, Schema.Sequence> indexSequences(Schema schema) {
+    private Map<String, Schema.Sequence> indexSequences(Schema schema) {
         if (schema.getSequences() == null) {
             return Collections.emptyMap();
         }
         return schema.getSequences().stream()
                 .collect(Collectors.toMap(
-                        s -> key(s.getSchema(), s.getName()),
+                        s -> getKey(s.getSchema(), s.getName()),
                         s -> s));
     }
 
-    private static String key(String schema, String name) {
+    private String getKey(String schema, String name) {
         if (schema == null || schema.isEmpty()) {
             return name.toLowerCase();
         }
         return (schema + "." + name).toLowerCase();
     }
 
-    private static void compareTable(Schema.Table from,
+    private void compareTable(Schema.Table from,
             Schema.Table to,
             List<MigrationOperation> operations) {
 
@@ -119,8 +119,8 @@ public class SchemaComparator {
             }
         }
 
-        Map<String, Schema.ForeignKey> fromForeignKeys = indexFks(from);
-        Map<String, Schema.ForeignKey> toForeignKeys = indexFks(to);
+        Map<String, Schema.ForeignKey> fromForeignKeys = indexForeignKeys(from);
+        Map<String, Schema.ForeignKey> toForeignKeys = indexForeignKeys(to);
 
         for (Schema.ForeignKey foreignKey : toForeignKeys.values()) {
             if (!fromForeignKeys.containsKey(foreignKey.getName().toLowerCase())) {
@@ -129,7 +129,7 @@ public class SchemaComparator {
         }
     }
 
-    private static Map<String, Schema.ForeignKey> indexFks(Schema.Table table) {
+    private Map<String, Schema.ForeignKey> indexForeignKeys(Schema.Table table) {
         if (table.getForeignKeys() == null) {
             return Collections.emptyMap();
         }

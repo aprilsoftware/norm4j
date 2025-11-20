@@ -8,10 +8,13 @@ import org.norm4j.metadata.MetadataManager;
 import org.norm4j.metadata.TableMetadata;
 
 public class SchemaGenerator {
-    public SchemaGenerator() {
+    private final MetadataManager metadataManager;
+
+    public SchemaGenerator(MetadataManager metadataManager) {
+        this.metadataManager = metadataManager;
     }
 
-    public static Schema generate(MetadataManager metadataManager, String version) {
+    public Schema generate(String version) {
         Schema schema = new Schema();
         schema.setVersion(version);
         schema.setSchemaModelVersion(1);
@@ -29,7 +32,7 @@ public class SchemaGenerator {
         return schema;
     }
 
-    private static Schema.Table toTable(TableMetadata tableMetadata,
+    private Schema.Table toTable(TableMetadata tableMetadata,
             List<Schema.Sequence> sequences) {
         Schema.Table table = new Schema.Table();
         table.setSchema(tableMetadata.getSchema());
@@ -48,7 +51,7 @@ public class SchemaGenerator {
         return table;
     }
 
-    private static Schema.Column toColumn(ColumnMetadata columnMetadata,
+    private Schema.Column toColumn(ColumnMetadata columnMetadata,
             List<Schema.Sequence> sequences) {
         Schema.Column column = new Schema.Column();
         column.setName(columnMetadata.getColumnName());
