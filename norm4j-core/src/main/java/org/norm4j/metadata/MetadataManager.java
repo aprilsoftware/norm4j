@@ -229,7 +229,7 @@ public class MetadataManager {
                 : null;
 
         Join[] joins = tableClass.getAnnotationsByType(Join.class);
-        DdlHelper.validateJoins(joins);
+        validateJoins(joins);
 
         TableMetadata tableMetadata = new TableMetadata(
                 tableClass,
@@ -256,14 +256,18 @@ public class MetadataManager {
         metadataMap.put(tableClass, tableMetadata);
     }
 
-    public TableMetadata getMetadata(Class<?> tableClass) {
+    public List<TableMetadata> getTableMetadata() {
+        return new ArrayList<>(metadataMap.values());
+    }
+
+    public TableMetadata getTableMetadata(Class<?> tableClass) {
         return metadataMap.get(tableClass);
     }
 
-    public ColumnMetadata getMetadata(Class<?> tableClass, String columnName) {
+    public ColumnMetadata getColumnMetadata(Class<?> tableClass, String columnName) {
         TableMetadata tableMetadata;
 
-        tableMetadata = getMetadata(tableClass);
+        tableMetadata = getTableMetadata(tableClass);
 
         if (tableMetadata == null) {
             throw new IllegalArgumentException("No metadata found for class "
@@ -276,19 +280,19 @@ public class MetadataManager {
                 .orElseThrow(() -> new NoSuchElementException("Column not found: " + columnName));
     }
 
-    public List<ColumnMetadata> getMetadata(Class<?> tableClass, String[] columnNames) {
+    public List<ColumnMetadata> getColumnMetadata(Class<?> tableClass, String[] columnNames) {
         return Arrays.stream(columnNames)
-                .map(name -> getMetadata(tableClass, name))
+                .map(name -> getColumnMetadata(tableClass, name))
                 .collect(Collectors.toList());
     }
 
-    public <T, R> ColumnMetadata getMetadata(FieldGetter<T, R> fieldGetter) {
+    public <T, R> ColumnMetadata getColumnMetadata(FieldGetter<T, R> fieldGetter) {
         FieldGetterMetadata fieldGetterMetadata;
         TableMetadata tableMetadata;
 
         fieldGetterMetadata = getterCache.computeIfAbsent(fieldGetter, this::extractMetadata);
 
-        tableMetadata = getMetadata(fieldGetterMetadata.getTableClass());
+        tableMetadata = getTableMetadata(fieldGetterMetadata.getTableClass());
 
         if (tableMetadata == null) {
             throw new IllegalArgumentException("No metadata found for class "
@@ -302,6 +306,14 @@ public class MetadataManager {
                         + fieldGetterMetadata.getFieldName()));
     }
 
+    public List<SequenceMetadata> getSequenceMetadata(TableMetadata tableMetadata) {
+        return new DdlHelper(metadataMap).getSequences(tableMetadata, dialect);
+    }
+
+    public List<ForeignKeyMetadata> getForeignKeyMetadata(TableMetadata tableMetadata) {
+        return new DdlHelper(metadataMap).getForeignKeys(tableMetadata, dialect);
+    }
+
     @SafeVarargs
     public final <T, R> boolean compareColumns(TableMetadata table,
             Join join,
@@ -309,7 +321,7 @@ public class MetadataManager {
         for (FieldGetter<T, R> fieldGetter : fieldGetters) {
             ColumnMetadata column;
 
-            column = getMetadata(fieldGetter);
+            column = getColumnMetadata(fieldGetter);
 
             if (table.getTableName().equals(column.getTable().getTableName())) {
                 if (!Arrays.asList(join.columns()).contains(column.getColumnName())) {
@@ -318,7 +330,7 @@ public class MetadataManager {
             } else {
                 TableMetadata referenceTableMetadata;
 
-                referenceTableMetadata = getMetadata(join.reference().table());
+                referenceTableMetadata = getTableMetadata(join.reference().table());
 
                 if (referenceTableMetadata == null) {
                     throw new IllegalArgumentException("No metadata found for class "
@@ -367,7 +379,7 @@ public class MetadataManager {
         for (TableMetadata tableMetadata : metadataMap.values()) {
             List<String> sequenceDdl = new ArrayList<>();
 
-            for (String sql : helper.createSequences(dialect, tableMetadata)) {
+            for (String sql : helper.createSequences(tableMetadata, dialect)) {
                 sequenceDdl.add(sql);
             }
 
@@ -384,7 +396,7 @@ public class MetadataManager {
 
         ddl.clear();
 
-        for (String sql : helper.createForeignKeyConstraints(dialect)) {
+        for (String sql : helper.createForeignKeys(dialect)) {
             ddl.add(sql);
         }
 
@@ -445,5 +457,16 @@ public class MetadataManager {
 
     private <T, R> FieldGetterMetadata extractMetadata(FieldGetter<T, R> getter) {
         return FieldGetterMetadata.extractMetadata(getter);
+    }
+
+    private void validateJoins(Join[] joins) {
+        for (Join join : joins) {
+            if (join.columns().length == 0 || join.reference().columns().length == 0) {
+                throw new IllegalArgumentException("Missing column(s) in join.");
+            }
+            if (join.columns().length != join.reference().columns().length) {
+                throw new IllegalArgumentException("Mismatched number of columns in join.");
+            }
+        }
     }
 }

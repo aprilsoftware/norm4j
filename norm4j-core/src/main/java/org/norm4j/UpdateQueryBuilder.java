@@ -61,7 +61,7 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder> {
 
         column = getTableManager()
                 .getMetadataManager()
-                .getMetadata(fieldGetter);
+                .getColumnMetadata(fieldGetter);
 
         if (!setClause.isEmpty()) {
             setClause.append(", ");
@@ -81,7 +81,7 @@ public class UpdateQueryBuilder extends QueryBuilder<UpdateQueryBuilder> {
 
         column = getTableManager()
                 .getMetadataManager()
-                .getMetadata(fieldGetter);
+                .getColumnMetadata(fieldGetter);
 
         if (!setClause.isEmpty()) {
             setClause.append(", ");

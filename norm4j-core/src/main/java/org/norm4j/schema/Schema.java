@@ -20,6 +20,8 @@
  */
 package org.norm4j.schema;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -71,12 +73,9 @@ public class Schema {
                 throw new RuntimeException("Schema not found: " + resourcePath);
             }
 
-            // ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper();
 
-            // return mapper.readValue(is, Schema.class);
-
-            return null;
-
+            return mapper.readValue(is, Schema.class);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load schema from: " + resourcePath, e);
         }
@@ -259,11 +258,10 @@ public class Schema {
     public static class ForeignKey {
         private String name;
         private List<String> columns;
-        private String referencedSchema;
-        private String referencedTable;
-        private List<String> referencedColumns;
-        private String onDelete;
-        private String onUpdate;
+        private String referenceSchema;
+        private String referenceTable;
+        private List<String> referenceColumns;
+        private boolean cascadeDelete;
 
         public String getName() {
             return name;
@@ -281,52 +279,43 @@ public class Schema {
             this.columns = columns;
         }
 
-        public String getReferencedSchema() {
-            return referencedSchema;
+        public String getReferenceSchema() {
+            return referenceSchema;
         }
 
-        public void setReferencedSchema(String referencedSchema) {
-            this.referencedSchema = referencedSchema;
+        public void setReferenceSchema(String referenceSchema) {
+            this.referenceSchema = referenceSchema;
         }
 
-        public String getReferencedTable() {
-            return referencedTable;
+        public String getReferenceTable() {
+            return referenceTable;
         }
 
-        public void setReferencedTable(String referencedTable) {
-            this.referencedTable = referencedTable;
+        public void setReferenceTable(String referenceTable) {
+            this.referenceTable = referenceTable;
         }
 
-        public List<String> getReferencedColumns() {
-            return referencedColumns;
+        public List<String> getReferenceColumns() {
+            return referenceColumns;
         }
 
-        public void setReferencedColumns(List<String> referencedColumns) {
-            this.referencedColumns = referencedColumns;
+        public void setReferenceColumns(List<String> referenceColumns) {
+            this.referenceColumns = referenceColumns;
         }
 
-        public String getOnDelete() {
-            return onDelete;
+        public boolean isCascadeDelete() {
+            return cascadeDelete;
         }
 
-        public void setOnDelete(String onDelete) {
-            this.onDelete = onDelete;
-        }
-
-        public String getOnUpdate() {
-            return onUpdate;
-        }
-
-        public void setOnUpdate(String onUpdate) {
-            this.onUpdate = onUpdate;
+        public void setCascadeDelete(boolean cascadeDelete) {
+            this.cascadeDelete = cascadeDelete;
         }
     }
 
     public static class Sequence {
         private String schema;
         private String name;
-        private long startWith;
-        private long incrementBy;
+        private int initialValue;
 
         public String getSchema() {
             return schema;
@@ -344,20 +333,12 @@ public class Schema {
             this.name = name;
         }
 
-        public long getStartWith() {
-            return startWith;
+        public int getInitialValue() {
+            return initialValue;
         }
 
-        public void setStartWith(long startWith) {
-            this.startWith = startWith;
-        }
-
-        public long getIncrementBy() {
-            return incrementBy;
-        }
-
-        public void setIncrementBy(long incrementBy) {
-            this.incrementBy = incrementBy;
+        public void setInitialValue(int initialValue) {
+            this.initialValue = initialValue;
         }
     }
 }

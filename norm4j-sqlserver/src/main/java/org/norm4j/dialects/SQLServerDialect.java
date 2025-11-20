@@ -130,7 +130,7 @@ public class SQLServerDialect extends GenericDialect {
                     ddl.append(" IDENTITY(1,1)");
                 } else if (generatedValueAnnotation.strategy() == GenerationType.SEQUENCE) {
                     ddl.append(" DEFAULT NEXT VALUE FOR ");
-                    ddl.append(getSequenceName(table, column));
+                    ddl.append(getSequenceName(column));
                 }
             }
 

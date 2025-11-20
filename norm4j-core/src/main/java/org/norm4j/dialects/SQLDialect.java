@@ -28,6 +28,7 @@ import java.util.ServiceLoader;
 
 import org.norm4j.Join;
 import org.norm4j.metadata.ColumnMetadata;
+import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
 
 public interface SQLDialect {
@@ -55,11 +56,9 @@ public interface SQLDialect {
 
         public String getTableName(String schema, String tableName);
 
-        public String getSequenceName(TableMetadata table,
-                        ColumnMetadata column);
+        public String getSequenceName(ColumnMetadata column);
 
-        public String createSequenceName(TableMetadata table,
-                        ColumnMetadata column);
+        public String createSequenceName(ColumnMetadata column);
 
         public String createSequence(String schema,
                         String sequenceName,
@@ -72,10 +71,7 @@ public interface SQLDialect {
                         String pkColumnName,
                         String valueColumnName);
 
-        public String alterTable(TableMetadata table,
-                        TableMetadata referenceTable,
-                        Join foreignKey,
-                        String foreignKeyName);
+        public String alterTable(ForeignKeyMetadata foreignKey);
 
         public boolean sequenceExists(Connection connection,
                         String schema,

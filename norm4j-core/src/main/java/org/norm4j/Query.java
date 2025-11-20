@@ -114,7 +114,7 @@ public class Query {
         List<Object[]> rows;
 
         if (tableManager.getMetadataManager()
-                .getMetadata(type) == null) {
+                .getTableMetadata(type) == null) {
             if (connection == null) {
                 rows = getResultList();
             } else {
@@ -210,7 +210,7 @@ public class Query {
                         Object record;
 
                         table = tableManager.getMetadataManager()
-                                .getMetadata(type);
+                                .getTableMetadata(type);
 
                         if (table == null) {
                             columns.add(rs.getObject(index));

@@ -23,7 +23,6 @@ package org.norm4j.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -89,9 +88,9 @@ public class SchemaComparator {
 
     private static String key(String schema, String name) {
         if (schema == null || schema.isEmpty()) {
-            return name.toLowerCase(Locale.ROOT);
+            return name.toLowerCase();
         }
-        return (schema + "." + name).toLowerCase(Locale.ROOT);
+        return (schema + "." + name).toLowerCase();
     }
 
     private static void compareTable(Schema.Table from,
@@ -102,18 +101,18 @@ public class SchemaComparator {
                 ? Collections.emptyMap()
                 : from.getColumns().stream()
                         .collect(Collectors.toMap(
-                                c -> c.getName().toLowerCase(Locale.ROOT),
+                                c -> c.getName().toLowerCase(),
                                 c -> c));
 
         Map<String, Schema.Column> toColumns = to.getColumns() == null
                 ? Collections.emptyMap()
                 : to.getColumns().stream()
                         .collect(Collectors.toMap(
-                                c -> c.getName().toLowerCase(Locale.ROOT),
+                                c -> c.getName().toLowerCase(),
                                 c -> c));
 
         for (Schema.Column column : toColumns.values()) {
-            if (!fromColumns.containsKey(column.getName().toLowerCase(Locale.ROOT))) {
+            if (!fromColumns.containsKey(column.getName().toLowerCase())) {
                 if (column.isNullable() || column.getDefaultValue() != null) {
                     operations.add(new AddColumnOperation(to.getSchema(), to.getName(), column));
                 }
@@ -124,7 +123,7 @@ public class SchemaComparator {
         Map<String, Schema.ForeignKey> toForeignKeys = indexFks(to);
 
         for (Schema.ForeignKey foreignKey : toForeignKeys.values()) {
-            if (!fromForeignKeys.containsKey(foreignKey.getName().toLowerCase(Locale.ROOT))) {
+            if (!fromForeignKeys.containsKey(foreignKey.getName().toLowerCase())) {
                 operations.add(new AddForeignKeyOperation(to.getSchema(), to.getName(), foreignKey));
             }
         }
@@ -136,7 +135,7 @@ public class SchemaComparator {
         }
         return table.getForeignKeys().stream()
                 .collect(Collectors.toMap(
-                        fk -> fk.getName().toLowerCase(Locale.ROOT),
+                        fk -> fk.getName().toLowerCase(),
                         fk -> fk));
     }
 }

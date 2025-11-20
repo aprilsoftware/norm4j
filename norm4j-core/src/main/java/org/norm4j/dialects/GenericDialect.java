@@ -38,6 +38,7 @@ import org.norm4j.SequenceGenerator;
 import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
+import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
 
 public abstract class GenericDialect implements SQLDialect {
@@ -156,7 +157,7 @@ public abstract class GenericDialect implements SQLDialect {
         }
     }
 
-    public String getSequenceName(TableMetadata table, ColumnMetadata column) {
+    public String getSequenceName(ColumnMetadata column) {
         SequenceGenerator sequenceGenerator;
         String sequenceName;
 
@@ -164,7 +165,7 @@ public abstract class GenericDialect implements SQLDialect {
                 .get(SequenceGenerator.class);
 
         if (sequenceGenerator == null || sequenceGenerator.sequenceName().isEmpty()) {
-            sequenceName = createSequenceName(table, column);
+            sequenceName = createSequenceName(column);
         } else {
             sequenceName = sequenceGenerator.sequenceName();
         }
@@ -179,9 +180,8 @@ public abstract class GenericDialect implements SQLDialect {
         }
     }
 
-    public String createSequenceName(TableMetadata table,
-            ColumnMetadata column) {
-        return table.getTableName()
+    public String createSequenceName(ColumnMetadata column) {
+        return column.getTable().getTableName()
                 + "_"
                 + column.getColumnName()
                 + "_seq";
@@ -194,37 +194,34 @@ public abstract class GenericDialect implements SQLDialect {
                 + referenceTable.getTableName();
     }
 
-    public String alterTable(TableMetadata table,
-            TableMetadata referenceTable,
-            Join foreignKey,
-            String foreignKeyName) {
+    public String alterTable(ForeignKeyMetadata foreignKey) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
 
         ddl.append("ALTER TABLE ");
-        ddl.append(getTableName(table));
+        ddl.append(getTableName(foreignKey.getTable()));
         ddl.append(" ADD CONSTRAINT ");
-        ddl.append(foreignKeyName);
+        ddl.append(foreignKey.getForeignKeyName());
         ddl.append(" FOREIGN KEY (");
 
-        for (int i = 0; i < foreignKey.columns().length; i++) {
+        for (int i = 0; i < foreignKey.getJoin().columns().length; i++) {
             if (i > 0) {
                 ddl.append(", ");
             }
 
-            ddl.append(foreignKey.columns()[i]);
+            ddl.append(foreignKey.getJoin().columns()[i]);
         }
 
         ddl.append(") REFERENCES ");
-        ddl.append(getTableName(referenceTable.getSchema(),
-                referenceTable.getTableName()));
+        ddl.append(getTableName(foreignKey.getReferenceTable().getSchema(),
+                foreignKey.getReferenceTable().getTableName()));
         ddl.append(" (");
 
-        for (int i = 0; i < foreignKey.reference().columns().length; i++) {
+        for (int i = 0; i < foreignKey.getJoin().reference().columns().length; i++) {
             String columnName;
 
-            columnName = foreignKey.reference().columns()[i];
+            columnName = foreignKey.getJoin().reference().columns()[i];
 
             if (i > 0) {
                 ddl.append(", ");
@@ -235,7 +232,7 @@ public abstract class GenericDialect implements SQLDialect {
 
         ddl.append(")");
 
-        if (foreignKey.cascadeDelete()) {
+        if (foreignKey.getJoin().cascadeDelete()) {
             ddl.append(" ON DELETE CASCADE");
         }
 

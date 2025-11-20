@@ -32,6 +32,8 @@ import org.norm4j.SequenceGenerator;
 import org.norm4j.TableGenerator;
 import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.ColumnMetadata;
+import org.norm4j.metadata.ForeignKeyMetadata;
+import org.norm4j.metadata.SequenceMetadata;
 import org.norm4j.metadata.TableIdGenerator;
 import org.norm4j.metadata.TableMetadata;
 
@@ -89,10 +91,23 @@ public class DdlHelper {
         return ddl;
     }
 
-    public List<String> createSequences(SQLDialect dialect, TableMetadata tableMetadata) {
+    public List<String> createSequences(TableMetadata table, SQLDialect dialect) {
         List<String> ddl = new ArrayList<>();
 
-        for (ColumnMetadata column : tableMetadata.getColumns()) {
+        for (SequenceMetadata sequenceMetadata : getSequences(table, dialect)) {
+            ddl.add(dialect.createSequence(
+                    sequenceMetadata.getSchema(),
+                    sequenceMetadata.getName(),
+                    sequenceMetadata.getInitialValue()));
+        }
+
+        return ddl;
+    }
+
+    public List<SequenceMetadata> getSequences(TableMetadata table, SQLDialect dialect) {
+        List<SequenceMetadata> sequences = new ArrayList<>();
+
+        for (ColumnMetadata column : table.getColumns()) {
             if (!column.getAnnotations().containsKey(GeneratedValue.class)) {
                 continue;
             }
@@ -102,121 +117,13 @@ public class DdlHelper {
                 continue;
             }
 
-            SequenceMetadata sequenceMetadata = getSequenceMetadataInfo(column, dialect, tableMetadata);
-
-            ddl.add(dialect.createSequence(
-                    sequenceMetadata.schema,
-                    sequenceMetadata.name,
-                    sequenceMetadata.initialValue));
+            sequences.add(getSequence(column, dialect));
         }
 
-        return ddl;
+        return sequences;
     }
 
-    public List<String> createForeignKeyConstraints(SQLDialect dialect) {
-        return createForeignKeyConstraints(dialect, new ArrayList<>());
-    }
-
-    public List<String> createForeignKeyConstraints(SQLDialect dialect, List<TableMetadata> existingTables) {
-        List<String> ddl = new ArrayList<>();
-
-        for (Map.Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet()) {
-            TableMetadata tableMetadata = metadataMap.get(entry.getKey());
-            Map<String, List<Join>> foreignKeyMap = new HashMap<>();
-            List<Join> namedForeignKeys = new ArrayList<>();
-
-            if (tableExists(tableMetadata, existingTables)) {
-                continue;
-            }
-
-            for (Join join : entry.getValue().getJoins()) {
-                String foreignKeyName;
-
-                if (!join.referencialIntegrity()) {
-                    continue;
-                }
-
-                if (join.name().isEmpty()) {
-                    foreignKeyName = dialect.createForeignKeyName(tableMetadata,
-                            metadataMap.get(join.reference().table()),
-                            join);
-                } else {
-                    namedForeignKeys.add(join);
-
-                    continue;
-                }
-
-                if (foreignKeyMap.containsKey(foreignKeyName)) {
-                    foreignKeyMap.get(foreignKeyName).add(join);
-                } else {
-                    List<Join> foreignKeys = new ArrayList<>();
-
-                    foreignKeys.add(join);
-
-                    foreignKeyMap.put(foreignKeyName, foreignKeys);
-                }
-            }
-
-            for (Join foreignKey : namedForeignKeys) {
-                if (foreignKeyMap.containsKey(foreignKey.name())) {
-                    throw new RuntimeException("More than one join with the same name"
-                            + foreignKey.name());
-                } else {
-                    ddl.add(dialect.alterTable(
-                            tableMetadata,
-                            metadataMap.get(foreignKey.reference().table()),
-                            foreignKey,
-                            foreignKey.name()));
-                }
-            }
-
-            for (String foreignKeyName : foreignKeyMap.keySet()) {
-                List<Join> foreignKeys = foreignKeyMap.get(foreignKeyName);
-
-                if (foreignKeys.size() == 1) {
-                    Join join = foreignKeys.get(0);
-
-                    ddl.add(dialect.alterTable(
-                            tableMetadata,
-                            metadataMap.get(join.reference().table()),
-                            join,
-                            foreignKeyName));
-                } else {
-                    for (int i = 0; i < foreignKeys.size(); i++) {
-                        Join join = foreignKeys.get(i);
-
-                        ddl.add(dialect.alterTable(
-                                tableMetadata,
-                                metadataMap.get(join.reference().table()),
-                                join,
-                                foreignKeyName + "_" + (i + 1)));
-                    }
-                }
-            }
-        }
-
-        return ddl;
-    }
-
-    public static void validateJoins(Join[] joins) {
-        for (Join join : joins) {
-            if (join.columns().length == 0 || join.reference().columns().length == 0) {
-                throw new IllegalArgumentException("Missing column(s) in join.");
-            }
-            if (join.columns().length != join.reference().columns().length) {
-                throw new IllegalArgumentException("Mismatched number of columns in join.");
-            }
-        }
-    }
-
-    public static String decapitalize(String name) {
-        if (name == null || name.isEmpty())
-            return name;
-        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
-    }
-
-    private SequenceMetadata getSequenceMetadataInfo(ColumnMetadata column, SQLDialect dialect,
-            TableMetadata tableMetadata) {
+    private SequenceMetadata getSequence(ColumnMetadata column, SQLDialect dialect) {
         String schema = "";
         String sequenceName = "";
         int initialValue = 1;
@@ -231,14 +138,111 @@ public class DdlHelper {
         }
 
         if (sequenceName.isEmpty()) {
-            sequenceName = dialect.createSequenceName(tableMetadata, column);
+            sequenceName = dialect.createSequenceName(column);
         }
 
         return new SequenceMetadata(schema, sequenceName, initialValue);
     }
 
-    private record SequenceMetadata(String schema,
-            String name,
-            int initialValue) {
+    public List<String> createForeignKeys(SQLDialect dialect) {
+        return createForeignKeys(dialect, null);
+    }
+
+    public List<String> createForeignKeys(SQLDialect dialect, List<TableMetadata> existingTables) {
+        List<String> ddl = new ArrayList<>();
+
+        for (ForeignKeyMetadata foreignKey : getForeignKeys(dialect, existingTables)) {
+            ddl.add(dialect.alterTable(foreignKey));
+        }
+
+        return ddl;
+    }
+
+    public List<ForeignKeyMetadata> getForeignKeys(SQLDialect dialect, List<TableMetadata> existingTables) {
+        List<ForeignKeyMetadata> foreignKeys = new ArrayList<>();
+
+        for (Map.Entry<Class<?>, TableMetadata> entry : metadataMap.entrySet()) {
+            if (existingTables != null &&
+                    tableExists(entry.getValue(), existingTables)) {
+                continue;
+            }
+
+            foreignKeys.addAll(getForeignKeys(entry.getValue(), dialect));
+        }
+
+        return foreignKeys;
+    }
+
+    public List<ForeignKeyMetadata> getForeignKeys(TableMetadata tableMetadata, SQLDialect dialect) {
+        List<ForeignKeyMetadata> foreignKeys = new ArrayList<>();
+        Map<String, List<Join>> joinMap = new HashMap<>();
+        List<Join> namedJoins = new ArrayList<>();
+
+        for (Join join : tableMetadata.getJoins()) {
+            String foreignKeyName;
+
+            if (!join.referencialIntegrity()) {
+                continue;
+            }
+
+            if (join.name().isEmpty()) {
+                foreignKeyName = dialect.createForeignKeyName(tableMetadata,
+                        metadataMap.get(join.reference().table()),
+                        join);
+            } else {
+                namedJoins.add(join);
+
+                continue;
+            }
+
+            if (joinMap.containsKey(foreignKeyName)) {
+                joinMap.get(foreignKeyName).add(join);
+            } else {
+                List<Join> joins = new ArrayList<>();
+
+                joins.add(join);
+
+                joinMap.put(foreignKeyName, joins);
+            }
+        }
+
+        for (Join foreignKey : namedJoins) {
+            if (joinMap.containsKey(foreignKey.name())) {
+                throw new RuntimeException("More than one join with the same name"
+                        + foreignKey.name());
+            } else {
+                foreignKeys.add(new ForeignKeyMetadata(
+                        foreignKey.name(),
+                        tableMetadata,
+                        metadataMap.get(foreignKey.reference().table()),
+                        foreignKey));
+            }
+        }
+
+        for (String foreignKeyName : joinMap.keySet()) {
+            List<Join> joins = joinMap.get(foreignKeyName);
+
+            if (joins.size() == 1) {
+                Join join = joins.get(0);
+
+                foreignKeys.add(new ForeignKeyMetadata(
+                        foreignKeyName,
+                        tableMetadata,
+                        metadataMap.get(join.reference().table()),
+                        join));
+            } else {
+                for (int i = 0; i < joins.size(); i++) {
+                    Join join = joins.get(i);
+
+                    foreignKeys.add(new ForeignKeyMetadata(
+                            foreignKeyName + "_" + (i + 1),
+                            tableMetadata,
+                            metadataMap.get(join.reference().table()),
+                            join));
+                }
+            }
+        }
+
+        return foreignKeys;
     }
 }

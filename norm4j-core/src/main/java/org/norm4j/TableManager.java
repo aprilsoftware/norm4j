@@ -553,17 +553,17 @@ public class TableManager {
             }
 
             return join(leftRecord,
-                    metadataManager.getMetadata(leftRecord.getClass(),
+                    metadataManager.getColumnMetadata(leftRecord.getClass(),
                             join.reference().columns()),
                     rightTableClass,
-                    metadataManager.getMetadata(rightTableClass,
+                    metadataManager.getColumnMetadata(rightTableClass,
                             join.columns()));
         } else {
             return join(leftRecord,
-                    metadataManager.getMetadata(leftRecord.getClass(),
+                    metadataManager.getColumnMetadata(leftRecord.getClass(),
                             join.columns()),
                     rightTableClass,
-                    metadataManager.getMetadata(rightTableClass,
+                    metadataManager.getColumnMetadata(rightTableClass,
                             join.reference().columns()));
         }
     }
@@ -607,13 +607,13 @@ public class TableManager {
         leftColumns = new ArrayList<>();
 
         for (FieldGetter<L, R> fieldGetter : leftFieldGetters) {
-            leftColumns.add(metadataManager.getMetadata(fieldGetter));
+            leftColumns.add(metadataManager.getColumnMetadata(fieldGetter));
         }
 
         rightColumns = new ArrayList<>();
 
         for (FieldGetter<T, R> fieldGetter : rightFieldGetters) {
-            rightColumns.add(metadataManager.getMetadata(fieldGetter));
+            rightColumns.add(metadataManager.getColumnMetadata(fieldGetter));
         }
 
         return join(leftRecord, leftColumns, rightTableClass, rightColumns);
@@ -947,7 +947,7 @@ public class TableManager {
     private TableMetadata getTable(Class<?> tableClass) {
         TableMetadata table;
 
-        table = metadataManager.getMetadata(tableClass);
+        table = metadataManager.getTableMetadata(tableClass);
 
         if (table == null) {
             throw new IllegalArgumentException("No metadata found for class "

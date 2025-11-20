@@ -11,7 +11,7 @@ public class SchemaGenerator {
     public SchemaGenerator() {
     }
 
-    public static Schema fromMetadata(MetadataManager metadataManager, String version) {
+    public static Schema generate(MetadataManager metadataManager, String version) {
         Schema schema = new Schema();
         schema.setVersion(version);
         schema.setSchemaModelVersion(1);
@@ -19,8 +19,8 @@ public class SchemaGenerator {
         List<Schema.Table> tables = new ArrayList<>();
         List<Schema.Sequence> sequences = new ArrayList<>();
 
-        for (TableMetadata tm : getAllTables(metadataManager)) {
-            tables.add(toTable(tm, sequences));
+        for (TableMetadata tableMetadata : metadataManager.getTableMetadata()) {
+            tables.add(toTable(tableMetadata, sequences));
         }
 
         schema.setTables(tables);
@@ -29,11 +29,8 @@ public class SchemaGenerator {
         return schema;
     }
 
-    private static List<TableMetadata> getAllTables(MetadataManager metadataManager) {
-        return null;
-    }
-
-    private static Schema.Table toTable(TableMetadata tableMetadata, List<Schema.Sequence> sequences) {
+    private static Schema.Table toTable(TableMetadata tableMetadata,
+            List<Schema.Sequence> sequences) {
         Schema.Table table = new Schema.Table();
         table.setSchema(tableMetadata.getSchema());
         table.setName(tableMetadata.getTableName());

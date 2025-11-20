@@ -121,7 +121,7 @@ public class OracleDialect extends GenericDialect {
             } else {
                 if (generatedValueAnnotation.strategy() == GenerationType.SEQUENCE) {
                     ddl.append(" DEFAULT ");
-                    ddl.append(getSequenceName(table, column));
+                    ddl.append(getSequenceName(column));
                     ddl.append(".NEXTVAL");
                 }
             }
@@ -316,7 +316,7 @@ public class OracleDialect extends GenericDialect {
 
                     sql.append(column.getColumnName());
 
-                    values.append(getSequenceName(table, column));
+                    values.append(getSequenceName(column));
                     values.append(".NEXTVAL");
 
                     generatedKeys.add(column.getColumnName());

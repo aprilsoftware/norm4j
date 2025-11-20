@@ -57,10 +57,10 @@ public class SchemaSynchronizer {
         return this;
     }
 
-    public VersionBuilder version() {
+    public VersionBuilder version(String name) {
         VersionBuilder builder;
 
-        builder = new VersionBuilder(this);
+        builder = new VersionBuilder(this, name);
 
         versionBuilders.add(builder);
 
@@ -72,7 +72,7 @@ public class SchemaSynchronizer {
 
         tableManager.getMetadataManager().registerTable(SchemaVersion.class, schema, schemaVersionTable);
 
-        column = tableManager.getMetadataManager().getMetadata(SchemaVersion.class, "creationDate");
+        column = tableManager.getMetadataManager().getColumnMetadata(SchemaVersion.class, "creationDate");
 
         try (Connection connection = tableManager.getDataSource().getConnection()) {
             connection.setAutoCommit(false);
@@ -182,20 +182,17 @@ public class SchemaSynchronizer {
         private final SchemaSynchronizer synchronizer;
         private final List<Object> initialStatements;
         private final List<Object> statements;
-        private String name;
+        private final String name;
         private String description;
 
-        public VersionBuilder(SchemaSynchronizer synchronizer) {
+        public VersionBuilder(SchemaSynchronizer synchronizer, String name) {
             this.synchronizer = synchronizer;
+
+            this.name = name;
 
             this.initialStatements = new ArrayList<>();
 
             statements = new ArrayList<>();
-        }
-
-        public VersionBuilder name(String name) {
-            this.name = name;
-            return this;
         }
 
         public VersionBuilder description(String description) {

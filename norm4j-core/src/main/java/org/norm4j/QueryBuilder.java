@@ -725,7 +725,7 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>> {
             List<Object> parameters) {
         ColumnMetadata column;
 
-        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
+        column = tableManager.getMetadataManager().getColumnMetadata(fieldGetter);
 
         append(column, alias, condition);
 
@@ -822,7 +822,7 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>> {
             List<Object> parameters) {
         ColumnMetadata column;
 
-        column = tableManager.getMetadataManager().getMetadata(fieldGetter);
+        column = tableManager.getMetadataManager().getColumnMetadata(fieldGetter);
 
         appendValue(value, condition, column);
 
@@ -989,7 +989,7 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>> {
     protected <T, R> void append(FieldGetter<T, R> fieldGetter,
             String alias,
             StringBuilder sb) {
-        append(tableManager.getMetadataManager().getMetadata(fieldGetter),
+        append(tableManager.getMetadataManager().getColumnMetadata(fieldGetter),
                 alias,
                 sb);
     }
@@ -1012,7 +1012,7 @@ public abstract class QueryBuilder<Q extends QueryBuilder<Q>> {
     protected TableMetadata getTable(Class<?> tableClass) {
         TableMetadata table;
 
-        table = tableManager.getMetadataManager().getMetadata(tableClass);
+        table = tableManager.getMetadataManager().getTableMetadata(tableClass);
 
         if (table == null) {
             throw new IllegalArgumentException("No metadata found for class "

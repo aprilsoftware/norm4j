@@ -53,15 +53,14 @@ public class Test15 extends BaseTest {
         tableManager = new TableManager(getDataSource(), metadataManager);
 
         new SchemaSynchronizer(tableManager)
-                .version()
-                .name("v0.1")
+                .version("v0.1")
                 .executeResourceIfInitial("db/v0.1/mariadb/ddl.sql", MariaDBDialect.class)
                 .executeResourceIfInitial("db/v0.1/oracle/ddl.sql", OracleDialect.class)
                 .executeResourceIfInitial("db/v0.1/postgresql/ddl.sql", PostgreSQLDialect.class)
                 .executeResourceIfInitial("db/v0.1/sqlserver/ddl.sql", SQLServerDialect.class)
                 .endVersion()
-                .version()
-                .name("v0.2")
+
+                .version("v0.2")
 
                 .executeResourceIfInitial("db/v0.2/mariadb/ddl.sql", MariaDBDialect.class)
                 .executeResourceIfInitial("db/v0.2/oracle/ddl.sql", OracleDialect.class)
