@@ -49,12 +49,12 @@ public class SchemaComparator {
             } else if (operation instanceof AddTableOperation ato) {
                 statements.add(dialect.createTable(ato.getTable()));
             } else if (operation instanceof AddColumnOperation aco) {
-                statements.add(dialect.addColumn(
+                statements.add(dialect.alterTable(
                         aco.getTableSchema(),
                         aco.getTableName(),
                         aco.getColumn()));
             } else if (operation instanceof AddForeignKeyOperation afk) {
-                statements.add(dialect.addForeignKey(
+                statements.add(dialect.alterTable(
                         afk.getTableSchema(),
                         afk.getTableName(),
                         afk.getForeignKey()));

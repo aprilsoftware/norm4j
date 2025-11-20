@@ -273,19 +273,19 @@ public class MariaDBDialect extends AbstractDialect {
         throw new RuntimeException("Unsupported SQL type.");
     }
 
+    public String createSequence(Schema.Sequence sequence) {
+        return null;
+    }
+
     public String createTable(Schema.Table table) {
         return null;
     }
 
-    public String addColumn(String tableSchema, String tableName, Schema.Column column) {
+    public String alterTable(String tableSchema, String tableName, Schema.Column column) {
         return null;
     }
 
-    public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
-        return null;
-    }
-
-    public String createSequence(Schema.Sequence sequence) {
+    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
         return null;
     }
 }

@@ -65,7 +65,11 @@ public interface SQLDialect {
                         String sequenceName,
                         int initialValue);
 
+        public String createSequence(Schema.Sequence sequence);
+
         public String createTable(TableMetadata table);
+
+        public String createTable(Schema.Table table);
 
         public String createSequenceTable(String schema,
                         String tableName,
@@ -73,6 +77,10 @@ public interface SQLDialect {
                         String valueColumnName);
 
         public String alterTable(ForeignKeyMetadata foreignKey);
+
+        public String alterTable(String tableSchema, String tableName, Schema.Column column);
+
+        public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey);
 
         public boolean sequenceExists(Connection connection,
                         String schema,
@@ -92,14 +100,6 @@ public interface SQLDialect {
         public Object toSqlValue(ColumnMetadata column, Object value);
 
         public String limitSelect(int offset, int limit);
-
-        public String createTable(Schema.Table table);
-
-        public String addColumn(String tableSchema, String tableName, Schema.Column column);
-
-        public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey);
-
-        public String createSequence(Schema.Sequence sequence);
 
         public static SQLDialect detectDialect(Connection connection) {
                 String productName;

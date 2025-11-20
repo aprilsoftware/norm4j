@@ -356,11 +356,11 @@ public class OracleDialect extends AbstractDialect {
         return null;
     }
 
-    public String addColumn(String tableSchema, String tableName, Schema.Column column) {
+    public String alterTable(String tableSchema, String tableName, Schema.Column column) {
         return null;
     }
 
-    public String addForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
         return null;
     }
 
