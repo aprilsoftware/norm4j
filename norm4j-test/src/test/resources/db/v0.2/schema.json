@@ -49,6 +49,30 @@
     } ]
   }, {
     "schema" : "",
+    "name" : "bookorder",
+    "columns" : [ {
+      "name" : "id",
+      "type" : "int",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : "IDENTITY",
+      "sequenceName" : "bookorder_id_seq"
+    }, {
+      "name" : "orderDate",
+      "type" : "java.util.Date",
+      "nullable" : false,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : null,
+      "sequenceName" : "bookorder_orderDate_seq"
+    } ],
+    "primaryKey" : {
+      "columns" : [ "id" ]
+    },
+    "foreignKeys" : [ ]
+  }, {
+    "schema" : "",
     "name" : "author",
     "columns" : [ {
       "name" : "id",
@@ -83,6 +107,14 @@
       "generationStrategy" : null,
       "sequenceName" : "book_author_id_seq"
     }, {
+      "name" : "description",
+      "type" : "java.lang.String",
+      "nullable" : true,
+      "columnDefinition" : null,
+      "length" : 0,
+      "generationStrategy" : null,
+      "sequenceName" : "book_description_seq"
+    }, {
       "name" : "id",
       "type" : "int",
       "nullable" : false,
@@ -110,30 +142,6 @@
       "referenceColumns" : [ "id" ],
       "cascadeDelete" : false
     } ]
-  }, {
-    "schema" : "",
-    "name" : "bookorder",
-    "columns" : [ {
-      "name" : "id",
-      "type" : "int",
-      "nullable" : false,
-      "columnDefinition" : null,
-      "length" : 0,
-      "generationStrategy" : "IDENTITY",
-      "sequenceName" : "bookorder_id_seq"
-    }, {
-      "name" : "orderDate",
-      "type" : "java.util.Date",
-      "nullable" : false,
-      "columnDefinition" : null,
-      "length" : 0,
-      "generationStrategy" : null,
-      "sequenceName" : "bookorder_orderDate_seq"
-    } ],
-    "primaryKey" : {
-      "columns" : [ "id" ]
-    },
-    "foreignKeys" : [ ]
   } ],
   "sequences" : [ ]
 }

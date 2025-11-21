@@ -40,6 +40,7 @@ import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.Schema;
 
 public abstract class AbstractDialect implements SQLDialect {
     public AbstractDialect() {
@@ -233,6 +234,51 @@ public abstract class AbstractDialect implements SQLDialect {
         ddl.append(")");
 
         if (foreignKey.getJoin().cascadeDelete()) {
+            ddl.append(" ON DELETE CASCADE");
+        }
+
+        return ddl.toString();
+    }
+
+    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+        StringBuilder ddl;
+
+        ddl = new StringBuilder();
+
+        ddl.append("ALTER TABLE ");
+        ddl.append(getTableName(tableSchema, tableName));
+        ddl.append(" ADD CONSTRAINT ");
+        ddl.append(foreignKey.getName());
+        ddl.append(" FOREIGN KEY (");
+
+        for (int i = 0; i < foreignKey.getColumns().size(); i++) {
+            if (i > 0) {
+                ddl.append(", ");
+            }
+
+            ddl.append(foreignKey.getColumns().get(i));
+        }
+
+        ddl.append(") REFERENCES ");
+        ddl.append(getTableName(foreignKey.getReferenceSchema(),
+                foreignKey.getReferenceTable()));
+        ddl.append(" (");
+
+        for (int i = 0; i < foreignKey.getReferenceColumns().size(); i++) {
+            String columnName;
+
+            columnName = foreignKey.getReferenceColumns().get(i);
+
+            if (i > 0) {
+                ddl.append(", ");
+            }
+
+            ddl.append(columnName);
+        }
+
+        ddl.append(")");
+
+        if (foreignKey.isCascadeDelete()) {
             ddl.append(" ON DELETE CASCADE");
         }
 

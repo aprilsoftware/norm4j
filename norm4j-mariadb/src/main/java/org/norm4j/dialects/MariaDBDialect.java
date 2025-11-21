@@ -235,7 +235,6 @@ public class MariaDBDialect extends AbstractDialect {
             } else {
                 return "VARCHAR(" + columnAnnotation.length() + ")";
             }
-
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BOOLEAN";
         } else if (fieldType == int.class || fieldType == Integer.class) {
@@ -273,10 +272,6 @@ public class MariaDBDialect extends AbstractDialect {
         throw new RuntimeException("Unsupported SQL type.");
     }
 
-    public String createSequence(Schema.Sequence sequence) {
-        return null;
-    }
-
     public String createTable(Schema.Table table) {
         return null;
     }
@@ -285,7 +280,7 @@ public class MariaDBDialect extends AbstractDialect {
         return null;
     }
 
-    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+    public String createSequence(Schema.Sequence sequence) {
         return null;
     }
 }

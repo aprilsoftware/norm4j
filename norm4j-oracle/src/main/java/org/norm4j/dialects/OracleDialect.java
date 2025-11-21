@@ -223,15 +223,20 @@ public class OracleDialect extends AbstractDialect {
     }
 
     private String getSqlType(ColumnMetadata column) {
-        Column columnAnnotation;
         Class<?> fieldType;
 
         fieldType = column.getField().getType();
 
-        columnAnnotation = (Column) column.getAnnotations().get(Column.class);
-
         if (fieldType == String.class) {
-            return "VARCHAR2(" + columnAnnotation.length() + ")";
+            Column columnAnnotation;
+
+            columnAnnotation = (Column) column.getAnnotations().get(Column.class);
+
+            if (columnAnnotation == null) {
+                return "VARCHAR2(255)";
+            } else {
+                return "VARCHAR2(" + columnAnnotation.length() + ")";
+            }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "NUMBER(1)";
         } else if (fieldType == int.class || fieldType == Integer.class) {
@@ -357,10 +362,6 @@ public class OracleDialect extends AbstractDialect {
     }
 
     public String alterTable(String tableSchema, String tableName, Schema.Column column) {
-        return null;
-    }
-
-    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
         return null;
     }
 

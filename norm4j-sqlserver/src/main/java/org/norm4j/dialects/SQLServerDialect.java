@@ -386,10 +386,6 @@ public class SQLServerDialect extends AbstractDialect {
         return null;
     }
 
-    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
-        return null;
-    }
-
     public String createSequence(Schema.Sequence sequence) {
         return null;
     }

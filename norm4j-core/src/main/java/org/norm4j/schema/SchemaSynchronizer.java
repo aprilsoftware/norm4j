@@ -182,8 +182,6 @@ public class SchemaSynchronizer {
                 .createDiffStatements(fromSchema, toSchema, tableManager.getDialect())) {
             tableManager.execute(statement);
         }
-
-        System.out.print("Test");
     }
 
     private void insertSchemaVersion(Connection connection, ColumnMetadata column, String name, String description)
