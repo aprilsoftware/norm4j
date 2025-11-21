@@ -48,11 +48,11 @@ public class GenericDialect extends AbstractDialect {
         throw new UnsupportedOperationException("Unimplemented method 'createTable'");
     }
 
-    public String alterTable(String tableSchema, String tableName, Column column) {
+    public String alterTableAddColumn(String tableSchema, String tableName, Column column) {
         throw new UnsupportedOperationException("Unimplemented method 'addColumn'");
     }
 
-    public String alterTable(String tableSchema, String tableName, ForeignKey foreignKey) {
+    public String alterTableAddForeignKey(String tableSchema, String tableName, ForeignKey foreignKey) {
         throw new UnsupportedOperationException("Unimplemented method 'addForeignKey'");
     }
 

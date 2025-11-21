@@ -195,7 +195,7 @@ public abstract class AbstractDialect implements SQLDialect {
                 + referenceTable.getTableName();
     }
 
-    public String alterTable(ForeignKeyMetadata foreignKey) {
+    public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
@@ -240,7 +240,7 @@ public abstract class AbstractDialect implements SQLDialect {
         return ddl.toString();
     }
 
-    public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+    public String alterTableAddForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();

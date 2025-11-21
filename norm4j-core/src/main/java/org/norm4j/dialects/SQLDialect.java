@@ -76,11 +76,11 @@ public interface SQLDialect {
                         String pkColumnName,
                         String valueColumnName);
 
-        public String alterTable(ForeignKeyMetadata foreignKey);
+        public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey);
 
-        public String alterTable(String tableSchema, String tableName, Schema.Column column);
+        public String alterTableAddForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey);
 
-        public String alterTable(String tableSchema, String tableName, Schema.ForeignKey foreignKey);
+        public String alterTableAddColumn(String tableSchema, String tableName, Schema.Column column);
 
         public boolean sequenceExists(Connection connection,
                         String schema,

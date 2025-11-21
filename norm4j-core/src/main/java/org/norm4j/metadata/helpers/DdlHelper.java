@@ -150,7 +150,7 @@ public class DdlHelper {
         List<String> ddl = new ArrayList<>();
 
         for (ForeignKeyMetadata foreignKey : getForeignKeys(dialect, existingTables)) {
-            ddl.add(dialect.alterTable(foreignKey));
+            ddl.add(dialect.alterTableAddForeignKey(foreignKey));
         }
 
         return ddl;

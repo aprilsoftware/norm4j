@@ -276,7 +276,7 @@ public class MariaDBDialect extends AbstractDialect {
         return null;
     }
 
-    public String alterTable(String tableSchema, String tableName, Schema.Column column) {
+    public String alterTableAddColumn(String tableSchema, String tableName, Schema.Column column) {
         return null;
     }
 
