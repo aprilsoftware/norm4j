@@ -166,6 +166,10 @@ public class SchemaSynchronizer {
         Schema fromSchema;
         Schema toSchema;
 
+        // TODO In DSL add in version MigrationBuilder where we will setup
+        // what can be done. Create automatically tables, columns, etc...
+        // but also allow delete tables, delete columns etc...
+
         fromSchema = Schema.loadFromResource(databaseResourcePath
                 + "/"
                 + fromVersion

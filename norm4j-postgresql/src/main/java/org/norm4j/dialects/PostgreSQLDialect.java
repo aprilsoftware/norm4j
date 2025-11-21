@@ -242,12 +242,30 @@ public class PostgreSQLDialect extends AbstractDialect {
         return ddl.toString();
     }
 
-    public String alterTableAddColumn(String tableSchema, String tableName, Schema.Column column) {
-        return null;
-    }
+    public String alterTableAddColumn(Schema.Table table, Schema.Column column) {
+        StringBuilder ddl;
 
-    public String createSequence(Schema.Sequence sequence) {
-        return null;
+        ddl = new StringBuilder();
+
+        ddl.append("ALTER TABLE ");
+        ddl.append(getTableName(table.getSchema(), table.getName()));
+        ddl.append(" ADD COLUMN ");
+        ddl.append(column.getName());
+
+        if (column.getColumnDefinition() == null ||
+                column.getColumnDefinition().isEmpty()) {
+            try {
+                ddl.append(getSqlType(Class.forName(column.getType()), 0));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            ddl.append(column.getColumnDefinition());
+        }
+
+        ddl.append(";");
+
+        return ddl.toString();
     }
 
     public String createSequenceTable(String schema,

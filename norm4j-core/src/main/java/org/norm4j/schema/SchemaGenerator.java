@@ -180,6 +180,8 @@ public class SchemaGenerator {
     private Schema.Column toColumn(ColumnMetadata columnMetadata) {
         Schema.Column column = new Schema.Column();
         column.setName(columnMetadata.getColumnName());
+        // TODO What about enum? What about any type transformation done at the dialect
+        // level?
         column.setType(columnMetadata.getField().getType().getTypeName());
         column.setSequenceName(metadataManager.getDialect().getSequenceName(columnMetadata));
 

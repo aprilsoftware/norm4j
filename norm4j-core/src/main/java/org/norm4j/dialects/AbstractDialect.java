@@ -195,6 +195,10 @@ public abstract class AbstractDialect implements SQLDialect {
                 + referenceTable.getTableName();
     }
 
+    public String createSequence(Schema.Sequence sequence) {
+        return createSequence(sequence.getSchema(), sequence.getName(), sequence.getInitialValue());
+    }
+
     public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey) {
         StringBuilder ddl;
 
@@ -240,13 +244,13 @@ public abstract class AbstractDialect implements SQLDialect {
         return ddl.toString();
     }
 
-    public String alterTableAddForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey) {
+    public String alterTableAddForeignKey(Schema.Table table, Schema.ForeignKey foreignKey) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
 
         ddl.append("ALTER TABLE ");
-        ddl.append(getTableName(tableSchema, tableName));
+        ddl.append(getTableName(table.getSchema(), table.getName()));
         ddl.append(" ADD CONSTRAINT ");
         ddl.append(foreignKey.getName());
         ddl.append(" FOREIGN KEY (");

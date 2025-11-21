@@ -42,6 +42,8 @@ public class SchemaComparator {
 
         List<MigrationOperation> orderedOperations = orderOperations(compare(from, to));
 
+        // TODO Add primary key if one in the new schema and not in the previous one.
+
         for (MigrationOperation operation : orderedOperations) {
             if (operation instanceof AddSequenceOperation aso) {
                 statements.add(dialect.createSequence(aso.getSequence()));
@@ -49,14 +51,20 @@ public class SchemaComparator {
             } else if (operation instanceof AddTableOperation ato) {
                 statements.add(dialect.createTable(ato.getTable()));
             } else if (operation instanceof AddColumnOperation aco) {
-                statements.add(dialect.alterTableAddColumn(
-                        aco.getTableSchema(),
-                        aco.getTableName(),
-                        aco.getColumn()));
+                if (aco.getColumn().isNullable()) {
+                    Schema.Table table = to.getTables().stream().filter(
+                            t -> t.getSchema().equals(aco.getTableSchema()) && t.getName().equals(aco.getTableName()))
+                            .findFirst().get();
+                    statements.add(dialect.alterTableAddColumn(
+                            table,
+                            aco.getColumn()));
+                }
             } else if (operation instanceof AddForeignKeyOperation afk) {
+                Schema.Table table = to.getTables().stream().filter(
+                        t -> t.getSchema().equals(afk.getTableSchema()) && t.getName().equals(afk.getTableName()))
+                        .findFirst().get();
                 statements.add(dialect.alterTableAddForeignKey(
-                        afk.getTableSchema(),
-                        afk.getTableName(),
+                        table,
                         afk.getForeignKey()));
 
             } else {

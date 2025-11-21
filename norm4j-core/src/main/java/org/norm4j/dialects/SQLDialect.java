@@ -78,9 +78,9 @@ public interface SQLDialect {
 
         public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey);
 
-        public String alterTableAddForeignKey(String tableSchema, String tableName, Schema.ForeignKey foreignKey);
+        public String alterTableAddForeignKey(Schema.Table table, Schema.ForeignKey foreignKey);
 
-        public String alterTableAddColumn(String tableSchema, String tableName, Schema.Column column);
+        public String alterTableAddColumn(Schema.Table table, Schema.Column column);
 
         public boolean sequenceExists(Connection connection,
                         String schema,

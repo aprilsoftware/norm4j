@@ -167,6 +167,14 @@ public class MariaDBDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    public String createTable(Schema.Table table) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String alterTableAddColumn(Schema.Table table, Schema.Column column) {
+        throw new UnsupportedOperationException();
+    }
+
     public String createSequenceTable(String schema,
             String tableName,
             String pkColumnName,
@@ -270,17 +278,5 @@ public class MariaDBDialect extends AbstractDialect {
         }
 
         throw new RuntimeException("Unsupported SQL type.");
-    }
-
-    public String createTable(Schema.Table table) {
-        return null;
-    }
-
-    public String alterTableAddColumn(String tableSchema, String tableName, Schema.Column column) {
-        return null;
-    }
-
-    public String createSequence(Schema.Sequence sequence) {
-        return null;
     }
 }

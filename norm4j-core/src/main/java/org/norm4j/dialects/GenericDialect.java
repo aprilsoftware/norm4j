@@ -37,7 +37,7 @@ public class GenericDialect extends AbstractDialect {
     }
 
     public String createSequence(Sequence sequence) {
-        throw new UnsupportedOperationException("Unimplemented method 'createSequence'");
+        throw new UnsupportedOperationException();
     }
 
     public String createTable(TableMetadata table) {
@@ -45,18 +45,22 @@ public class GenericDialect extends AbstractDialect {
     }
 
     public String createTable(Table table) {
-        throw new UnsupportedOperationException("Unimplemented method 'createTable'");
+        throw new UnsupportedOperationException();
     }
 
     public String alterTableAddColumn(String tableSchema, String tableName, Column column) {
-        throw new UnsupportedOperationException("Unimplemented method 'addColumn'");
+        throw new UnsupportedOperationException();
     }
 
     public String alterTableAddForeignKey(String tableSchema, String tableName, ForeignKey foreignKey) {
-        throw new UnsupportedOperationException("Unimplemented method 'addForeignKey'");
+        throw new UnsupportedOperationException();
     }
 
     public String limitSelect(int offset, int limit) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String alterTableAddColumn(Table table, Column column) {
         throw new UnsupportedOperationException();
     }
 }
