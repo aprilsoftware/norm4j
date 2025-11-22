@@ -208,7 +208,7 @@ public class PostgreSQLDialect extends AbstractDialect {
                 ddl.append(", ");
             }
 
-            columnName = column.getColumnName();
+            columnName = column.getColumnName(columnAnnotation);
 
             ddl.append(columnName);
             ddl.append(" ");
@@ -283,12 +283,14 @@ public class PostgreSQLDialect extends AbstractDialect {
         ddl.append("ALTER TABLE ");
         ddl.append(getTableName(table.getSchema(), table.getTableName()));
         ddl.append(" ADD COLUMN ");
-        ddl.append(column.getColumnName());
 
         ColumnAnnotation columnAnnotation;
-        Class<?> fieldType;
 
         columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+        ddl.append(column.getColumnName());
+
+        Class<?> fieldType;
 
         try {
             fieldType = Class.forName(column.getFieldType());

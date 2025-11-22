@@ -130,6 +130,10 @@ public class SchemaColumn {
 
         columnAnnotation = Annotation.get(this, ColumnAnnotation.class);
 
+        return getColumnName(columnAnnotation);
+    }
+
+    public String getColumnName(ColumnAnnotation columnAnnotation) {
         if (columnAnnotation == null ||
                 columnAnnotation.getName().isEmpty()) {
             return fieldName;
