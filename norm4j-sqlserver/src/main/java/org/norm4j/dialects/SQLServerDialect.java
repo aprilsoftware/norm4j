@@ -38,12 +38,14 @@ import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaTable;
 
 public class SQLServerDialect extends AbstractDialect {
     public SQLServerDialect() {
     }
 
+    @Override
     public boolean isDialect(String productName) {
         productName = productName.toLowerCase();
 
@@ -51,14 +53,17 @@ public class SQLServerDialect extends AbstractDialect {
                 productName.contains("sqlserver");
     }
 
+    @Override
     public boolean isTupleSupported() {
         return false;
     }
 
+    @Override
     public boolean isGeneratedKeysForSequenceSupported() {
         return false;
     }
 
+    @Override
     public String createSequence(String schema,
             String sequenceName,
             int initialValue) {
@@ -80,6 +85,7 @@ public class SQLServerDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public String createTable(TableMetadata table) {
         List<ColumnMetadata> primaryKeys;
         List<ColumnMetadata> columns;
@@ -161,14 +167,17 @@ public class SQLServerDialect extends AbstractDialect {
         return ddl.toString();
     }
 
-    public String createTable(Schema.Table table) {
+    @Override
+    public String createTable(SchemaTable table) {
         throw new UnsupportedOperationException();
     }
 
-    public String alterTableAddColumn(Schema.Table table, Schema.Column column) {
+    @Override
+    public String alterTableAddColumn(SchemaTable table, SchemaColumn column) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String createSequenceTable(String schema,
             String tableName,
             String pkColumnName,
@@ -188,6 +197,7 @@ public class SQLServerDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public boolean sequenceExists(Connection connection,
             String schema,
             String sequenceName) {
@@ -235,6 +245,7 @@ public class SQLServerDialect extends AbstractDialect {
         }
     }
 
+    @Override
     public String limitSelect(int offset, int limit) {
         return "OFFSET "
                 + offset
@@ -296,6 +307,7 @@ public class SQLServerDialect extends AbstractDialect {
         throw new RuntimeException("Unsupported SQL type.");
     }
 
+    @Override
     public PreparedStatement createPersistStatement(Connection connection,
             TableMetadata table) {
         StringBuilder sql;
@@ -377,6 +389,7 @@ public class SQLServerDialect extends AbstractDialect {
         }
     }
 
+    @Override
     public PreparedStatement createLockStatement(Connection connection, TableMetadata table) {
         try {
             return connection.prepareStatement(

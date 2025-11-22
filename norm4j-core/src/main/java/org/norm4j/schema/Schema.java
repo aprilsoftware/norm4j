@@ -34,12 +34,10 @@ import java.util.List;
 public class Schema {
     private String version;
     private int schemaModelVersion;
-    private List<Table> tables;
-    private List<Sequence> sequences;
+    private List<SchemaTable> tables;
 
     public Schema() {
         tables = new ArrayList<>();
-        sequences = new ArrayList<>();
     }
 
     public String getVersion() {
@@ -58,20 +56,12 @@ public class Schema {
         this.schemaModelVersion = schemaModelVersion;
     }
 
-    public List<Table> getTables() {
+    public List<SchemaTable> getTables() {
         return tables;
     }
 
-    public void setTables(List<Table> tables) {
+    public void setTables(List<SchemaTable> tables) {
         this.tables = tables;
-    }
-
-    public List<Sequence> getSequences() {
-        return sequences;
-    }
-
-    public void setSequences(List<Sequence> sequences) {
-        this.sequences = sequences;
     }
 
     public static Schema loadFromResource(String resourcePath) {
@@ -100,240 +90,6 @@ public class Schema {
             mapper.writeValue(os, this);
         } catch (Exception e) {
             throw new RuntimeException("Failed to write schema: " + path.toString(), e);
-        }
-    }
-
-    public static class Table {
-        private String schema;
-        private String name;
-        private List<Column> columns;
-        private PrimaryKey primaryKey;
-        private List<ForeignKey> foreignKeys;
-
-        public Table() {
-            columns = new ArrayList<>();
-            foreignKeys = new ArrayList<>();
-        }
-
-        public String getSchema() {
-            return schema;
-        }
-
-        public void setSchema(String schema) {
-            this.schema = schema;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public List<Column> getColumns() {
-            return columns;
-        }
-
-        public void setColumns(List<Column> columns) {
-            this.columns = columns;
-        }
-
-        public PrimaryKey getPrimaryKey() {
-            return primaryKey;
-        }
-
-        public void setPrimaryKey(PrimaryKey primaryKey) {
-            this.primaryKey = primaryKey;
-        }
-
-        public List<ForeignKey> getForeignKeys() {
-            return foreignKeys;
-        }
-
-        public void setForeignKeys(List<ForeignKey> foreignKeys) {
-            this.foreignKeys = foreignKeys;
-        }
-    }
-
-    public static class Column {
-        private String name;
-        private String type;
-        private boolean nullable;
-        private String columnDefinition;
-        private int length;
-        private String generationStrategy;
-        private String sequenceName;
-
-        public Column() {
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public boolean isNullable() {
-            return nullable;
-        }
-
-        public void setNullable(boolean nullable) {
-            this.nullable = nullable;
-        }
-
-        public String getColumnDefinition() {
-            return columnDefinition;
-        }
-
-        public void setColumnDefinition(String columnDefinition) {
-            this.columnDefinition = columnDefinition;
-        }
-
-        public int getLength() {
-            return length;
-        }
-
-        public void setLength(int length) {
-            this.length = length;
-        }
-
-        public String getGenerationStrategy() {
-            return generationStrategy;
-        }
-
-        public void setGenerationStrategy(String generationStrategy) {
-            this.generationStrategy = generationStrategy;
-        }
-
-        public String getSequenceName() {
-            return sequenceName;
-        }
-
-        public void setSequenceName(String sequenceName) {
-            this.sequenceName = sequenceName;
-        }
-    }
-
-    public static class PrimaryKey {
-        private List<String> columns;
-
-        public PrimaryKey() {
-            columns = new ArrayList<>();
-        }
-
-        public List<String> getColumns() {
-            return columns;
-        }
-
-        public void setColumns(List<String> columns) {
-            this.columns = columns;
-        }
-    }
-
-    public static class ForeignKey {
-        private String name;
-        private List<String> columns;
-        private String referenceSchema;
-        private String referenceTable;
-        private List<String> referenceColumns;
-        private boolean cascadeDelete;
-
-        public ForeignKey() {
-            columns = new ArrayList<>();
-
-            referenceColumns = new ArrayList<>();
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public List<String> getColumns() {
-            return columns;
-        }
-
-        public void setColumns(List<String> columns) {
-            this.columns = columns;
-        }
-
-        public String getReferenceSchema() {
-            return referenceSchema;
-        }
-
-        public void setReferenceSchema(String referenceSchema) {
-            this.referenceSchema = referenceSchema;
-        }
-
-        public String getReferenceTable() {
-            return referenceTable;
-        }
-
-        public void setReferenceTable(String referenceTable) {
-            this.referenceTable = referenceTable;
-        }
-
-        public List<String> getReferenceColumns() {
-            return referenceColumns;
-        }
-
-        public void setReferenceColumns(List<String> referenceColumns) {
-            this.referenceColumns = referenceColumns;
-        }
-
-        public boolean isCascadeDelete() {
-            return cascadeDelete;
-        }
-
-        public void setCascadeDelete(boolean cascadeDelete) {
-            this.cascadeDelete = cascadeDelete;
-        }
-    }
-
-    public static class Sequence {
-        private String schema;
-        private String name;
-        private int initialValue;
-
-        public Sequence() {
-        }
-
-        public String getSchema() {
-            return schema;
-        }
-
-        public void setSchema(String schema) {
-            this.schema = schema;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getInitialValue() {
-            return initialValue;
-        }
-
-        public void setInitialValue(int initialValue) {
-            this.initialValue = initialValue;
         }
     }
 }

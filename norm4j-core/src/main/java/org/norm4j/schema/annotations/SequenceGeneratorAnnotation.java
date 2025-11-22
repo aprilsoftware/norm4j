@@ -18,32 +18,45 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-public class AddSequenceOperation implements MigrationOperation {
-    private final String schema;
-    private final String name;
-    private final int initialValue;
+import org.norm4j.SequenceGenerator;
 
-    public AddSequenceOperation(String schema, String name, int initialValue) {
-        this.schema = schema;
-        this.name = name;
-        this.initialValue = initialValue;
+public class SequenceGeneratorAnnotation implements Annotation {
+    private String sequenceName;
+    private String schema;
+    private int initialValue;
+
+    public SequenceGeneratorAnnotation() {
     }
 
-    public Type getType() {
-        return Type.ADD_SEQUENCE;
+    public SequenceGeneratorAnnotation(SequenceGenerator sequenceGenerator) {
+        this.sequenceName = sequenceGenerator.sequenceName();
+        this.schema = sequenceGenerator.schema();
+        this.initialValue = sequenceGenerator.initialValue();
+    }
+
+    public String getSequenceName() {
+        return sequenceName;
+    }
+
+    public void setSequenceName(String sequenceName) {
+        this.sequenceName = sequenceName;
     }
 
     public String getSchema() {
         return schema;
     }
 
-    public String getName() {
-        return name;
+    public void setSchema(String schema) {
+        this.schema = schema;
     }
 
     public int getInitialValue() {
         return initialValue;
+    }
+
+    public void setInitialValue(int initialValue) {
+        this.initialValue = initialValue;
     }
 }

@@ -20,20 +20,21 @@
  */
 package org.norm4j.schema.migrations;
 
-import org.norm4j.schema.SchemaTable;
+import org.norm4j.schema.annotations.TableGeneratorAnnotation;
 
-public class AddTableOperation implements MigrationOperation {
-    private final SchemaTable table;
+public class AddTableGeneratorOperation implements MigrationOperation {
+    private final TableGeneratorAnnotation generator;
 
-    public AddTableOperation(SchemaTable table) {
-        this.table = table;
+    public AddTableGeneratorOperation(TableGeneratorAnnotation generator) {
+        this.generator = generator;
     }
 
+    @Override
     public Type getType() {
-        return Type.ADD_TABLE;
+        return Type.ADD_TABLE_GENERATOR;
     }
 
-    public SchemaTable getTable() {
-        return table;
+    public TableGeneratorAnnotation getGenerator() {
+        return generator;
     }
 }

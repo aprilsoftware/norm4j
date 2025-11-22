@@ -20,20 +20,29 @@
  */
 package org.norm4j.schema.migrations;
 
+import org.norm4j.schema.SchemaJoin;
 import org.norm4j.schema.SchemaTable;
 
-public class AddTableOperation implements MigrationOperation {
+public class AddJoinOperation implements MigrationOperation {
     private final SchemaTable table;
+    private final SchemaJoin join;
 
-    public AddTableOperation(SchemaTable table) {
+    public AddJoinOperation(String tableSchema,
+            SchemaTable table,
+            SchemaJoin join) {
         this.table = table;
+        this.join = join;
     }
 
     public Type getType() {
-        return Type.ADD_TABLE;
+        return Type.ADD_JOIN;
     }
 
     public SchemaTable getTable() {
         return table;
+    }
+
+    public SchemaJoin getJoin() {
+        return join;
     }
 }

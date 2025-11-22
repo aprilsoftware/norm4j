@@ -18,22 +18,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-import org.norm4j.schema.SchemaTable;
+import org.norm4j.schema.SchemaColumn;
 
-public class AddTableOperation implements MigrationOperation {
-    private final SchemaTable table;
+public interface Annotation {
+    @SuppressWarnings("unchecked")
+    public static <T extends Annotation> T get(SchemaColumn column, Class<T> type) {
+        if (column.getAnnotations() == null)
+            return null;
 
-    public AddTableOperation(SchemaTable table) {
-        this.table = table;
+        for (Annotation annotation : column.getAnnotations()) {
+            if (type.isInstance(annotation)) {
+                return (T) annotation;
+            }
+        }
+        return null;
     }
 
-    public Type getType() {
-        return Type.ADD_TABLE;
-    }
-
-    public SchemaTable getTable() {
-        return table;
+    public static boolean has(SchemaColumn column, Class<? extends Annotation> type) {
+        return get(column, type) != null;
     }
 }

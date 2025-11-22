@@ -18,22 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-import org.norm4j.schema.SchemaTable;
-
-public class AddTableOperation implements MigrationOperation {
-    private final SchemaTable table;
-
-    public AddTableOperation(SchemaTable table) {
-        this.table = table;
-    }
-
-    public Type getType() {
-        return Type.ADD_TABLE;
-    }
-
-    public SchemaTable getTable() {
-        return table;
+public class IdAnnotation implements Annotation {
+    public IdAnnotation() {
     }
 }

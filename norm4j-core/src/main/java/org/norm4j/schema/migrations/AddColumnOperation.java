@@ -20,16 +20,15 @@
  */
 package org.norm4j.schema.migrations;
 
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaTable;
 
 public class AddColumnOperation implements MigrationOperation {
-    private final String tableSchema;
-    private final String tableName;
-    private final Schema.Column column;
+    private final SchemaTable table;
+    private final SchemaColumn column;
 
-    public AddColumnOperation(String tableSchema, String tableName, Schema.Column column) {
-        this.tableSchema = tableSchema;
-        this.tableName = tableName;
+    public AddColumnOperation(SchemaTable table, SchemaColumn column) {
+        this.table = table;
         this.column = column;
     }
 
@@ -37,15 +36,11 @@ public class AddColumnOperation implements MigrationOperation {
         return Type.ADD_COLUMN;
     }
 
-    public String getTableSchema() {
-        return tableSchema;
+    public SchemaTable getTable() {
+        return table;
     }
 
-    public String getTableName() {
-        return tableName;
-    }
-
-    public Schema.Column getColumn() {
+    public SchemaColumn getColumn() {
         return column;
     }
 }

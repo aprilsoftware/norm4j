@@ -37,21 +37,25 @@ import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaTable;
 
 public class OracleDialect extends AbstractDialect {
     public OracleDialect() {
     }
 
+    @Override
     public boolean isDialect(String productName) {
         return productName.toLowerCase()
                 .contains("oracle");
     }
 
+    @Override
     public boolean isTupleSupported() {
         return true;
     }
 
+    @Override
     public String createSequence(String schema,
             String sequenceName,
             int initialValue) {
@@ -72,6 +76,7 @@ public class OracleDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public String createTable(TableMetadata table) {
         List<ColumnMetadata> primaryKeys;
         List<ColumnMetadata> columns;
@@ -151,14 +156,17 @@ public class OracleDialect extends AbstractDialect {
         return ddl.toString();
     }
 
-    public String createTable(Schema.Table table) {
+    @Override
+    public String createTable(SchemaTable table) {
         throw new UnsupportedOperationException();
     }
 
-    public String alterTableAddColumn(Schema.Table table, Schema.Column column) {
+    @Override
+    public String alterTableAddColumn(SchemaTable table, SchemaColumn column) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String createSequenceTable(String schema,
             String tableName,
             String pkColumnName,
@@ -180,6 +188,7 @@ public class OracleDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public boolean sequenceExists(Connection connection,
             String schema,
             String sequenceName) {
@@ -189,6 +198,7 @@ public class OracleDialect extends AbstractDialect {
                 new String[] { "SEQUENCE" });
     }
 
+    @Override
     public boolean tableExists(Connection connection,
             String schema,
             String tableName) {
@@ -222,6 +232,7 @@ public class OracleDialect extends AbstractDialect {
         }
     }
 
+    @Override
     public String limitSelect(int offset, int limit) {
         return "OFFSET "
                 + offset
@@ -283,6 +294,7 @@ public class OracleDialect extends AbstractDialect {
         throw new RuntimeException("Unsupported SQL type.");
     }
 
+    @Override
     public PreparedStatement createPersistStatement(Connection connection,
             TableMetadata table) {
         List<String> generatedKeys;

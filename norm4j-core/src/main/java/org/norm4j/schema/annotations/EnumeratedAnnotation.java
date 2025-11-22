@@ -18,16 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-import java.util.List;
+import org.norm4j.EnumType;
+import org.norm4j.Enumerated;
 
-public interface MigrationDialectSupport {
-    public List<String> toSql(AddTableOperation operation);
+public class EnumeratedAnnotation implements Annotation {
+    private EnumType value;
 
-    public List<String> toSql(AddColumnOperation operation);
+    public EnumeratedAnnotation() {
+    }
 
-    public List<String> toSql(AddForeignKeyOperation operation);
+    public EnumeratedAnnotation(Enumerated enumerated) {
+        this.value = enumerated.value();
+    }
 
-    public List<String> toSql(AddSequenceOperation operation);
+    public EnumType getValue() {
+        return value;
+    }
+
+    public void setValue(EnumType enumType) {
+        this.value = enumType;
+    }
 }

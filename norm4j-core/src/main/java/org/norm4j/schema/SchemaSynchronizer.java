@@ -182,9 +182,9 @@ public class SchemaSynchronizer {
                 + "/"
                 + "schema.json");
 
-        for (String statement : new SchemaComparator()
-                .createDiffStatements(fromSchema, toSchema, tableManager.getDialect())) {
-            tableManager.execute(statement);
+        for (String ddl : new SchemaComparator()
+                .createDiffDdl(fromSchema, toSchema, tableManager.getDialect())) {
+            tableManager.execute(ddl);
         }
     }
 

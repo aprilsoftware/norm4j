@@ -18,22 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-import org.norm4j.schema.SchemaTable;
+import org.norm4j.GeneratedValue;
+import org.norm4j.GenerationType;
 
-public class AddTableOperation implements MigrationOperation {
-    private final SchemaTable table;
+public class GeneratedValueAnnotation implements Annotation {
+    private GenerationType strategy;
 
-    public AddTableOperation(SchemaTable table) {
-        this.table = table;
+    public GeneratedValueAnnotation() {
     }
 
-    public Type getType() {
-        return Type.ADD_TABLE;
+    public GeneratedValueAnnotation(GeneratedValue generatedValue) {
+        this.strategy = generatedValue.strategy();
     }
 
-    public SchemaTable getTable() {
-        return table;
+    public GenerationType getStrategy() {
+        return strategy;
+    }
+
+    public void setStrategy(GenerationType strategy) {
+        this.strategy = strategy;
     }
 }

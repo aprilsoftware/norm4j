@@ -36,12 +36,14 @@ import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaTable;
 
 public class MariaDBDialect extends AbstractDialect {
     public MariaDBDialect() {
     }
 
+    @Override
     public boolean isDialect(String productName) {
         productName = productName.toLowerCase();
 
@@ -49,22 +51,27 @@ public class MariaDBDialect extends AbstractDialect {
                 productName.contains("mysql");
     }
 
+    @Override
     public boolean isTupleSupported() {
         return true;
     }
 
+    @Override
     public boolean isSequenceSupported() {
         return false;
     }
 
+    @Override
     public boolean isGeneratedKeysForSequenceSupported() {
         return false;
     }
 
+    @Override
     public boolean isMultiStatementsSupported() {
         return false;
     }
 
+    @Override
     public String getTableName(String schema, String tableName) {
         if (schema == null ||
                 schema.isEmpty()) {
@@ -76,19 +83,22 @@ public class MariaDBDialect extends AbstractDialect {
         }
     }
 
-    public String getSequenceName(TableMetadata table, ColumnMetadata column) {
+    @Override
+    public String getSequenceName(ColumnMetadata column) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
-    public String createSequenceName(TableMetadata table,
-            ColumnMetadata column) {
+    @Override
+    public String createSequenceName(ColumnMetadata column) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
+    @Override
     public String createSequence(String schema, String sequenceName, int initialValue) {
         throw new UnsupportedOperationException("MariaDB does not support sequences.");
     }
 
+    @Override
     public String createTable(TableMetadata table) {
         List<ColumnMetadata> primaryKeys;
         List<ColumnMetadata> columns;
@@ -167,11 +177,13 @@ public class MariaDBDialect extends AbstractDialect {
         return ddl.toString();
     }
 
-    public String createTable(Schema.Table table) {
+    @Override
+    public String createTable(SchemaTable table) {
         throw new UnsupportedOperationException();
     }
 
-    public String alterTableAddColumn(Schema.Table table, Schema.Column column) {
+    @Override
+    public String alterTableAddColumn(SchemaTable table, SchemaColumn column) {
         throw new UnsupportedOperationException();
     }
 

@@ -25,43 +25,53 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
 import org.norm4j.EnumType;
 import org.norm4j.Enumerated;
-import org.norm4j.Join;
 import org.norm4j.GeneratedValue;
 import org.norm4j.GenerationType;
+import org.norm4j.Join;
 import org.norm4j.SequenceGenerator;
 import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaJoin;
+import org.norm4j.schema.SchemaTable;
+import org.norm4j.schema.annotations.Annotation;
+import org.norm4j.schema.annotations.SequenceGeneratorAnnotation;
 
 public abstract class AbstractDialect implements SQLDialect {
     public AbstractDialect() {
     }
 
+    @Override
     public boolean isArraySupported() {
         return false;
     }
 
+    @Override
     public boolean isSequenceSupported() {
         return true;
     }
 
+    @Override
     public boolean isGeneratedKeysForSequenceSupported() {
         return true;
     }
 
+    @Override
     public boolean isMultiStatementsSupported() {
         return true;
     }
 
+    @Override
     public List<String> parseMultiStatements(String sql) {
         List<String> statements = new ArrayList<>();
         StringBuilder current = new StringBuilder();
@@ -147,6 +157,7 @@ public abstract class AbstractDialect implements SQLDialect {
         return statements;
     }
 
+    @Override
     public String getTableName(String schema, String tableName) {
         if (schema == null ||
                 schema.isEmpty()) {
@@ -158,6 +169,7 @@ public abstract class AbstractDialect implements SQLDialect {
         }
     }
 
+    @Override
     public String getSequenceName(ColumnMetadata column) {
         SequenceGenerator sequenceGenerator;
         String sequenceName;
@@ -181,6 +193,30 @@ public abstract class AbstractDialect implements SQLDialect {
         }
     }
 
+    @Override
+    public String getSequenceName(SchemaTable table, SchemaColumn column) {
+        SequenceGeneratorAnnotation sequenceGenerator;
+        String sequenceName;
+
+        sequenceGenerator = Annotation.get(column, SequenceGeneratorAnnotation.class);
+
+        if (sequenceGenerator == null || sequenceGenerator.getSequenceName().isEmpty()) {
+            sequenceName = createSequenceName(table, column);
+        } else {
+            sequenceName = sequenceGenerator.getSequenceName();
+        }
+
+        if (sequenceGenerator != null &&
+                !sequenceGenerator.getSchema().isEmpty()) {
+            return sequenceGenerator.getSchema()
+                    + "."
+                    + sequenceName;
+        } else {
+            return sequenceName;
+        }
+    }
+
+    @Override
     public String createSequenceName(ColumnMetadata column) {
         return column.getTable().getTableName()
                 + "_"
@@ -188,6 +224,15 @@ public abstract class AbstractDialect implements SQLDialect {
                 + "_seq";
     }
 
+    @Override
+    public String createSequenceName(SchemaTable table, SchemaColumn column) {
+        return table.getTableName()
+                + "_"
+                + column.getColumnName()
+                + "_seq";
+    }
+
+    @Override
     public String createForeignKeyName(TableMetadata table, TableMetadata referenceTable, Join foreignKey) {
         return "fk_"
                 + table.getTableName()
@@ -195,38 +240,61 @@ public abstract class AbstractDialect implements SQLDialect {
                 + referenceTable.getTableName();
     }
 
-    public String createSequence(Schema.Sequence sequence) {
-        return createSequence(sequence.getSchema(), sequence.getName(), sequence.getInitialValue());
-    }
-
+    @Override
     public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey) {
+        return alterTableAddForeignKey(foreignKey.getTable().getSchema(),
+                foreignKey.getTable().getTableName(),
+                foreignKey.getForeignKeyName(),
+                Arrays.asList(foreignKey.getJoin().columns()),
+                foreignKey.getReferenceTable().getTableName(),
+                Arrays.asList(foreignKey.getJoin().reference().columns()),
+                foreignKey.getJoin().cascadeDelete());
+    }
+
+    @Override
+    public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join) {
+        return alterTableAddForeignKey(table.getSchema(),
+                table.getTableName(),
+                join.getName(),
+                join.getColumns(),
+                join.getReference().getTable(),
+                join.getReference().getColumns(),
+                join.isCascadeDelete());
+    }
+
+    private String alterTableAddForeignKey(String schema,
+            String tableName,
+            String name,
+            List<String> columns,
+            String referenceTable,
+            List<String> referenceColumns,
+            boolean cascadeDelete) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
 
         ddl.append("ALTER TABLE ");
-        ddl.append(getTableName(foreignKey.getTable()));
+        ddl.append(getTableName(schema, tableName));
         ddl.append(" ADD CONSTRAINT ");
-        ddl.append(foreignKey.getForeignKeyName());
+        ddl.append(name);
         ddl.append(" FOREIGN KEY (");
 
-        for (int i = 0; i < foreignKey.getJoin().columns().length; i++) {
+        for (int i = 0; i < columns.size(); i++) {
             if (i > 0) {
                 ddl.append(", ");
             }
 
-            ddl.append(foreignKey.getJoin().columns()[i]);
+            ddl.append(columns.get(i));
         }
 
         ddl.append(") REFERENCES ");
-        ddl.append(getTableName(foreignKey.getReferenceTable().getSchema(),
-                foreignKey.getReferenceTable().getTableName()));
+        ddl.append(getTableName(schema, referenceTable));
         ddl.append(" (");
 
-        for (int i = 0; i < foreignKey.getJoin().reference().columns().length; i++) {
+        for (int i = 0; i < referenceColumns.size(); i++) {
             String columnName;
 
-            columnName = foreignKey.getJoin().reference().columns()[i];
+            columnName = referenceColumns.get(i);
 
             if (i > 0) {
                 ddl.append(", ");
@@ -237,58 +305,14 @@ public abstract class AbstractDialect implements SQLDialect {
 
         ddl.append(")");
 
-        if (foreignKey.getJoin().cascadeDelete()) {
+        if (cascadeDelete) {
             ddl.append(" ON DELETE CASCADE");
         }
 
         return ddl.toString();
     }
 
-    public String alterTableAddForeignKey(Schema.Table table, Schema.ForeignKey foreignKey) {
-        StringBuilder ddl;
-
-        ddl = new StringBuilder();
-
-        ddl.append("ALTER TABLE ");
-        ddl.append(getTableName(table.getSchema(), table.getName()));
-        ddl.append(" ADD CONSTRAINT ");
-        ddl.append(foreignKey.getName());
-        ddl.append(" FOREIGN KEY (");
-
-        for (int i = 0; i < foreignKey.getColumns().size(); i++) {
-            if (i > 0) {
-                ddl.append(", ");
-            }
-
-            ddl.append(foreignKey.getColumns().get(i));
-        }
-
-        ddl.append(") REFERENCES ");
-        ddl.append(getTableName(foreignKey.getReferenceSchema(),
-                foreignKey.getReferenceTable()));
-        ddl.append(" (");
-
-        for (int i = 0; i < foreignKey.getReferenceColumns().size(); i++) {
-            String columnName;
-
-            columnName = foreignKey.getReferenceColumns().get(i);
-
-            if (i > 0) {
-                ddl.append(", ");
-            }
-
-            ddl.append(columnName);
-        }
-
-        ddl.append(")");
-
-        if (foreignKey.isCascadeDelete()) {
-            ddl.append(" ON DELETE CASCADE");
-        }
-
-        return ddl.toString();
-    }
-
+    @Override
     public PreparedStatement createPersistStatement(Connection connection,
             TableMetadata table) {
         StringBuilder sql;
@@ -342,6 +366,7 @@ public abstract class AbstractDialect implements SQLDialect {
         }
     }
 
+    @Override
     public PreparedStatement createLockStatement(Connection connection, TableMetadata table) {
         try {
             return connection.prepareStatement(
@@ -351,6 +376,7 @@ public abstract class AbstractDialect implements SQLDialect {
         }
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object fromSqlValue(ColumnMetadata column, Object value) {
         if (value != null) {
@@ -386,6 +412,7 @@ public abstract class AbstractDialect implements SQLDialect {
         return value;
     }
 
+    @Override
     public Object toSqlValue(ColumnMetadata column, Object value) {
         if (value != null) {
             if (column.getField().getType().isEnum()) {

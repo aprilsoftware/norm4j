@@ -18,22 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-import org.norm4j.schema.SchemaTable;
+import org.norm4j.Temporal;
+import org.norm4j.TemporalType;
 
-public class AddTableOperation implements MigrationOperation {
-    private final SchemaTable table;
+public class TemporalAnnotation implements Annotation {
+    private TemporalType value;
 
-    public AddTableOperation(SchemaTable table) {
-        this.table = table;
+    public TemporalAnnotation() {
     }
 
-    public Type getType() {
-        return Type.ADD_TABLE;
+    public TemporalAnnotation(Temporal temporal) {
+        this.value = temporal.value();
     }
 
-    public SchemaTable getTable() {
-        return table;
+    public TemporalType getValue() {
+        return value;
+    }
+
+    public void setValue(TemporalType value) {
+        this.value = value;
     }
 }

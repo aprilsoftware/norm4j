@@ -24,8 +24,9 @@ public interface MigrationOperation {
     enum Type {
         ADD_TABLE,
         ADD_COLUMN,
-        ADD_FOREIGN_KEY,
-        ADD_SEQUENCE
+        ADD_JOIN,
+        ADD_SEQUENCE,
+        ADD_TABLE_GENERATOR
     }
 
     Type getType();

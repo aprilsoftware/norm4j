@@ -18,36 +18,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema;
 
-import org.norm4j.schema.Schema;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class AddForeignKeyOperation implements MigrationOperation {
-    private final String tableSchema;
-    private final String tableName;
-    private final Schema.ForeignKey foreignKey;
+import org.norm4j.Reference;
 
-    public AddForeignKeyOperation(String tableSchema,
-            String tableName,
-            Schema.ForeignKey foreignKey) {
-        this.tableSchema = tableSchema;
-        this.tableName = tableName;
-        this.foreignKey = foreignKey;
+public class SchemaReference {
+    private String table;
+    private List<String> columns;
+
+    public SchemaReference() {
+        columns = new ArrayList<>();
     }
 
-    public Type getType() {
-        return Type.ADD_FOREIGN_KEY;
+    public SchemaReference(Reference reference) {
+        this.table = reference.table().getName();
+        this.columns = Arrays.asList(reference.columns());
     }
 
-    public String getTableSchema() {
-        return tableSchema;
+    public String getTable() {
+        return table;
     }
 
-    public String getTableName() {
-        return tableName;
+    public void setTable(String table) {
+        this.table = table;
     }
 
-    public Schema.ForeignKey getForeignKey() {
-        return foreignKey;
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
     }
 }

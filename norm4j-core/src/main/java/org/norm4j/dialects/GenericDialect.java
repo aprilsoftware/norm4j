@@ -3,64 +3,66 @@ package org.norm4j.dialects;
 import java.sql.Connection;
 
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema.Column;
-import org.norm4j.schema.Schema.ForeignKey;
-import org.norm4j.schema.Schema.Sequence;
-import org.norm4j.schema.Schema.Table;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaJoin;
+import org.norm4j.schema.SchemaTable;
 
 public class GenericDialect extends AbstractDialect {
     public GenericDialect() {
     }
 
+    @Override
     public boolean isDialect(String productName) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isTupleSupported() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String createSequenceTable(String schema, String tableName, String pkColumnName, String valueColumnName) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean sequenceExists(Connection connection, String schema, String sequenceName) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean tableExists(Connection connection, String schema, String tableName) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String createSequence(String schema, String sequenceName, int initialValue) {
         throw new UnsupportedOperationException();
     }
 
-    public String createSequence(Sequence sequence) {
-        throw new UnsupportedOperationException();
-    }
-
+    @Override
     public String createTable(TableMetadata table) {
         throw new UnsupportedOperationException();
     }
 
-    public String createTable(Table table) {
+    @Override
+    public String createTable(SchemaTable table) {
         throw new UnsupportedOperationException();
     }
 
-    public String alterTableAddColumn(String tableSchema, String tableName, Column column) {
+    @Override
+    public String alterTableAddColumn(SchemaTable table, SchemaColumn column) {
         throw new UnsupportedOperationException();
     }
 
-    public String alterTableAddForeignKey(String tableSchema, String tableName, ForeignKey foreignKey) {
+    @Override
+    public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String limitSelect(int offset, int limit) {
-        throw new UnsupportedOperationException();
-    }
-
-    public String alterTableAddColumn(Table table, Column column) {
         throw new UnsupportedOperationException();
     }
 }

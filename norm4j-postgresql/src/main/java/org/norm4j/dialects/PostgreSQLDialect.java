@@ -40,7 +40,12 @@ import org.norm4j.Temporal;
 import org.norm4j.TemporalType;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaTable;
+import org.norm4j.schema.annotations.Annotation;
+import org.norm4j.schema.annotations.ColumnAnnotation;
+import org.norm4j.schema.annotations.GeneratedValueAnnotation;
+import org.norm4j.schema.annotations.IdAnnotation;
 import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.PGobject;
 
@@ -48,19 +53,23 @@ public class PostgreSQLDialect extends AbstractDialect {
     public PostgreSQLDialect() {
     }
 
+    @Override
     public boolean isDialect(String productName) {
         return productName.toLowerCase()
                 .contains("postgresql");
     }
 
+    @Override
     public boolean isTupleSupported() {
         return true;
     }
 
+    @Override
     public boolean isArraySupported() {
         return true;
     }
 
+    @Override
     public String createSequence(String schema,
             String sequenceName,
             int initialValue) {
@@ -81,6 +90,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public String createTable(TableMetadata table) {
         List<ColumnMetadata> primaryKeys;
         List<ColumnMetadata> columns;
@@ -165,73 +175,95 @@ public class PostgreSQLDialect extends AbstractDialect {
         return ddl.toString();
     }
 
-    public String createTable(Schema.Table table) {
+    @Override
+    public String createTable(SchemaTable table) {
+        List<SchemaColumn> columns;
+        List<String> primaryKeys;
         StringBuilder ddl;
+
+        columns = table.getColumns();
 
         ddl = new StringBuilder();
 
         ddl.append("CREATE TABLE ");
-        ddl.append(getTableName(table.getSchema(), table.getName()));
+        ddl.append(getTableName(table));
         ddl.append(" (");
 
-        for (int i = 0; i < table.getColumns().size(); i++) {
-            Schema.Column column;
+        primaryKeys = new ArrayList<>();
 
-            column = table.getColumns().get(i);
+        for (int i = 0; i < columns.size(); i++) {
+            GeneratedValueAnnotation generatedValueAnnotation;
+            ColumnAnnotation columnAnnotation;
+            SchemaColumn column;
+            String columnName;
+            Class<?> fieldType;
+
+            column = columns.get(i);
+
+            columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+            generatedValueAnnotation = Annotation.get(column, GeneratedValueAnnotation.class);
 
             if (i > 0) {
                 ddl.append(", ");
             }
 
-            ddl.append(column.getName());
+            columnName = column.getColumnName();
+
+            ddl.append(columnName);
             ddl.append(" ");
 
-            if (column.getColumnDefinition() == null ||
-                    column.getColumnDefinition().isEmpty()) {
-                try {
-                    ddl.append(getSqlType(Class.forName(column.getType()), 0));
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                ddl.append(column.getColumnDefinition());
+            try {
+                fieldType = Class.forName(column.getFieldType());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
 
-            if (column.getGenerationStrategy() == null ||
-                    column.getGenerationStrategy().isEmpty()) {
-                try {
-                    if (Class.forName(column.getType()).isPrimitive() ||
-                            (column.isNullable()) ||
-                            (table.getPrimaryKey() != null
-                                    && table.getPrimaryKey().getColumns().contains(column.getName()))) {
-                        ddl.append(" NOT NULL");
-                    }
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+            // TODO To be continued...
+            if (columnAnnotation == null ||
+                    columnAnnotation.getColumnDefinition().isEmpty()) {
+                ddl.append(getSqlType(fieldType, 0));
+            } else {
+                ddl.append(columnAnnotation.getColumnDefinition());
+            }
+
+            IdAnnotation idAnnotation;
+
+            idAnnotation = Annotation.get(column, IdAnnotation.class);
+
+            if (idAnnotation != null) {
+                primaryKeys.add(columnName);
+            }
+
+            if (generatedValueAnnotation == null) {
+                if (fieldType.isPrimitive() ||
+                        (columnAnnotation != null && !columnAnnotation.isNullable()) ||
+                        idAnnotation != null) {
+                    ddl.append(" NOT NULL");
                 }
             } else {
-                if (column.getGenerationStrategy().equals(GenerationType.AUTO.name()) ||
-                        column.getGenerationStrategy().equals(GenerationType.IDENTITY.name())) {
+                if (generatedValueAnnotation.getStrategy() == GenerationType.AUTO ||
+                        generatedValueAnnotation.getStrategy() == GenerationType.IDENTITY) {
                     ddl.append(" GENERATED BY DEFAULT AS IDENTITY");
-                } else if (column.getGenerationStrategy().equals(GenerationType.SEQUENCE.name())) {
+                } else if (generatedValueAnnotation.getStrategy() == GenerationType.SEQUENCE) {
                     ddl.append(" NOT NULL DEFAULT nextval('");
-                    ddl.append(column.getSequenceName());
+                    ddl.append(getSequenceName(table, column));
                     ddl.append("')");
                 }
             }
         }
 
-        if (table.getPrimaryKey() != null) {
+        if (!primaryKeys.isEmpty()) {
             ddl.append(", CONSTRAINT ");
-            ddl.append(table.getName());
+            ddl.append(table.getTableName());
             ddl.append("_pkey PRIMARY KEY (");
 
-            for (int i = 0; i < table.getPrimaryKey().getColumns().size(); i++) {
+            for (int i = 0; i < primaryKeys.size(); i++) {
                 if (i > 0) {
                     ddl.append(", ");
                 }
 
-                ddl.append(table.getPrimaryKey().getColumns());
+                ddl.append(primaryKeys.get(i));
             }
 
             ddl.append(")");
@@ -242,25 +274,34 @@ public class PostgreSQLDialect extends AbstractDialect {
         return ddl.toString();
     }
 
-    public String alterTableAddColumn(Schema.Table table, Schema.Column column) {
+    @Override
+    public String alterTableAddColumn(SchemaTable table, SchemaColumn column) {
         StringBuilder ddl;
 
         ddl = new StringBuilder();
 
         ddl.append("ALTER TABLE ");
-        ddl.append(getTableName(table.getSchema(), table.getName()));
+        ddl.append(getTableName(table.getSchema(), table.getTableName()));
         ddl.append(" ADD COLUMN ");
-        ddl.append(column.getName());
+        ddl.append(column.getColumnName());
 
-        if (column.getColumnDefinition() == null ||
-                column.getColumnDefinition().isEmpty()) {
-            try {
-                ddl.append(getSqlType(Class.forName(column.getType()), 0));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+        ColumnAnnotation columnAnnotation;
+        Class<?> fieldType;
+
+        columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+        try {
+            fieldType = Class.forName(column.getFieldType());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // TODO To be continued...
+        if (columnAnnotation == null ||
+                columnAnnotation.getColumnDefinition().isEmpty()) {
+            ddl.append(getSqlType(fieldType, 0));
         } else {
-            ddl.append(column.getColumnDefinition());
+            ddl.append(columnAnnotation.getColumnDefinition());
         }
 
         ddl.append(";");
@@ -268,6 +309,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public String createSequenceTable(String schema,
             String tableName,
             String pkColumnName,
@@ -291,6 +333,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         return ddl.toString();
     }
 
+    @Override
     public boolean sequenceExists(Connection connection,
             String schema,
             String sequenceName) {
@@ -300,6 +343,7 @@ public class PostgreSQLDialect extends AbstractDialect {
                 new String[] { "SEQUENCE" });
     }
 
+    @Override
     public boolean tableExists(Connection connection,
             String schema,
             String tableName) {
@@ -334,6 +378,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         }
     }
 
+    @Override
     public Object toSqlValue(ColumnMetadata column, Object value) {
         if (value instanceof java.sql.Date ||
                 value instanceof java.util.Date) {
@@ -381,6 +426,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         return value;
     }
 
+    @Override
     public Object fromSqlValue(ColumnMetadata column, Object value) {
         if (value != null &&
                 column.getField().getType().isArray()) {
@@ -467,6 +513,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         return value;
     }
 
+    @Override
     public String limitSelect(int offset, int limit) {
         return "LIMIT "
                 + limit

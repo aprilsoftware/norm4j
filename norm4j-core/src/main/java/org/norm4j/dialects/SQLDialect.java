@@ -30,7 +30,9 @@ import org.norm4j.Join;
 import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
-import org.norm4j.schema.Schema;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaJoin;
+import org.norm4j.schema.SchemaTable;
 
 public interface SQLDialect {
         public boolean isDialect(String productName);
@@ -47,11 +49,11 @@ public interface SQLDialect {
 
         public List<String> parseMultiStatements(String sql);
 
-        public String createForeignKeyName(TableMetadata table,
-                        TableMetadata referenceTable,
-                        Join foreignKey);
-
         public default String getTableName(TableMetadata table) {
+                return getTableName(table.getSchema(), table.getTableName());
+        }
+
+        public default String getTableName(SchemaTable table) {
                 return getTableName(table.getSchema(), table.getTableName());
         }
 
@@ -59,28 +61,36 @@ public interface SQLDialect {
 
         public String getSequenceName(ColumnMetadata column);
 
+        public String getSequenceName(SchemaTable table, SchemaColumn column);
+
+        // TODO Should be hidden
         public String createSequenceName(ColumnMetadata column);
+
+        // TODO Should be hidden
+        public String createSequenceName(SchemaTable table, SchemaColumn column);
 
         public String createSequence(String schema,
                         String sequenceName,
                         int initialValue);
 
-        public String createSequence(Schema.Sequence sequence);
-
         public String createTable(TableMetadata table);
 
-        public String createTable(Schema.Table table);
+        public String createTable(SchemaTable table);
 
         public String createSequenceTable(String schema,
                         String tableName,
                         String pkColumnName,
                         String valueColumnName);
 
+        public String createForeignKeyName(TableMetadata table,
+                        TableMetadata referenceTable,
+                        Join foreignKey);
+
         public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey);
 
-        public String alterTableAddForeignKey(Schema.Table table, Schema.ForeignKey foreignKey);
+        public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join);
 
-        public String alterTableAddColumn(Schema.Table table, Schema.Column column);
+        public String alterTableAddColumn(SchemaTable table, SchemaColumn column);
 
         public boolean sequenceExists(Connection connection,
                         String schema,

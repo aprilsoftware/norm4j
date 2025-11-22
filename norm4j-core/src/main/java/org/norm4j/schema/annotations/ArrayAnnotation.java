@@ -18,22 +18,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.schema.migrations;
+package org.norm4j.schema.annotations;
 
-import org.norm4j.schema.SchemaTable;
+import org.norm4j.Array;
+import org.norm4j.ArrayType;
 
-public class AddTableOperation implements MigrationOperation {
-    private final SchemaTable table;
+public class ArrayAnnotation implements Annotation {
+    private ArrayType type;
+    private int length;
 
-    public AddTableOperation(SchemaTable table) {
-        this.table = table;
+    public ArrayAnnotation() {
     }
 
-    public Type getType() {
-        return Type.ADD_TABLE;
+    public ArrayAnnotation(Array array) {
+        type = array.type();
+        length = array.length();
     }
 
-    public SchemaTable getTable() {
-        return table;
+    public ArrayType getType() {
+        return type;
+    }
+
+    public void setType(ArrayType type) {
+        this.type = type;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 }
