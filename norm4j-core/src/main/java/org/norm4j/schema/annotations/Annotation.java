@@ -22,6 +22,20 @@ package org.norm4j.schema.annotations;
 
 import org.norm4j.schema.SchemaColumn;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ArrayAnnotation.class, name = "array"),
+        @JsonSubTypes.Type(value = ColumnAnnotation.class, name = "column"),
+        @JsonSubTypes.Type(value = EnumeratedAnnotation.class, name = "enumerated"),
+        @JsonSubTypes.Type(value = GeneratedValueAnnotation.class, name = "generatedValue"),
+        @JsonSubTypes.Type(value = IdAnnotation.class, name = "id"),
+        @JsonSubTypes.Type(value = SequenceGeneratorAnnotation.class, name = "sequenceGenerator"),
+        @JsonSubTypes.Type(value = TableGeneratorAnnotation.class, name = "tableGenerator"),
+        @JsonSubTypes.Type(value = TemporalAnnotation.class, name = "temporal")
+})
 public interface Annotation {
     @SuppressWarnings("unchecked")
     public static <T extends Annotation> T get(SchemaColumn column, Class<T> type) {

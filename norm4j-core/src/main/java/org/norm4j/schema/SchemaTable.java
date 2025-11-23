@@ -42,7 +42,7 @@ public class SchemaTable {
     public SchemaTable(TableMetadata tableMetadata) {
         this();
 
-        this.className = tableMetadata.getClass().getName();
+        this.className = tableMetadata.getTableClass().getName();
         this.tableName = tableMetadata.getTableName();
         this.schema = tableMetadata.getSchema();
 

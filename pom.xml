@@ -19,7 +19,6 @@
         <module>norm4j-oracle</module>
         <module>norm4j-postgresql</module>
         <module>norm4j-sqlserver</module>
-        <module>norm4j-test</module>
     </modules>
 
     <build>

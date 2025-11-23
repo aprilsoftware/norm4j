@@ -20,6 +20,9 @@
  */
 package org.norm4j.schema.annotations;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
+@JsonTypeName("id")
 public class IdAnnotation implements Annotation {
     public IdAnnotation() {
     }
