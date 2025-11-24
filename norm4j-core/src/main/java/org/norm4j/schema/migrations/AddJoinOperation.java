@@ -26,12 +26,17 @@ import org.norm4j.schema.SchemaTable;
 public class AddJoinOperation implements MigrationOperation {
     private final SchemaTable table;
     private final SchemaJoin join;
+    private final String foreignKeyName;
+    private final String referenceTable;
 
-    public AddJoinOperation(String tableSchema,
-            SchemaTable table,
-            SchemaJoin join) {
+    public AddJoinOperation(SchemaTable table,
+            SchemaJoin join,
+            String foreignKeyName,
+            String referenceTable) {
         this.table = table;
         this.join = join;
+        this.foreignKeyName = foreignKeyName;
+        this.referenceTable = referenceTable;
     }
 
     public Type getType() {
@@ -44,5 +49,13 @@ public class AddJoinOperation implements MigrationOperation {
 
     public SchemaJoin getJoin() {
         return join;
+    }
+
+    public String getForeignKeyName() {
+        return foreignKeyName;
+    }
+
+    public String getReferenceTable() {
+        return referenceTable;
     }
 }

@@ -204,16 +204,16 @@ public class DdlHelper {
             }
         }
 
-        for (Join foreignKey : namedJoins) {
-            if (joinMap.containsKey(foreignKey.name())) {
+        for (Join join : namedJoins) {
+            if (joinMap.containsKey(join.name())) {
                 throw new RuntimeException("More than one join with the same name"
-                        + foreignKey.name());
+                        + join.name());
             } else {
                 foreignKeys.add(new ForeignKeyMetadata(
-                        foreignKey.name(),
+                        join.name(),
                         tableMetadata,
-                        metadataMap.get(foreignKey.reference().table()),
-                        foreignKey));
+                        metadataMap.get(join.reference().table()),
+                        join));
             }
         }
 

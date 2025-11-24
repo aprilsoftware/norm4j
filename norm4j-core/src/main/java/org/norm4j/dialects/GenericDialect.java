@@ -57,7 +57,8 @@ public class GenericDialect extends AbstractDialect {
     }
 
     @Override
-    public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join) {
+    public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join, String foreignKeyName,
+            String referenceTable) {
         throw new UnsupportedOperationException();
     }
 

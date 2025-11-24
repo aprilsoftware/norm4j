@@ -54,6 +54,36 @@
       "columnName" : "name"
     } ]
   }, {
+    "className" : "org.norm4j.tests.test15.Order",
+    "tableName" : "bookorder",
+    "schema" : "",
+    "joins" : [ ],
+    "columns" : [ {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ],
+      "columnName" : "id"
+    }, {
+      "fieldName" : "orderDate",
+      "fieldType" : "java.util.Date",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      }, {
+        "type" : "temporal",
+        "value" : "DATE"
+      } ],
+      "columnName" : "orderDate"
+    } ]
+  }, {
     "className" : "org.norm4j.tests.test15.OrderItem",
     "tableName" : "bookorderitem",
     "schema" : "",
@@ -108,36 +138,6 @@
         "length" : 255
       } ],
       "columnName" : "order_id"
-    } ]
-  }, {
-    "className" : "org.norm4j.tests.test15.Order",
-    "tableName" : "bookorder",
-    "schema" : "",
-    "joins" : [ ],
-    "columns" : [ {
-      "fieldName" : "id",
-      "fieldType" : "int",
-      "annotations" : [ {
-        "type" : "generatedValue",
-        "strategy" : "IDENTITY"
-      }, {
-        "type" : "id"
-      } ],
-      "columnName" : "id"
-    }, {
-      "fieldName" : "orderDate",
-      "fieldType" : "java.util.Date",
-      "annotations" : [ {
-        "type" : "column",
-        "name" : "",
-        "nullable" : false,
-        "columnDefinition" : "",
-        "length" : 255
-      }, {
-        "type" : "temporal",
-        "value" : "DATE"
-      } ],
-      "columnName" : "orderDate"
     } ]
   }, {
     "className" : "org.norm4j.tests.test15.Author",

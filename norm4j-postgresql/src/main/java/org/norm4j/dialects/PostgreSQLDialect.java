@@ -43,9 +43,12 @@ import org.norm4j.metadata.TableMetadata;
 import org.norm4j.schema.SchemaColumn;
 import org.norm4j.schema.SchemaTable;
 import org.norm4j.schema.annotations.Annotation;
+import org.norm4j.schema.annotations.ArrayAnnotation;
 import org.norm4j.schema.annotations.ColumnAnnotation;
+import org.norm4j.schema.annotations.EnumeratedAnnotation;
 import org.norm4j.schema.annotations.GeneratedValueAnnotation;
 import org.norm4j.schema.annotations.IdAnnotation;
+import org.norm4j.schema.annotations.TemporalAnnotation;
 import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.PGobject;
 
@@ -213,16 +216,11 @@ public class PostgreSQLDialect extends AbstractDialect {
             ddl.append(columnName);
             ddl.append(" ");
 
-            try {
-                fieldType = Class.forName(column.getFieldType());
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            fieldType = column.getFieldTypeClass();
 
-            // TODO To be continued...
             if (columnAnnotation == null ||
                     columnAnnotation.getColumnDefinition().isEmpty()) {
-                ddl.append(getSqlType(fieldType, 0));
+                ddl.append(getSqlType(column));
             } else {
                 ddl.append(columnAnnotation.getColumnDefinition());
             }
@@ -289,19 +287,11 @@ public class PostgreSQLDialect extends AbstractDialect {
         columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
 
         ddl.append(column.getColumnName());
+        ddl.append(" ");
 
-        Class<?> fieldType;
-
-        try {
-            fieldType = Class.forName(column.getFieldType());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        // TODO To be continued...
         if (columnAnnotation == null ||
                 columnAnnotation.getColumnDefinition().isEmpty()) {
-            ddl.append(getSqlType(fieldType, 0));
+            ddl.append(getSqlType(column));
         } else {
             ddl.append(columnAnnotation.getColumnDefinition());
         }
@@ -560,7 +550,7 @@ public class PostgreSQLDialect extends AbstractDialect {
             } else {
                 return "timestamp";
             }
-        } else if (column.getField().getType().isArray()) {
+        } else if (fieldType.isArray()) {
             Array arraryAnnotation;
 
             arraryAnnotation = (Array) column.getAnnotations().get(Array.class);
@@ -568,12 +558,10 @@ public class PostgreSQLDialect extends AbstractDialect {
             if (arraryAnnotation == null ||
                     arraryAnnotation.type() == ArrayType.Array) {
                 if (columnAnnotation == null) {
-                    return getSqlType(column.getField()
-                            .getType().getComponentType(), 0)
+                    return getSqlType(fieldType.getComponentType(), 0)
                             + "[]";
                 } else {
-                    return getSqlType(column.getField()
-                            .getType().getComponentType(),
+                    return getSqlType(fieldType.getComponentType(),
                             columnAnnotation.length())
                             + "[]";
                 }
@@ -582,7 +570,7 @@ public class PostgreSQLDialect extends AbstractDialect {
             } else {
                 throw new RuntimeException("Unsupported array type.");
             }
-        } else if (column.getField().getType().isEnum()) {
+        } else if (fieldType.isEnum()) {
             Enumerated enumeratedAnnotation;
 
             enumeratedAnnotation = (Enumerated) column.getAnnotations()
@@ -604,6 +592,73 @@ public class PostgreSQLDialect extends AbstractDialect {
                 return getSqlType(fieldType, 0);
             } else {
                 return getSqlType(fieldType, columnAnnotation.length());
+            }
+        }
+    }
+
+    private String getSqlType(SchemaColumn column) {
+        ColumnAnnotation columnAnnotation;
+        Class<?> fieldType;
+
+        fieldType = column.getFieldTypeClass();
+
+        columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+        if (fieldType == java.util.Date.class ||
+                fieldType == java.sql.Date.class) {
+            TemporalAnnotation temporalAnnotation;
+
+            temporalAnnotation = Annotation.get(column, TemporalAnnotation.class);
+
+            if (temporalAnnotation == null ||
+                    temporalAnnotation.getValue() == TemporalType.DATE) {
+                return "date";
+            } else if (temporalAnnotation.getValue() == TemporalType.TIME) {
+                return "time";
+            } else {
+                return "timestamp";
+            }
+        } else if (fieldType.isArray()) {
+            ArrayAnnotation arraryAnnotation;
+
+            arraryAnnotation = Annotation.get(column, ArrayAnnotation.class);
+
+            if (arraryAnnotation == null ||
+                    arraryAnnotation.getType() == ArrayType.Array) {
+                if (columnAnnotation == null) {
+                    return getSqlType(fieldType.getComponentType(), 0)
+                            + "[]";
+                } else {
+                    return getSqlType(fieldType.getComponentType(),
+                            columnAnnotation.getLength())
+                            + "[]";
+                }
+            } else if (arraryAnnotation.getType() == ArrayType.Vector) {
+                return "vector(" + arraryAnnotation.getLength() + ")";
+            } else {
+                throw new RuntimeException("Unsupported array type.");
+            }
+        } else if (fieldType.isEnum()) {
+            EnumeratedAnnotation enumeratedAnnotation;
+
+            enumeratedAnnotation = Annotation.get(column, EnumeratedAnnotation.class);
+
+            if (enumeratedAnnotation == null) {
+                return "int";
+            } else {
+                if (enumeratedAnnotation.getValue() == EnumType.ORDINAL) {
+                    return "int";
+                } else if (enumeratedAnnotation.getValue() == EnumType.STRING) {
+                    return "character varying(255)";
+                } else {
+                    throw new RuntimeException("Unsupported enum type.");
+                }
+            }
+        } else {
+            if (columnAnnotation == null) {
+                return getSqlType(fieldType, 0);
+            } else {
+                return getSqlType(fieldType, columnAnnotation.getLength());
             }
         }
     }

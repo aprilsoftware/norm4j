@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.tests.test15;
+package org.norm4j.tests.test16;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,14 +28,19 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.norm4j.TableManager;
+import org.norm4j.dialects.MariaDBDialect;
+import org.norm4j.dialects.OracleDialect;
+import org.norm4j.dialects.PostgreSQLDialect;
+import org.norm4j.dialects.SQLServerDialect;
 import org.norm4j.metadata.MetadataManager;
 import org.norm4j.schema.SchemaSynchronizer;
 import org.norm4j.tests.BaseTest;
+import org.norm4j.tests.test15.Order;
 
-public class Test15 extends BaseTest {
+public class Test16 extends BaseTest {
     private TableManager tableManager;
 
-    public Test15() {
+    public Test16() {
     }
 
     @BeforeEach
@@ -49,25 +54,35 @@ public class Test15 extends BaseTest {
         tableManager = new TableManager(getDataSource(), metadataManager);
 
         new SchemaSynchronizer(tableManager)
-                .startFromFirstVersion(true)
+                .startFromFirstVersion(false)
 
                 .version("v0.1")
-                .schema().enableAutoCreation(true).endSchema()
+                .executeResourceIfInitial("db/v0.1/mariadb/ddl.sql", MariaDBDialect.class)
+                .executeResourceIfInitial("db/v0.1/oracle/ddl.sql", OracleDialect.class)
+                .executeResourceIfInitial("db/v0.1/postgresql/ddl.sql", PostgreSQLDialect.class)
+                .executeResourceIfInitial("db/v0.1/sqlserver/ddl.sql", SQLServerDialect.class)
                 .endVersion()
 
                 .version("v0.2")
 
-                .schema().enableAutoMigration(true).endSchema()
+                .executeResourceIfInitial("db/v0.2/mariadb/ddl.sql", MariaDBDialect.class)
+                .executeResourceIfInitial("db/v0.2/oracle/ddl.sql", OracleDialect.class)
+                .executeResourceIfInitial("db/v0.2/postgresql/ddl.sql", PostgreSQLDialect.class)
+                .executeResourceIfInitial("db/v0.2/sqlserver/ddl.sql", SQLServerDialect.class)
+                .executeIfInitial("insert into bookorder (orderdate) values ('2025-11-17');")
+                .executeIfInitial(tableManager.createQuery("delete from bookorder;"))
+                .executeResourceIfInitial("db/test15/v0.2/test.sql")
+
                 .execute("insert into bookorder (orderdate) values ('2025-11-17');")
                 .execute(tableManager.createQuery("delete from bookorder;"))
-                .executeResource("db/test15/v0.2/test.sql")
+                .executeResource("db/test16/v0.2/test.sql")
 
                 .endVersion()
                 .apply();
     }
 
     @Test
-    public void test15() {
+    public void test16() {
         List<Order> orders = tableManager.createSelectQueryBuilder()
                 .select()
                 .from(Order.class)

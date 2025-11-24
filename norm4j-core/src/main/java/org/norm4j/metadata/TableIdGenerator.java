@@ -52,7 +52,7 @@ public class TableIdGenerator {
 
         if (table == null ||
                 table.isEmpty()) {
-            table = "norm_sequences";
+            table = "norm_sequence";
         }
 
         if (pkColumnName == null ||

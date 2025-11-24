@@ -63,10 +63,8 @@ public interface SQLDialect {
 
         public String getSequenceName(SchemaTable table, SchemaColumn column);
 
-        // TODO Should be hidden
         public String createSequenceName(ColumnMetadata column);
 
-        // TODO Should be hidden
         public String createSequenceName(SchemaTable table, SchemaColumn column);
 
         public String createSequence(String schema,
@@ -86,9 +84,14 @@ public interface SQLDialect {
                         TableMetadata referenceTable,
                         Join foreignKey);
 
+        public String createForeignKeyName(SchemaTable table,
+                        SchemaTable referenceTable,
+                        SchemaJoin foreignKey);
+
         public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey);
 
-        public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join);
+        public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join, String foreignKeyName,
+                        String referenceTable);
 
         public String alterTableAddColumn(SchemaTable table, SchemaColumn column);
 

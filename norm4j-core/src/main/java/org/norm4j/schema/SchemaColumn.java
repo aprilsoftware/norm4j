@@ -22,6 +22,7 @@ package org.norm4j.schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.norm4j.Array;
 import org.norm4j.Column;
@@ -41,6 +42,8 @@ import org.norm4j.schema.annotations.IdAnnotation;
 import org.norm4j.schema.annotations.SequenceGeneratorAnnotation;
 import org.norm4j.schema.annotations.TableGeneratorAnnotation;
 import org.norm4j.schema.annotations.TemporalAnnotation;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class SchemaColumn {
     private String fieldName;
@@ -125,23 +128,6 @@ public class SchemaColumn {
         }
     }
 
-    public String getColumnName() {
-        ColumnAnnotation columnAnnotation;
-
-        columnAnnotation = Annotation.get(this, ColumnAnnotation.class);
-
-        return getColumnName(columnAnnotation);
-    }
-
-    public String getColumnName(ColumnAnnotation columnAnnotation) {
-        if (columnAnnotation == null ||
-                columnAnnotation.getName().isEmpty()) {
-            return fieldName;
-        } else {
-            return columnAnnotation.getName();
-        }
-    }
-
     public String getFieldName() {
         return fieldName;
     }
@@ -165,4 +151,44 @@ public class SchemaColumn {
     public void setAnnotations(List<Annotation> annotations) {
         this.annotations = annotations;
     }
+
+    @JsonIgnore
+    public String getColumnName() {
+        ColumnAnnotation columnAnnotation;
+
+        columnAnnotation = Annotation.get(this, ColumnAnnotation.class);
+
+        return getColumnName(columnAnnotation);
+    }
+
+    @JsonIgnore
+    public String getColumnName(ColumnAnnotation columnAnnotation) {
+        if (columnAnnotation == null ||
+                columnAnnotation.getName().isEmpty()) {
+            return fieldName;
+        } else {
+            return columnAnnotation.getName();
+        }
+    }
+
+    @JsonIgnore
+    public Class<?> getFieldTypeClass() {
+        Class<?> primitive = PRIMITIVES.get(fieldType);
+        try {
+            return (primitive != null) ? primitive : Class.forName(fieldType);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final Map<String, Class<?>> PRIMITIVES = Map.of(
+            "boolean", boolean.class,
+            "byte", byte.class,
+            "short", short.class,
+            "int", int.class,
+            "long", long.class,
+            "char", char.class,
+            "float", float.class,
+            "double", double.class,
+            "void", void.class);
 }

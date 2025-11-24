@@ -21,6 +21,7 @@
 package org.norm4j.schema;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,14 +45,11 @@ public class SchemaComparator {
     public SchemaComparator() {
     }
 
-    public List<String> createDiffDdl(Schema from, Schema to, SQLDialect dialect) {
+    public List<String> generateDdl(Schema from, Schema to, SQLDialect dialect) {
         List<String> ddl = new ArrayList<>();
+        List<MigrationOperation> orderedOperations;
 
-        List<MigrationOperation> orderedOperations = orderOperations(compare(from, to));
-
-        // TODO We should create the foreign keys for the new tables after the tables
-        // are created
-        // with the new ones.
+        orderedOperations = orderOperations(compare(from, to, dialect));
 
         for (MigrationOperation operation : orderedOperations) {
             if (operation instanceof AddSequenceOperation aso) {
@@ -65,7 +63,8 @@ public class SchemaComparator {
             } else if (operation instanceof AddColumnOperation aco) {
                 ddl.add(dialect.alterTableAddColumn(aco.getTable(), aco.getColumn()));
             } else if (operation instanceof AddJoinOperation ajo) {
-                ddl.add(dialect.alterTableAddForeignKey(ajo.getTable(), ajo.getJoin()));
+                ddl.add(dialect.alterTableAddForeignKey(ajo.getTable(), ajo.getJoin(), ajo.getForeignKeyName(),
+                        ajo.getReferenceTable()));
             } else {
                 throw new RuntimeException("Unsupported migration operation: " +
                         operation.getClass());
@@ -107,11 +106,22 @@ public class SchemaComparator {
         return ordered;
     }
 
-    public List<MigrationOperation> compare(Schema from, Schema to) {
+    public List<MigrationOperation> compare(Schema from, Schema to, SQLDialect dialect) {
         List<MigrationOperation> operations = new ArrayList<>();
 
-        Map<String, SchemaTable> fromTables = indexTables(from);
+        Map<String, SchemaTable> fromTables;
+        Map<String, SchemaTable> fromTablesByClass;
+
+        if (from == null) {
+            fromTables = new HashMap<>();
+            fromTablesByClass = new HashMap<>();
+        } else {
+            fromTables = indexTables(from);
+            fromTablesByClass = indexTablesByClass(from);
+        }
+
         Map<String, SchemaTable> toTables = indexTables(to);
+        Map<String, SchemaTable> toTablesByClass = indexTablesByClass(to);
 
         for (SchemaTable toTable : toTables.values()) {
             String key = tableKey(toTable);
@@ -119,12 +129,29 @@ public class SchemaComparator {
 
             if (fromTable == null) {
                 operations.add(new AddTableOperation(toTable));
+
+                Map<String, SchemaJoin> toForeignKeys = createForeignKeyMap(toTable, toTablesByClass, dialect);
+
+                for (String foreignKeyName : toForeignKeys.keySet()) {
+                    SchemaJoin join = toForeignKeys.get(foreignKeyName);
+                    operations.add(new AddJoinOperation(toTable,
+                            join,
+                            foreignKeyName,
+                            toTablesByClass.get(join.getReference().getTable()).getTableName()));
+                }
             } else {
-                compareTable(fromTable, toTable, operations);
+                compareTable(fromTable, toTable, operations, fromTablesByClass, toTablesByClass, dialect);
             }
         }
 
-        Map<String, AddSequenceOperation> fromSequences = getSequences(from);
+        Map<String, AddSequenceOperation> fromSequences;
+
+        if (from == null) {
+            fromSequences = new HashMap<>();
+        } else {
+            fromSequences = getSequences(from);
+        }
+
         Map<String, AddSequenceOperation> toSequences = getSequences(to);
 
         for (var entry : toSequences.entrySet()) {
@@ -133,7 +160,14 @@ public class SchemaComparator {
             }
         }
 
-        Map<String, AddTableGeneratorOperation> fromTableGenerators = getTableGenerators(from);
+        Map<String, AddTableGeneratorOperation> fromTableGenerators;
+
+        if (from == null) {
+            fromTableGenerators = new HashMap<>();
+        } else {
+            fromTableGenerators = getTableGenerators(from);
+        }
+
         Map<String, AddTableGeneratorOperation> toTableGenerators = getTableGenerators(to);
 
         for (var entry : toTableGenerators.entrySet()) {
@@ -143,6 +177,18 @@ public class SchemaComparator {
         }
 
         return operations;
+    }
+
+    private Map<String, SchemaTable> indexTablesByClass(Schema schema) {
+        if (schema == null || schema.getTables() == null)
+            return Collections.emptyMap();
+
+        return schema.getTables().stream()
+                .collect(Collectors.toMap(
+                        t -> t.getClassName(),
+                        t -> t,
+                        (a, b) -> a,
+                        HashMap::new));
     }
 
     private Map<String, SchemaTable> indexTables(Schema schema) {
@@ -162,7 +208,12 @@ public class SchemaComparator {
         return (table.getSchema() + "." + table.getTableName()).toLowerCase();
     }
 
-    private void compareTable(SchemaTable fromTable, SchemaTable toTable, List<MigrationOperation> operations) {
+    private void compareTable(SchemaTable fromTable,
+            SchemaTable toTable,
+            List<MigrationOperation> operations,
+            Map<String, SchemaTable> fromTablesByClass,
+            Map<String, SchemaTable> toTablesByClass,
+            SQLDialect dialect) {
         Map<String, SchemaColumn> fromColumns = indexColumns(fromTable);
         Map<String, SchemaColumn> toColumns = indexColumns(toTable);
 
@@ -176,14 +227,16 @@ public class SchemaComparator {
             }
         }
 
-        Map<String, SchemaJoin> fromJoins = indexJoins(fromTable);
-        Map<String, SchemaJoin> toJoins = indexJoins(toTable);
+        Map<String, SchemaJoin> fromForeignKeys = createForeignKeyMap(fromTable, fromTablesByClass, dialect);
+        Map<String, SchemaJoin> toForeignKeys = createForeignKeyMap(toTable, toTablesByClass, dialect);
 
-        for (SchemaJoin toJoin : toJoins.values()) {
-            String joinKey = joinKey(toJoin);
-
-            if (!fromJoins.containsKey(joinKey)) {
-                operations.add(new AddJoinOperation(toTable.getSchema(), toTable, toJoin));
+        for (String foreignKeyName : toForeignKeys.keySet()) {
+            if (!fromForeignKeys.containsKey(foreignKeyName)) {
+                SchemaJoin join = toForeignKeys.get(foreignKeyName);
+                operations.add(new AddJoinOperation(toTable,
+                        join,
+                        foreignKeyName,
+                        toTablesByClass.get(join.getReference().getTable()).getTableName()));
             }
         }
     }
@@ -212,28 +265,6 @@ public class SchemaComparator {
         ColumnAnnotation columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
 
         return (columnAnnotation == null) || columnAnnotation.isNullable();
-    }
-
-    private Map<String, SchemaJoin> indexJoins(SchemaTable table) {
-        return table.getJoins().stream()
-                .collect(Collectors.toMap(
-                        this::joinKey,
-                        j -> j,
-                        (a, b) -> a,
-                        HashMap::new));
-    }
-
-    private String joinKey(SchemaJoin join) {
-        SchemaReference reference = join.getReference();
-
-        String columns = join.getColumns().stream().map(String::toLowerCase).sorted().collect(Collectors.joining(","));
-
-        String referenceColumns = reference.getColumns().stream().map(String::toLowerCase).sorted()
-                .collect(Collectors.joining(","));
-
-        String referenceTable = reference.getTable().toLowerCase();
-
-        return (columns + "->" + referenceTable + "(" + referenceColumns + "):" + join.isCascadeDelete()).toLowerCase();
     }
 
     private Map<String, AddSequenceOperation> getSequences(Schema schema) {
@@ -306,5 +337,71 @@ public class SchemaComparator {
         }
 
         return (schema + "." + tableName).toLowerCase();
+    }
+
+    private Map<String, SchemaJoin> createForeignKeyMap(SchemaTable table,
+            Map<String, SchemaTable> tablesByClass,
+            SQLDialect dialect) {
+        Map<String, List<SchemaJoin>> joinMap = new HashMap<>();
+        List<SchemaJoin> namedJoins = new ArrayList<>();
+        Map<String, SchemaJoin> foreignKeys = new HashMap<>();
+
+        for (SchemaJoin join : table.getJoins()) {
+            String foreignKeyName;
+
+            if (!join.isReferencialIntegrity()) {
+                continue;
+            }
+
+            if (join.getName() == null || join.getName().isEmpty()) {
+                SchemaReference reference = join.getReference();
+                SchemaTable referenceTable = tablesByClass.get(reference.getTable());
+
+                foreignKeyName = dialect.createForeignKeyName(
+                        table,
+                        referenceTable,
+                        join);
+            } else {
+                namedJoins.add(join);
+                continue;
+            }
+
+            if (joinMap.containsKey(foreignKeyName)) {
+                joinMap.get(foreignKeyName).add(join);
+            } else {
+                List<SchemaJoin> joins = new ArrayList<>();
+
+                joins.add(join);
+
+                joinMap.put(foreignKeyName, joins);
+            }
+        }
+
+        for (SchemaJoin join : namedJoins) {
+            if (joinMap.containsKey(join.getName())) {
+                throw new RuntimeException("More than one join with the same name"
+                        + join.getName());
+            } else {
+                foreignKeys.put(join.getName().toLowerCase(), join);
+            }
+        }
+
+        for (String foreignKeyName : joinMap.keySet()) {
+            List<SchemaJoin> joins = joinMap.get(foreignKeyName);
+
+            if (joins.size() == 1) {
+                SchemaJoin join = joins.get(0);
+                join.setName(foreignKeyName);
+                foreignKeys.put(foreignKeyName.toLowerCase(), join);
+            } else {
+                for (int i = 0; i < joins.size(); i++) {
+                    SchemaJoin join = joins.get(i);
+                    join.setName(foreignKeyName + "_" + (i + 1));
+                    foreignKeys.put(join.getName().toLowerCase(), join);
+                }
+            }
+        }
+
+        return foreignKeys;
     }
 }

@@ -233,7 +233,19 @@ public abstract class AbstractDialect implements SQLDialect {
     }
 
     @Override
-    public String createForeignKeyName(TableMetadata table, TableMetadata referenceTable, Join foreignKey) {
+    public String createForeignKeyName(TableMetadata table,
+            TableMetadata referenceTable,
+            Join foreignKey) {
+        return "fk_"
+                + table.getTableName()
+                + "_"
+                + referenceTable.getTableName();
+    }
+
+    @Override
+    public String createForeignKeyName(SchemaTable table,
+            SchemaTable referenceTable,
+            SchemaJoin foreignKey) {
         return "fk_"
                 + table.getTableName()
                 + "_"
@@ -252,12 +264,15 @@ public abstract class AbstractDialect implements SQLDialect {
     }
 
     @Override
-    public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join) {
+    public String alterTableAddForeignKey(SchemaTable table,
+            SchemaJoin join,
+            String foreignKeyName,
+            String referenceTable) {
         return alterTableAddForeignKey(table.getSchema(),
                 table.getTableName(),
-                join.getName(),
+                foreignKeyName,
                 join.getColumns(),
-                join.getReference().getTable(),
+                referenceTable,
                 join.getReference().getColumns(),
                 join.isCascadeDelete());
     }
