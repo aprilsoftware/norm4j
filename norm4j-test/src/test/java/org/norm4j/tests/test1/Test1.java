@@ -41,8 +41,8 @@ public class Test1 extends BaseTest {
 
         dropTable("test1", "book");
         dropTable("test1", "author");
-        dropTable("test1", "norm_sequences");
-        dropTable("test1", "norm_sequences2");
+        dropTable("test1", "norm_sequence");
+        dropTable("test1", "norm_sequence2");
 
         metadataManager = new MetadataManager();
 
@@ -79,7 +79,7 @@ public class Test1 extends BaseTest {
 
         dropTable("test1", "book");
         dropTable("test1", "author");
-        dropTable("test1", "norm_sequences");
-        dropTable("test1", "norm_sequences2");
+        dropTable("test1", "norm_sequence");
+        dropTable("test1", "norm_sequence2");
     }
 }

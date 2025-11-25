@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.norm4j</groupId>
+    <artifactId>norm4j-build</artifactId>
+    <version>1.1.17</version>
+    <packaging>pom</packaging>
+
+    <name>norm4j build (aggregator)</name>
+    <description>Build aggregator for norm4j modules</description>
+
+    <modules>
+        <module>norm4j-core</module>
+        <module>norm4j-mariadb</module>
+        <module>norm4j-maven-plugin</module>
+        <module>norm4j-oracle</module>
+        <module>norm4j-postgresql</module>
+        <module>norm4j-sqlserver</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

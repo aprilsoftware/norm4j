@@ -73,14 +73,14 @@ public class TableCreationHelper {
 
     public void createSequencesForTable(Connection connection, SQLDialect dialect,
             TableMetadata tableMetadata) throws SQLException {
-        for (String sql : ddlHelper.createSequences(dialect, tableMetadata)) {
+        for (String sql : ddlHelper.createSequences(tableMetadata, dialect)) {
             sqlExecutor.execute(connection, sql);
         }
     }
 
     public void addForeignKeyConstraints(Connection connection, SQLDialect dialect,
             List<TableMetadata> existingTables) throws SQLException {
-        for (String sql : ddlHelper.createForeignKeyConstraints(dialect, existingTables)) {
+        for (String sql : ddlHelper.createForeignKeys(dialect, existingTables)) {
             sqlExecutor.execute(connection, sql);
         }
     }

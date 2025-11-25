@@ -1,0 +1,159 @@
+{
+  "version" : "v0.2",
+  "schemaModelVersion" : 1,
+  "tables" : [ {
+    "className" : "org.norm4j.tests.test15.Author",
+    "tableName" : "author",
+    "schema" : "",
+    "joins" : [ ],
+    "columns" : [ {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ]
+    }, {
+      "fieldName" : "name",
+      "fieldType" : "java.lang.String",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ]
+    } ]
+  }, {
+    "className" : "org.norm4j.tests.test15.Book",
+    "tableName" : "book",
+    "schema" : "",
+    "joins" : [ {
+      "name" : "",
+      "columns" : [ "author_id" ],
+      "reference" : {
+        "table" : "org.norm4j.tests.test15.Author",
+        "columns" : [ "id" ]
+      },
+      "referencialIntegrity" : true,
+      "cascadeDelete" : false
+    } ],
+    "columns" : [ {
+      "fieldName" : "authorId",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "author_id",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ]
+    }, {
+      "fieldName" : "description",
+      "fieldType" : "java.lang.String",
+      "annotations" : [ ]
+    }, {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ]
+    }, {
+      "fieldName" : "name",
+      "fieldType" : "java.lang.String",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ]
+    } ]
+  }, {
+    "className" : "org.norm4j.tests.test15.Order",
+    "tableName" : "bookorder",
+    "schema" : "",
+    "joins" : [ ],
+    "columns" : [ {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ]
+    }, {
+      "fieldName" : "orderDate",
+      "fieldType" : "java.util.Date",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      }, {
+        "type" : "temporal",
+        "value" : "DATE"
+      } ]
+    } ]
+  }, {
+    "className" : "org.norm4j.tests.test15.OrderItem",
+    "tableName" : "bookorderitem",
+    "schema" : "",
+    "joins" : [ {
+      "name" : "",
+      "columns" : [ "book_id" ],
+      "reference" : {
+        "table" : "org.norm4j.tests.test15.Book",
+        "columns" : [ "id" ]
+      },
+      "referencialIntegrity" : true,
+      "cascadeDelete" : false
+    }, {
+      "name" : "",
+      "columns" : [ "order_id" ],
+      "reference" : {
+        "table" : "org.norm4j.tests.test15.Order",
+        "columns" : [ "id" ]
+      },
+      "referencialIntegrity" : true,
+      "cascadeDelete" : false
+    } ],
+    "columns" : [ {
+      "fieldName" : "bookId",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "book_id",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ]
+    }, {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ]
+    }, {
+      "fieldName" : "orderId",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "order_id",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ]
+    } ]
+  } ]
+}

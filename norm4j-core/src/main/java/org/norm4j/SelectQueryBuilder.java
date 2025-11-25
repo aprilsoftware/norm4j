@@ -133,7 +133,7 @@ public class SelectQueryBuilder extends QueryBuilder<SelectQueryBuilder> {
         ColumnMetadata column;
 
         column = getTableManager().getMetadataManager()
-                .getMetadata(fieldGetter);
+                .getColumnMetadata(fieldGetter);
 
         if (!selectClause.isEmpty()) {
             selectClause.append(", ");

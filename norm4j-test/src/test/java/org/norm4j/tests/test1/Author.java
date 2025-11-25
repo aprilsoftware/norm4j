@@ -31,7 +31,7 @@ import org.norm4j.TableGenerator;
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    @TableGenerator(schema = "test1", table = "norm_sequences2", pkColumnName = "sequence", valueColumnName = "value")
+    @TableGenerator(schema = "test1", table = "norm_sequence2", pkColumnName = "sequence", valueColumnName = "value")
     private int id;
 
     @Column(nullable = false)

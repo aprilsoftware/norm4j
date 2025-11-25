@@ -64,7 +64,7 @@ public class TableManager {
     public SQLDialect getDialect() {
         if (metadataManager.getDialect() == null) {
             try (Connection connection = dataSource.getConnection()) {
-                return metadataManager.getDialect(connection);
+                return metadataManager.initDialect(connection);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -93,7 +93,7 @@ public class TableManager {
         try (Connection connection = dataSource.getConnection()) {
             SQLDialect dialect;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             try (PreparedStatement ps = dialect.createPersistStatement(connection, table)) {
                 for (ColumnMetadata column : table.getColumns()) {
@@ -210,7 +210,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -295,7 +295,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -352,7 +352,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -406,7 +406,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             primaryKeys = table.getPrimaryKeys();
 
@@ -553,17 +553,17 @@ public class TableManager {
             }
 
             return join(leftRecord,
-                    metadataManager.getMetadata(leftRecord.getClass(),
+                    metadataManager.getColumnMetadata(leftRecord.getClass(),
                             join.reference().columns()),
                     rightTableClass,
-                    metadataManager.getMetadata(rightTableClass,
+                    metadataManager.getColumnMetadata(rightTableClass,
                             join.columns()));
         } else {
             return join(leftRecord,
-                    metadataManager.getMetadata(leftRecord.getClass(),
+                    metadataManager.getColumnMetadata(leftRecord.getClass(),
                             join.columns()),
                     rightTableClass,
-                    metadataManager.getMetadata(rightTableClass,
+                    metadataManager.getColumnMetadata(rightTableClass,
                             join.reference().columns()));
         }
     }
@@ -607,13 +607,13 @@ public class TableManager {
         leftColumns = new ArrayList<>();
 
         for (FieldGetter<L, R> fieldGetter : leftFieldGetters) {
-            leftColumns.add(metadataManager.getMetadata(fieldGetter));
+            leftColumns.add(metadataManager.getColumnMetadata(fieldGetter));
         }
 
         rightColumns = new ArrayList<>();
 
         for (FieldGetter<T, R> fieldGetter : rightFieldGetters) {
-            rightColumns.add(metadataManager.getMetadata(fieldGetter));
+            rightColumns.add(metadataManager.getColumnMetadata(fieldGetter));
         }
 
         return join(leftRecord, leftColumns, rightTableClass, rightColumns);
@@ -632,7 +632,7 @@ public class TableManager {
             SQLDialect dialect;
             StringBuilder sql;
 
-            dialect = metadataManager.getDialect(connection);
+            dialect = metadataManager.initDialect(connection);
 
             sql = new StringBuilder();
 
@@ -947,7 +947,7 @@ public class TableManager {
     private TableMetadata getTable(Class<?> tableClass) {
         TableMetadata table;
 
-        table = metadataManager.getMetadata(tableClass);
+        table = metadataManager.getTableMetadata(tableClass);
 
         if (table == null) {
             throw new IllegalArgumentException("No metadata found for class "

@@ -1,0 +1,79 @@
+{
+  "version" : "v0.1",
+  "schemaModelVersion" : 1,
+  "tables" : [ {
+    "className" : "org.norm4j.tests.test15.Book",
+    "tableName" : "book",
+    "schema" : "",
+    "joins" : [ {
+      "name" : "",
+      "columns" : [ "author_id" ],
+      "reference" : {
+        "table" : "org.norm4j.tests.test15.Author",
+        "columns" : [ "id" ]
+      },
+      "referencialIntegrity" : true,
+      "cascadeDelete" : false
+    } ],
+    "columns" : [ {
+      "fieldName" : "authorId",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "author_id",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ],
+      "columnName" : "author_id"
+    }, {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ],
+      "columnName" : "id"
+    }, {
+      "fieldName" : "name",
+      "fieldType" : "java.lang.String",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ],
+      "columnName" : "name"
+    } ]
+  }, {
+    "className" : "org.norm4j.tests.test15.Author",
+    "tableName" : "author",
+    "schema" : "",
+    "joins" : [ ],
+    "columns" : [ {
+      "fieldName" : "id",
+      "fieldType" : "int",
+      "annotations" : [ {
+        "type" : "generatedValue",
+        "strategy" : "IDENTITY"
+      }, {
+        "type" : "id"
+      } ],
+      "columnName" : "id"
+    }, {
+      "fieldName" : "name",
+      "fieldType" : "java.lang.String",
+      "annotations" : [ {
+        "type" : "column",
+        "name" : "",
+        "nullable" : false,
+        "columnDefinition" : "",
+        "length" : 255
+      } ],
+      "columnName" : "name"
+    } ]
+  } ]
+}

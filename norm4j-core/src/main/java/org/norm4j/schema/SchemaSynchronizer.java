@@ -28,6 +28,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.norm4j.Query;
 import org.norm4j.SelectQueryBuilder;
@@ -36,15 +38,20 @@ import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.ColumnMetadata;
 
 public class SchemaSynchronizer {
+    private static final Logger LOGGER = Logger.getLogger(SchemaSynchronizer.class.getName());
     private final List<VersionBuilder> versionBuilders;
     private final TableManager tableManager;
     private String schemaVersionTable;
     private String schema;
+    private String databaseResourcePath;
+    private boolean startFromFirstVersion;
 
     public SchemaSynchronizer(TableManager tableManager) {
         this.tableManager = tableManager;
 
         versionBuilders = new ArrayList<>();
+
+        databaseResourcePath = "db";
     }
 
     public SchemaSynchronizer schemaVersionTable(String schemaVersionTable) {
@@ -57,60 +64,89 @@ public class SchemaSynchronizer {
         return this;
     }
 
-    public VersionBuilder version() {
+    public SchemaSynchronizer databaseResourcePath(String databaseResourcePath) {
+        this.databaseResourcePath = databaseResourcePath;
+        return this;
+    }
+
+    public VersionBuilder version(String name) {
         VersionBuilder builder;
 
-        builder = new VersionBuilder(this);
+        builder = new VersionBuilder(this, name);
 
         versionBuilders.add(builder);
 
         return builder;
     }
 
-    public SchemaSynchronizer apply() {
+    public SchemaSynchronizer startFromFirstVersion(boolean startFromFirstVersion) {
+        this.startFromFirstVersion = startFromFirstVersion;
+        return this;
+    }
+
+    public void apply() {
         ColumnMetadata column;
 
         tableManager.getMetadataManager().registerTable(SchemaVersion.class, schema, schemaVersionTable);
 
-        column = tableManager.getMetadataManager().getMetadata(SchemaVersion.class, "creationDate");
+        column = tableManager.getMetadataManager().getColumnMetadata(SchemaVersion.class, "creationDate");
 
         try (Connection connection = tableManager.getDataSource().getConnection()) {
             connection.setAutoCommit(false);
 
-            if (!tableManager.getMetadataManager().getDialect()
+            if (!tableManager.getMetadataManager().initDialect(connection)
                     .tableExists(connection, column.getTable().getSchema(),
                             column.getTable().getTableName())) {
-                executeQuery(tableManager,
-                        connection,
-                        tableManager.getDialect().createTable(column.getTable()));
+                try {
+                    executeQuery(tableManager,
+                            connection,
+                            tableManager.getDialect().createTable(column.getTable()));
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "SchemaVersion table creation failed.", e);
+                }
             }
 
             try (PreparedStatement lockStatement = tableManager.getDialect()
                     .createLockStatement(connection, column.getTable())) {
                 lockStatement.executeQuery();
 
-                boolean hasAnyVersion = hasAnyAppliedVersion(tableManager, connection);
-
-                if (!hasAnyVersion && !versionBuilders.isEmpty()) {
+                if (!startFromFirstVersion &&
+                        !versionBuilders.isEmpty() &&
+                        !hasAnyAppliedVersion(tableManager, connection)) {
                     VersionBuilder last = versionBuilders.get(versionBuilders.size() - 1);
 
                     if (!isAlreadyApplied(tableManager, connection, last.name)) {
+                        if (last.schemaBuilder.autoCreationEnabled) {
+                            createSchema(connection, last.name);
+                        }
+
                         for (Object statement : last.initialStatements) {
                             executeQuery(tableManager, connection, statement);
                         }
 
-                        insertSchemaVersionRow(connection, column, last);
+                        insertSchemaVersion(connection, column, last.name, last.description);
                     }
                 } else {
-                    for (VersionBuilder versionBuilder : versionBuilders) {
-                        if (isAlreadyApplied(tableManager, connection, versionBuilder.name))
-                            continue;
+                    VersionBuilder previousVersionBuilder = null;
 
-                        for (Object statement : versionBuilder.statements) {
-                            executeQuery(tableManager, connection, statement);
+                    for (VersionBuilder versionBuilder : versionBuilders) {
+                        if (!isAlreadyApplied(tableManager, connection, versionBuilder.name)) {
+                            if (previousVersionBuilder == null &&
+                                    versionBuilder.schemaBuilder.autoCreationEnabled) {
+                                createSchema(connection, versionBuilder.name);
+                            } else if (versionBuilder.schemaBuilder.autoMigrationEnabled) {
+                                migrateFromPreviousVersion(connection, previousVersionBuilder.name,
+                                        versionBuilder.name);
+                            }
+
+                            for (Object statement : versionBuilder.statements) {
+                                executeQuery(tableManager, connection, statement);
+                            }
+
+                            insertSchemaVersion(connection, column, versionBuilder.name, versionBuilder.description);
                         }
 
-                        insertSchemaVersionRow(connection, column, versionBuilder);
+                        previousVersionBuilder = versionBuilder;
                     }
                 }
             }
@@ -119,21 +155,54 @@ public class SchemaSynchronizer {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        versionBuilders.clear();
-
-        return this;
     }
 
-    private void insertSchemaVersionRow(Connection connection, ColumnMetadata column, VersionBuilder versionBuilder)
+    private void createSchema(Connection connection, String version) {
+        Schema schema;
+
+        schema = Schema.loadFromResource(databaseResourcePath
+                + "/"
+                + version
+                + "/"
+                + "schema.json");
+
+        for (String ddl : new SchemaComparator()
+                .generateDdl(null, schema, tableManager.getDialect())) {
+            tableManager.execute(connection, ddl);
+        }
+    }
+
+    private void migrateFromPreviousVersion(Connection connection, String fromVersion, String toVersion) {
+        Schema fromSchema;
+        Schema toSchema;
+
+        fromSchema = Schema.loadFromResource(databaseResourcePath
+                + "/"
+                + fromVersion
+                + "/"
+                + "schema.json");
+
+        toSchema = Schema.loadFromResource(databaseResourcePath
+                + "/"
+                + toVersion
+                + "/"
+                + "schema.json");
+
+        for (String ddl : new SchemaComparator()
+                .generateDdl(fromSchema, toSchema, tableManager.getDialect())) {
+            tableManager.execute(connection, ddl);
+        }
+    }
+
+    private void insertSchemaVersion(Connection connection, ColumnMetadata column, String name, String description)
             throws SQLException {
         try (PreparedStatement insertStatement = connection.prepareStatement(
                 "INSERT INTO "
                         + tableManager.getDialect().getTableName(column.getTable())
                         + " (name, description, creationdate)"
                         + " VALUES (?, ?, ?)")) {
-            insertStatement.setString(1, versionBuilder.name);
-            insertStatement.setString(2, versionBuilder.description);
+            insertStatement.setString(1, name);
+            insertStatement.setString(2, description);
             insertStatement.setObject(3,
                     tableManager.getDialect().toSqlValue(column,
                             new Date(System.currentTimeMillis())));
@@ -179,28 +248,32 @@ public class SchemaSynchronizer {
     }
 
     public class VersionBuilder {
+        private final SchemaBuilder schemaBuilder;
         private final SchemaSynchronizer synchronizer;
         private final List<Object> initialStatements;
         private final List<Object> statements;
-        private String name;
+        private final String name;
         private String description;
 
-        public VersionBuilder(SchemaSynchronizer synchronizer) {
+        public VersionBuilder(SchemaSynchronizer synchronizer, String name) {
             this.synchronizer = synchronizer;
+
+            this.name = name;
 
             this.initialStatements = new ArrayList<>();
 
             statements = new ArrayList<>();
-        }
 
-        public VersionBuilder name(String name) {
-            this.name = name;
-            return this;
+            schemaBuilder = new SchemaBuilder(this);
         }
 
         public VersionBuilder description(String description) {
             this.description = description;
             return this;
+        }
+
+        public SchemaBuilder schema() {
+            return schemaBuilder;
         }
 
         public VersionBuilder execute(String statement) {
@@ -301,6 +374,30 @@ public class SchemaSynchronizer {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to load SQL resource: " + path, e);
             }
+        }
+    }
+
+    public class SchemaBuilder {
+        private final VersionBuilder versionBuilder;
+        private boolean autoCreationEnabled;
+        private boolean autoMigrationEnabled;
+
+        public SchemaBuilder(VersionBuilder versionBuilder) {
+            this.versionBuilder = versionBuilder;
+        }
+
+        public SchemaBuilder enableAutoCreation(boolean enable) {
+            this.autoCreationEnabled = enable;
+            return this;
+        }
+
+        public SchemaBuilder enableAutoMigration(boolean enable) {
+            this.autoMigrationEnabled = enable;
+            return this;
+        }
+
+        public VersionBuilder endSchema() {
+            return versionBuilder;
         }
     }
 }

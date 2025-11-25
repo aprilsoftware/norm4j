@@ -23,7 +23,6 @@ package org.norm4j.metadata;
 import java.lang.reflect.Method;
 
 import org.norm4j.FieldGetter;
-import org.norm4j.metadata.helpers.DdlHelper;
 
 public class FieldGetterMetadata {
     private final Class<?> tableClass;
@@ -59,9 +58,9 @@ public class FieldGetterMetadata {
             String fieldName;
 
             if (methodName.startsWith("get") && methodName.length() > 3) {
-                fieldName = DdlHelper.decapitalize(methodName.substring(3));
+                fieldName = decapitalize(methodName.substring(3));
             } else if (methodName.startsWith("is") && methodName.length() > 2) {
-                fieldName = DdlHelper.decapitalize(methodName.substring(2));
+                fieldName = decapitalize(methodName.substring(2));
             } else {
                 fieldName = methodName;
             }
@@ -71,5 +70,11 @@ public class FieldGetterMetadata {
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to extract field metadata from getter: " + getter, e);
         }
+    }
+
+    private static String decapitalize(String name) {
+        if (name == null || name.isEmpty())
+            return name;
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 }

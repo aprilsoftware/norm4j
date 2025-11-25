@@ -5,13 +5,13 @@
 
   <groupId>org.norm4j</groupId>
   <artifactId>norm4j-test</artifactId>
-  <version>1.1.16</version>
+  <version>1.1.17</version>
   <packaging>jar</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
 
   <description>
-      norm4j (Not an ORM for Java) is a lightweight, SQL-centric alternative to JPA
+      norm4j (Not an ORM for Java) is a lightweight, SQL-centric persistence library that keeps SQL and database schema as first-class citizens
   </description>
 
   <url>https://www.norm4j.org</url>
@@ -42,7 +42,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
     <junit.jupiter.version>5.12.1</junit.jupiter.version>
-    <norm4j.schema.version>v0.2</norm4j.schema.version>
   </properties>
 
   <dependencies>
@@ -50,14 +49,14 @@
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-core</artifactId>
-        <version>1.1.16</version>
+        <version>1.1.17</version>
         <scope>test</scope>
     </dependency>
   
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-postgresql</artifactId>
-        <version>1.1.16</version>
+        <version>1.1.17</version>
         <scope>test</scope>
     </dependency>
 
@@ -71,7 +70,7 @@
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-mariadb</artifactId>
-        <version>1.1.16</version>
+        <version>1.1.17</version>
         <scope>test</scope>
     </dependency>
 
@@ -85,7 +84,7 @@
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-sqlserver</artifactId>
-        <version>1.1.16</version>
+        <version>1.1.17</version>
         <scope>test</scope>
     </dependency>
 
@@ -99,7 +98,7 @@
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-oracle</artifactId>
-        <version>1.1.16</version>
+        <version>1.1.17</version>
         <scope>test</scope>
     </dependency>
 
@@ -132,7 +131,7 @@
       <plugin>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-maven-plugin</artifactId>
-        <version>1.1.16</version>
+        <version>1.1.17</version>
         <configuration>
           <packages>
             <package>org.norm4j.tests.test15</package>
@@ -143,7 +142,7 @@
             <dialect>postgresql</dialect>
             <dialect>sqlserver</dialect>
           </dialects>
-          <version>${norm4j.schema.version}</version>
+          <version>v0.2</version>
           <outputDirectory>${project.basedir}/src/test/resources/db</outputDirectory>
         </configuration>
         <executions>
@@ -158,14 +157,22 @@
         </executions>
       </plugin>
 
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.1.2</version>
-            <configuration>
-                <useModulePath>false</useModulePath>
-            </configuration>
-        </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <configuration>
+              <skip>true</skip>
+          </configuration>
+      </plugin>
+
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.1.2</version>
+          <configuration>
+              <useModulePath>false</useModulePath>
+          </configuration>
+      </plugin>
 
     </plugins>
 

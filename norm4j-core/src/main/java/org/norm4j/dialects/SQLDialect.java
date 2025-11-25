@@ -28,7 +28,11 @@ import java.util.ServiceLoader;
 
 import org.norm4j.Join;
 import org.norm4j.metadata.ColumnMetadata;
+import org.norm4j.metadata.ForeignKeyMetadata;
 import org.norm4j.metadata.TableMetadata;
+import org.norm4j.schema.SchemaColumn;
+import org.norm4j.schema.SchemaJoin;
+import org.norm4j.schema.SchemaTable;
 
 public interface SQLDialect {
         public boolean isDialect(String productName);
@@ -45,21 +49,23 @@ public interface SQLDialect {
 
         public List<String> parseMultiStatements(String sql);
 
-        public String createForeignKeyName(TableMetadata table,
-                        TableMetadata referenceTable,
-                        Join foreignKey);
-
         public default String getTableName(TableMetadata table) {
+                return getTableName(table.getSchema(), table.getTableName());
+        }
+
+        public default String getTableName(SchemaTable table) {
                 return getTableName(table.getSchema(), table.getTableName());
         }
 
         public String getTableName(String schema, String tableName);
 
-        public String getSequenceName(TableMetadata table,
-                        ColumnMetadata column);
+        public String getSequenceName(ColumnMetadata column);
 
-        public String createSequenceName(TableMetadata table,
-                        ColumnMetadata column);
+        public String getSequenceName(SchemaTable table, SchemaColumn column);
+
+        public String createSequenceName(ColumnMetadata column);
+
+        public String createSequenceName(SchemaTable table, SchemaColumn column);
 
         public String createSequence(String schema,
                         String sequenceName,
@@ -67,15 +73,27 @@ public interface SQLDialect {
 
         public String createTable(TableMetadata table);
 
+        public String createTable(SchemaTable table);
+
         public String createSequenceTable(String schema,
                         String tableName,
                         String pkColumnName,
                         String valueColumnName);
 
-        public String alterTable(TableMetadata table,
+        public String createForeignKeyName(TableMetadata table,
                         TableMetadata referenceTable,
-                        Join foreignKey,
-                        String foreignKeyName);
+                        Join foreignKey);
+
+        public String createForeignKeyName(SchemaTable table,
+                        SchemaTable referenceTable,
+                        SchemaJoin foreignKey);
+
+        public String alterTableAddForeignKey(ForeignKeyMetadata foreignKey);
+
+        public String alterTableAddForeignKey(SchemaTable table, SchemaJoin join, String foreignKeyName,
+                        String referenceTable);
+
+        public String alterTableAddColumn(SchemaTable table, SchemaColumn column);
 
         public boolean sequenceExists(Connection connection,
                         String schema,
@@ -106,6 +124,10 @@ public interface SQLDialect {
                         throw new RuntimeException(e);
                 }
 
+                return getDialectByProductName(productName);
+        }
+
+        public static SQLDialect getDialectByProductName(String productName) {
                 for (SQLDialect dialect : ServiceLoader.load(SQLDialect.class)) {
                         if (dialect.isDialect(productName)) {
                                 return dialect;

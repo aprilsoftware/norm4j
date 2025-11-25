@@ -114,7 +114,7 @@ public class Query {
         List<Object[]> rows;
 
         if (tableManager.getMetadataManager()
-                .getMetadata(type) == null) {
+                .getTableMetadata(type) == null) {
             if (connection == null) {
                 rows = getResultList();
             } else {
@@ -182,7 +182,7 @@ public class Query {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             SQLDialect dialect;
 
-            dialect = tableManager.getMetadataManager().getDialect(connection);
+            dialect = tableManager.getMetadataManager().initDialect(connection);
 
             for (Map.Entry<Integer, Object> entry : parameters.entrySet()) {
                 ps.setObject(entry.getKey(), entry.getValue());
@@ -210,7 +210,7 @@ public class Query {
                         Object record;
 
                         table = tableManager.getMetadataManager()
-                                .getMetadata(type);
+                                .getTableMetadata(type);
 
                         if (table == null) {
                             columns.add(rs.getObject(index));

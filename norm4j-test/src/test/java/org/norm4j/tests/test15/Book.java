@@ -41,6 +41,8 @@ public class Book {
     @Column(name = "author_id", nullable = false)
     private int authorId;
 
+    private String description;
+
     public Book() {
     }
 
@@ -66,6 +68,14 @@ public class Book {
 
     public void setAuthorId(int authorId) {
         this.authorId = authorId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
