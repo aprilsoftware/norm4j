@@ -39,6 +39,8 @@ public class SchemaGenerator {
             schema.getTables().add(new SchemaTable(tableMetadata));
         }
 
+        schema.sortObjects();
+
         return schema;
     }
 }

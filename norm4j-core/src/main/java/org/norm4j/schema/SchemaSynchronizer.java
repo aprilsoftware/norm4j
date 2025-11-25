@@ -157,7 +157,6 @@ public class SchemaSynchronizer {
     }
 
     private void createSchema(Connection connection, String version) {
-
         Schema schema;
 
         schema = Schema.loadFromResource(databaseResourcePath

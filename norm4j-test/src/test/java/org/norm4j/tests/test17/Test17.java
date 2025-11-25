@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.norm4j.tests.test16;
+package org.norm4j.tests.test17;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,10 +37,10 @@ import org.norm4j.schema.SchemaSynchronizer;
 import org.norm4j.tests.BaseTest;
 import org.norm4j.tests.test15.Order;
 
-public class Test16 extends BaseTest {
+public class Test17 extends BaseTest {
     private TableManager tableManager;
 
-    public Test16() {
+    public Test17() {
     }
 
     @BeforeEach
@@ -60,7 +60,7 @@ public class Test16 extends BaseTest {
         tableManager = new TableManager(getDataSource(), metadataManager);
 
         new SchemaSynchronizer(tableManager)
-                .startFromFirstVersion(false)
+                .startFromFirstVersion(true)
 
                 .version("v0.1")
                 .executeResourceIfInitial("db/v0.1/mariadb/ddl.sql", MariaDBDialect.class)
@@ -70,6 +70,8 @@ public class Test16 extends BaseTest {
                 .endVersion()
 
                 .version("v0.2")
+
+                .schema().enableAutoMigration(true).endSchema()
 
                 .executeResourceIfInitial("db/v0.2/mariadb/ddl.sql", MariaDBDialect.class)
                 .executeResourceIfInitial("db/v0.2/oracle/ddl.sql", OracleDialect.class)
@@ -88,7 +90,7 @@ public class Test16 extends BaseTest {
     }
 
     @Test
-    public void test16() {
+    public void test17() {
         List<Order> orders = tableManager.createSelectQueryBuilder()
                 .select()
                 .from(Order.class)

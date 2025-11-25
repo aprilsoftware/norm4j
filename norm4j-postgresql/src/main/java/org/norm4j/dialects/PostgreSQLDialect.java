@@ -286,7 +286,7 @@ public class PostgreSQLDialect extends AbstractDialect {
 
         columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
 
-        ddl.append(column.getColumnName());
+        ddl.append(column.getColumnName(columnAnnotation));
         ddl.append(" ");
 
         if (columnAnnotation == null ||

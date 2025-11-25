@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -82,7 +82,7 @@ public class MetadataManager {
             Enumerated.class);
 
     public MetadataManager() {
-        metadataMap = new HashMap<>();
+        metadataMap = new LinkedHashMap<>();
     }
 
     public MetadataManager(SQLDialect dialect) {
@@ -238,7 +238,7 @@ public class MetadataManager {
                 joins);
 
         for (Field field : tableClass.getDeclaredFields()) {
-            Map<Class<?>, Object> annotations = new HashMap<>();
+            Map<Class<?>, Object> annotations = new LinkedHashMap<>();
 
             for (Class<? extends Annotation> annotationType : annotationTypes) {
                 Annotation annotation = field.getAnnotation(annotationType);
@@ -249,8 +249,6 @@ public class MetadataManager {
 
             tableMetadata.getColumns().add(new ColumnMetadata(tableMetadata, annotations, field));
         }
-
-        tableMetadata.getColumns().sort(Comparator.comparing(ColumnMetadata::getColumnName));
 
         metadataMap.put(tableClass, tableMetadata);
     }

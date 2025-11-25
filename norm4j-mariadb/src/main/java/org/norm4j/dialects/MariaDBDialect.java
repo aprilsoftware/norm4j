@@ -38,6 +38,11 @@ import org.norm4j.metadata.ColumnMetadata;
 import org.norm4j.metadata.TableMetadata;
 import org.norm4j.schema.SchemaColumn;
 import org.norm4j.schema.SchemaTable;
+import org.norm4j.schema.annotations.Annotation;
+import org.norm4j.schema.annotations.ColumnAnnotation;
+import org.norm4j.schema.annotations.EnumeratedAnnotation;
+import org.norm4j.schema.annotations.GeneratedValueAnnotation;
+import org.norm4j.schema.annotations.IdAnnotation;
 
 public class MariaDBDialect extends AbstractDialect {
     public MariaDBDialect() {
@@ -179,12 +184,120 @@ public class MariaDBDialect extends AbstractDialect {
 
     @Override
     public String createTable(SchemaTable table) {
-        throw new UnsupportedOperationException();
+        List<String> primaryKeys;
+        List<SchemaColumn> columns;
+        StringBuilder ddl;
+
+        columns = table.getColumns();
+
+        ddl = new StringBuilder();
+
+        ddl.append("CREATE TABLE ");
+        ddl.append(getTableName(table));
+        ddl.append(" (");
+
+        primaryKeys = new ArrayList<>();
+
+        for (int i = 0; i < columns.size(); i++) {
+            GeneratedValueAnnotation generatedValueAnnotation;
+            ColumnAnnotation columnAnnotation;
+            SchemaColumn column;
+            String columnName;
+
+            column = columns.get(i);
+
+            columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+            generatedValueAnnotation = Annotation.get(column, GeneratedValueAnnotation.class);
+
+            if (i > 0) {
+                ddl.append(", ");
+            }
+
+            columnName = column.getColumnName(columnAnnotation);
+
+            ddl.append(columnName);
+            ddl.append(" ");
+
+            if (columnAnnotation == null ||
+                    columnAnnotation.getColumnDefinition().isEmpty()) {
+                ddl.append(getSqlType(column));
+            } else {
+                ddl.append(columnAnnotation.getColumnDefinition());
+            }
+
+            Class<?> fieldType;
+
+            fieldType = column.getFieldTypeClass();
+
+            IdAnnotation idAnnotation;
+
+            idAnnotation = Annotation.get(column, IdAnnotation.class);
+
+            if (idAnnotation != null) {
+                primaryKeys.add(columnName);
+            }
+
+            if (generatedValueAnnotation == null) {
+                if (fieldType.isPrimitive() ||
+                        (columnAnnotation != null && !columnAnnotation.isNullable()) ||
+                        idAnnotation != null) {
+                    ddl.append(" NOT NULL");
+                }
+            } else {
+                if (generatedValueAnnotation.getStrategy() == GenerationType.AUTO ||
+                        generatedValueAnnotation.getStrategy() == GenerationType.IDENTITY) {
+                    ddl.append(" AUTO_INCREMENT");
+                }
+            }
+        }
+
+        if (!primaryKeys.isEmpty()) {
+            ddl.append(", PRIMARY KEY (");
+
+            for (int i = 0; i < primaryKeys.size(); i++) {
+                if (i > 0) {
+                    ddl.append(", ");
+                }
+
+                ddl.append(primaryKeys.get(i));
+            }
+
+            ddl.append(")");
+        }
+
+        ddl.append(") ENGINE=InnoDB;");
+
+        return ddl.toString();
     }
 
     @Override
     public String alterTableAddColumn(SchemaTable table, SchemaColumn column) {
-        throw new UnsupportedOperationException();
+        StringBuilder ddl;
+
+        ddl = new StringBuilder();
+
+        ddl.append("ALTER TABLE ");
+        ddl.append(getTableName(table.getSchema(), table.getTableName()));
+        ddl.append(" ADD COLUMN ");
+
+        ColumnAnnotation columnAnnotation;
+
+        columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+        ddl.append(column.getColumnName(columnAnnotation));
+        ddl.append(" ");
+
+        if (columnAnnotation == null ||
+                columnAnnotation.getColumnDefinition().isEmpty()) {
+            ddl.append(getSqlType(column));
+        } else {
+            ddl.append(columnAnnotation.getColumnDefinition());
+        }
+
+        ddl.append(";");
+
+        return ddl.toString();
     }
 
     public String createSequenceTable(String schema,
@@ -282,6 +395,58 @@ public class MariaDBDialect extends AbstractDialect {
                 if (enumeratedAnnotation.value() == EnumType.ORDINAL) {
                     return "INT";
                 } else if (enumeratedAnnotation.value() == EnumType.STRING) {
+                    return "VARCHAR(255)";
+                } else {
+                    throw new RuntimeException("Unsupported enum type.");
+                }
+            }
+        }
+
+        throw new RuntimeException("Unsupported SQL type.");
+    }
+
+    private String getSqlType(SchemaColumn column) {
+        Class<?> fieldType;
+
+        fieldType = column.getFieldTypeClass();
+
+        if (fieldType == String.class) {
+            ColumnAnnotation columnAnnotation;
+
+            columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+            if (columnAnnotation == null) {
+                return "VARCHAR(255)";
+            } else {
+                return "VARCHAR(" + columnAnnotation.getLength() + ")";
+            }
+        } else if (fieldType == boolean.class || fieldType == Boolean.class) {
+            return "BOOLEAN";
+        } else if (fieldType == int.class || fieldType == Integer.class) {
+            return "INT";
+        } else if (fieldType == long.class || fieldType == Long.class) {
+            return "BIGINT";
+        } else if (fieldType == float.class || fieldType == Float.class) {
+            return "FLOAT";
+        } else if (fieldType == double.class || fieldType == Double.class) {
+            return "DOUBLE";
+        } else if (fieldType == BigDecimal.class) {
+            return "DECIMAL";
+        } else if (fieldType == java.util.Date.class || fieldType == java.sql.Date.class) {
+            return "DATETIME";
+        } else if (fieldType == UUID.class) {
+            return "CHAR(36)";
+        } else if (fieldType.isEnum()) {
+            EnumeratedAnnotation enumeratedAnnotation;
+
+            enumeratedAnnotation = Annotation.get(column, EnumeratedAnnotation.class);
+
+            if (enumeratedAnnotation == null) {
+                return "INT";
+            } else {
+                if (enumeratedAnnotation.getValue() == EnumType.ORDINAL) {
+                    return "INT";
+                } else if (enumeratedAnnotation.getValue() == EnumType.STRING) {
                     return "VARCHAR(255)";
                 } else {
                     throw new RuntimeException("Unsupported enum type.");

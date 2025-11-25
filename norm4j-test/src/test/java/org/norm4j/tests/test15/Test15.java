@@ -42,6 +42,12 @@ public class Test15 extends BaseTest {
     public void setup() {
         MetadataManager metadataManager;
 
+        dropTable("bookorderitem");
+        dropTable("bookorder");
+        dropTable("book");
+        dropTable("author");
+        dropTable("schema_version");
+
         metadataManager = new MetadataManager();
 
         metadataManager.registerPackage("org.norm4j.tests.test15");

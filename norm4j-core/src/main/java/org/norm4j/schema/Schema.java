@@ -29,7 +29,12 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.norm4j.schema.annotations.Annotation;
+import org.norm4j.schema.annotations.ColumnAnnotation;
 
 public class Schema {
     private String version;
@@ -91,5 +96,55 @@ public class Schema {
         } catch (Exception e) {
             throw new RuntimeException("Failed to write schema: " + path.toString(), e);
         }
+    }
+
+    public void sortObjects() {
+        for (SchemaTable table : tables) {
+            table.getColumns().sort(Comparator.comparing(this::columnKey));
+
+            table.getJoins().sort(Comparator.comparing(this::joinKey));
+        }
+
+        tables.sort(Comparator.comparing(this::tableKey));
+    }
+
+    private String tableKey(SchemaTable table) {
+        String schema = table.getSchema();
+        String name = table.getTableName();
+
+        if (schema == null || schema.isEmpty()) {
+            return name.toLowerCase();
+        }
+        return (schema + "." + name).toLowerCase();
+    }
+
+    private String columnKey(SchemaColumn column) {
+        ColumnAnnotation columnAnnotation = Annotation.get(column, ColumnAnnotation.class);
+
+        String name = (columnAnnotation != null
+                && columnAnnotation.getName() != null
+                && !columnAnnotation.getName().isEmpty())
+                        ? columnAnnotation.getName()
+                        : column.getFieldName();
+
+        return name.toLowerCase();
+    }
+
+    private String joinKey(SchemaJoin join) {
+        SchemaReference reference = join.getReference();
+
+        String columns = join.getColumns().stream()
+                .map(String::toLowerCase)
+                .sorted()
+                .collect(Collectors.joining(","));
+
+        String referenceTable = reference.getTable().toLowerCase();
+
+        String referenceColumns = reference.getColumns().stream()
+                .map(String::toLowerCase)
+                .sorted()
+                .collect(Collectors.joining(","));
+
+        return columns + "->" + referenceTable + "(" + referenceColumns + ")";
     }
 }
