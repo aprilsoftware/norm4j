@@ -94,7 +94,7 @@ public class SchemaSynchronizer {
         try (Connection connection = tableManager.getDataSource().getConnection()) {
             connection.setAutoCommit(false);
 
-            if (!tableManager.getMetadataManager().getDialect()
+            if (!tableManager.getMetadataManager().initDialect(connection)
                     .tableExists(connection, column.getTable().getSchema(),
                             column.getTable().getTableName())) {
                 try {
@@ -131,7 +131,8 @@ public class SchemaSynchronizer {
 
                     for (VersionBuilder versionBuilder : versionBuilders) {
                         if (!isAlreadyApplied(tableManager, connection, versionBuilder.name)) {
-                            if (previousVersionBuilder == null) {
+                            if (previousVersionBuilder == null &&
+                                    versionBuilder.schemaBuilder.autoCreationEnabled) {
                                 createSchema(connection, versionBuilder.name);
                             } else if (versionBuilder.schemaBuilder.autoMigrationEnabled) {
                                 migrateFromPreviousVersion(connection, previousVersionBuilder.name,
