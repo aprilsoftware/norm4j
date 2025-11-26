@@ -756,6 +756,8 @@ public class TableManagerFactory {
 3. [Norm4j: Simplifying Entity-to-DTO Mapping with a Powerful DSL](https://medium.com/@cedric.nanni/norm4j-simplifying-entity-to-dto-mapping-with-a-powerful-dsl-c1c478d45288)
 4. [Schema Versioning in norm4j: Keeping Your SQL-First World in Sync](https://medium.com/@cedric.nanni/schema-versioning-in-norm4j-keeping-your-sql-first-world-in-sync-3098eda88572)
 
+5. [How to Build a Lightweight Java REST API with TomEE and norm4j](https://medium.com/@cedric.nanni/how-to-build-a-lightweight-java-rest-api-with-tomee-and-norm4j-7639400616d8)
+
 ---
 
 ## 🧪 Running Tests
