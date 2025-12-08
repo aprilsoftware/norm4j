@@ -113,34 +113,42 @@ public class SchemaSynchronizer {
                 if (!startFromFirstVersion &&
                         !versionBuilders.isEmpty() &&
                         !hasAnyAppliedVersion(tableManager, connection)) {
-                    VersionBuilder last = versionBuilders.get(versionBuilders.size() - 1);
+                    VersionBuilder lastVersionBuilder = versionBuilders.get(versionBuilders.size() - 1);
 
-                    if (!isAlreadyApplied(tableManager, connection, last.name)) {
-                        if (last.schemaBuilder.autoCreationEnabled) {
-                            createSchema(connection, last.name);
+                    if (!isAlreadyApplied(tableManager, connection, lastVersionBuilder.name)) {
+                        if (lastVersionBuilder.schemaBuilder.autoCreationEnabled) {
+                            createSchema(connection, lastVersionBuilder.name);
                         }
 
-                        for (Object statement : last.initialStatements) {
+                        for (Object statement : lastVersionBuilder.initialStatements) {
                             executeQuery(tableManager, connection, statement);
                         }
 
-                        insertSchemaVersion(connection, column, last.name, last.description);
+                        insertSchemaVersion(connection, column, lastVersionBuilder.name,
+                                lastVersionBuilder.description);
                     }
                 } else {
                     VersionBuilder previousVersionBuilder = null;
 
                     for (VersionBuilder versionBuilder : versionBuilders) {
                         if (!isAlreadyApplied(tableManager, connection, versionBuilder.name)) {
-                            if (previousVersionBuilder == null &&
-                                    versionBuilder.schemaBuilder.autoCreationEnabled) {
-                                createSchema(connection, versionBuilder.name);
-                            } else if (versionBuilder.schemaBuilder.autoMigrationEnabled) {
-                                migrateFromPreviousVersion(connection, previousVersionBuilder.name,
-                                        versionBuilder.name);
-                            }
+                            if (previousVersionBuilder == null) {
+                                if (versionBuilder.schemaBuilder.autoCreationEnabled) {
+                                    createSchema(connection, versionBuilder.name);
+                                }
 
-                            for (Object statement : versionBuilder.statements) {
-                                executeQuery(tableManager, connection, statement);
+                                for (Object statement : versionBuilder.initialStatements) {
+                                    executeQuery(tableManager, connection, statement);
+                                }
+                            } else {
+                                if (versionBuilder.schemaBuilder.autoMigrationEnabled) {
+                                    migrateFromPreviousVersion(connection, previousVersionBuilder.name,
+                                            versionBuilder.name);
+                                }
+
+                                for (Object statement : versionBuilder.statements) {
+                                    executeQuery(tableManager, connection, statement);
+                                }
                             }
 
                             insertSchemaVersion(connection, column, versionBuilder.name, versionBuilder.description);
