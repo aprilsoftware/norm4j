@@ -28,7 +28,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-core</artifactId>
-    <version>1.1.17</version>
+    <version>1.1.18</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-postgresql</artifactId>
-    <version>1.1.17</version>
+    <version>1.1.18</version>
 </dependency>
 <dependency>
     <groupId>org.postgresql</groupId>
@@ -53,7 +53,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-mariadb</artifactId>
-    <version>1.1.17</version>
+    <version>1.1.18</version>
 </dependency>
 <dependency>
     <groupId>org.mariadb.jdbc</groupId>
@@ -67,7 +67,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-sqlserver</artifactId>
-    <version>1.1.17</version>
+    <version>1.1.18</version>
 </dependency>
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
@@ -81,7 +81,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>org.norm4j</groupId>
     <artifactId>norm4j-oracle</artifactId>
-    <version>1.1.17</version>
+    <version>1.1.18</version>
 </dependency>
 ```
 
@@ -99,7 +99,7 @@ Example configuration (single dialect, PostgreSQL):
     <plugin>
       <groupId>org.norm4j</groupId>
       <artifactId>norm4j-maven-plugin</artifactId>
-      <version>1.1.17</version>
+      <version>1.1.18</version>
       <configuration>
         <!-- Packages to scan for @Table-annotated classes -->
         <packages>
@@ -159,7 +159,7 @@ For tests or multi-dialect scenarios, you can configure several dialects and a t
 <plugin>
   <groupId>org.norm4j</groupId>
   <artifactId>norm4j-maven-plugin</artifactId>
-  <version>1.1.17</version>
+  <version>1.1.18</version>
   <configuration>
     <packages>
       <package>org.norm4j.tests.test15</package>
@@ -535,7 +535,7 @@ A typical setup using the **Author/Book** example and PostgreSQL might look like
    <plugin>
      <groupId>org.norm4j</groupId>
      <artifactId>norm4j-maven-plugin</artifactId>
-     <version>1.1.17</version>
+     <version>1.1.18</version>
      <configuration>
        <packages>
          <package>com.mycompany.app.records</package>
