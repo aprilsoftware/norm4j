@@ -5,7 +5,7 @@
 
   <groupId>org.norm4j</groupId>
   <artifactId>norm4j-maven-plugin</artifactId>
-  <version>1.1.18</version>
+  <version>1.1.19</version>
   <packaging>maven-plugin</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -48,31 +48,31 @@
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-core</artifactId>
-        <version>1.1.18</version>
+        <version>1.1.19</version>
     </dependency>
 
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-postgresql</artifactId>
-        <version>1.1.18</version>
+        <version>1.1.19</version>
     </dependency>
     
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-mariadb</artifactId>
-        <version>1.1.18</version>
+        <version>1.1.19</version>
     </dependency>
     
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-sqlserver</artifactId>
-        <version>1.1.18</version>
+        <version>1.1.19</version>
     </dependency>
 
     <dependency>
         <groupId>org.norm4j</groupId>
         <artifactId>norm4j-oracle</artifactId>
-        <version>1.1.18</version>
+        <version>1.1.19</version>
     </dependency>
    
     <dependency>

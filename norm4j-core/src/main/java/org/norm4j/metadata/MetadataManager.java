@@ -36,6 +36,9 @@ import org.norm4j.dialects.SQLDialect;
 import org.norm4j.metadata.helpers.DdlHelper;
 import org.norm4j.metadata.helpers.TableCreationHelper;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
+
 import javax.sql.DataSource;
 
 import java.io.BufferedReader;
@@ -103,35 +106,7 @@ public class MetadataManager {
     }
 
     public void registerPackage(String packageName) {
-        for (Class<?> c : getPackageClasses(packageName)) {
-            if (c.isAnnotationPresent(Table.class)) {
-                registerTable(c);
-            }
-        }
-    }
-
-    private List<Class<?>> getPackageClasses(String packageName) {
-        InputStream inputStream;
-        BufferedReader reader;
-
-        inputStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(packageName.replaceAll("[.]", "/"));
-
-        reader = new BufferedReader(new InputStreamReader(inputStream));
-
-        return reader.lines()
-                .filter(line -> line.endsWith(".class"))
-                .map(line -> getClass(line, packageName))
-                .collect(Collectors.toList());
-    }
-
-    private Class<?> getClass(String className, String packageName) {
-        try {
-            return Class.forName(packageName + "."
-                    + className.substring(0, className.lastIndexOf('.')));
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        registerPackageFromClassPath(packageName, Thread.currentThread().getContextClassLoader());
     }
 
     public void registerPackageFromClassPath(String packageName) {
@@ -146,60 +121,14 @@ public class MetadataManager {
         }
     }
 
-    private List<Class<?>> getPackageClassesFromClassPath(String packageName, ClassLoader cl) {
-        String path = packageName.replace('.', '/');
-        List<Class<?>> classes = new ArrayList<>();
+    private List<Class<?>> getPackageClassesFromClassPath(String packageName, ClassLoader classLoader) {
+        try (ScanResult scan = new ClassGraph()
+                .overrideClassLoaders(classLoader)
+                .enableClassInfo()
+                .acceptPackages(packageName)
+                .scan()) {
 
-        try {
-            Enumeration<URL> resources = cl.getResources(path);
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                String protocol = url.getProtocol();
-
-                if ("file".equals(protocol)) {
-                    File dir = new File(url.toURI());
-                    if (dir.isDirectory()) {
-                        File[] files = dir.listFiles();
-                        if (files != null) {
-                            for (File f : files) {
-                                String name = f.getName();
-                                if (name.endsWith(".class") && !name.contains("$")) {
-                                    String simpleName = name.substring(0, name.length() - 6);
-                                    String fqcn = packageName + "." + simpleName;
-                                    classes.add(Class.forName(fqcn, false, cl));
-                                }
-                            }
-                        }
-                    }
-                } else if ("jar".equals(protocol)) {
-                    String urlPath = url.getPath();
-                    int bang = urlPath.indexOf('!');
-                    if (bang != -1) {
-                        String jarPath = urlPath.substring("file:".length(), bang);
-                        try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
-                            String prefix = path + "/";
-                            Enumeration<JarEntry> entries = jar.entries();
-                            while (entries.hasMoreElements()) {
-                                JarEntry entry = entries.nextElement();
-                                String name = entry.getName();
-                                if (name.startsWith(prefix)
-                                        && name.endsWith(".class")
-                                        && !name.contains("$")
-                                        && name.indexOf('/', prefix.length()) == -1) {
-
-                                    String fqcn = name.substring(0, name.length() - 6)
-                                            .replace('/', '.');
-                                    classes.add(Class.forName(fqcn, false, cl));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return classes;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to scan package " + packageName, e);
+            return scan.getAllClasses().loadClasses();
         }
     }
 
