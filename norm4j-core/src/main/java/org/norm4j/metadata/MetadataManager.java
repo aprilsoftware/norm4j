@@ -116,7 +116,7 @@ public class MetadataManager {
         try (ScanResult scan = new ClassGraph()
                 .overrideClassLoaders(classLoader)
                 .enableClassInfo()
-                .acceptPackages(packageName)
+                .acceptPackagesNonRecursive(packageName)
                 .scan()) {
 
             return scan.getAllClasses().loadClasses();
