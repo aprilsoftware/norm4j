@@ -624,7 +624,7 @@ public class PostgreSQLDialect extends AbstractDialect {
             arraryAnnotation = Annotation.get(column, ArrayAnnotation.class);
 
             if (arraryAnnotation == null ||
-                    arraryAnnotation.getType() == ArrayType.Array) {
+                    arraryAnnotation.getArrayType() == ArrayType.Array) {
                 if (columnAnnotation == null) {
                     return getSqlType(fieldType.getComponentType(), 0)
                             + "[]";
@@ -633,7 +633,7 @@ public class PostgreSQLDialect extends AbstractDialect {
                             columnAnnotation.getLength())
                             + "[]";
                 }
-            } else if (arraryAnnotation.getType() == ArrayType.Vector) {
+            } else if (arraryAnnotation.getArrayType() == ArrayType.Vector) {
                 return "vector(" + arraryAnnotation.getLength() + ")";
             } else {
                 throw new RuntimeException("Unsupported array type.");

@@ -24,23 +24,23 @@ import org.norm4j.Array;
 import org.norm4j.ArrayType;
 
 public class ArrayAnnotation implements Annotation {
-    private ArrayType type;
+    private ArrayType arrayType;
     private int length;
 
     public ArrayAnnotation() {
     }
 
     public ArrayAnnotation(Array array) {
-        type = array.type();
+        arrayType = array.type();
         length = array.length();
     }
 
-    public ArrayType getType() {
-        return type;
+    public ArrayType getArrayType() {
+        return arrayType;
     }
 
-    public void setType(ArrayType type) {
-        this.type = type;
+    public void setArrayType(ArrayType arrayType) {
+        this.arrayType = arrayType;
     }
 
     public int getLength() {
