@@ -84,7 +84,7 @@ public class SchemaSynchronizer {
         return this;
     }
 
-    public void apply() {
+    public SchemaSynchronizer apply() {
         ColumnMetadata column;
 
         tableManager.getMetadataManager().registerTable(SchemaVersion.class, schema, schemaVersionTable);
@@ -163,6 +163,8 @@ public class SchemaSynchronizer {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        return this;
     }
 
     private void createSchema(Connection connection, String version) {
