@@ -694,6 +694,10 @@ public class TableManager {
         SelectQueryBuilder queryBuilder;
         Class<R> recordClass = null;
 
+        if (records.isEmpty()) {
+            return new HashMap<>();
+        }
+
         primaryKeys = new ArrayList<>();
 
         primaryKeyMap = new HashMap<>();
