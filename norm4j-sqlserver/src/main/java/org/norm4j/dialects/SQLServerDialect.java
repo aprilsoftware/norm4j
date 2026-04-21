@@ -387,6 +387,8 @@ public class SQLServerDialect extends AbstractDialect {
             }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BIT";
+        } else if (fieldType == byte[].class) {
+            return "VARBINARY(MAX)";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "INT";
         } else if (fieldType == long.class || fieldType == Long.class) {
@@ -440,6 +442,8 @@ public class SQLServerDialect extends AbstractDialect {
             }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BIT";
+        } else if (fieldType == byte[].class) {
+            return "VARBINARY(MAX)";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "INT";
         } else if (fieldType == long.class || fieldType == Long.class) {

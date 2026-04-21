@@ -421,6 +421,9 @@ public class PostgreSQLDialect extends AbstractDialect {
     @Override
     public Object fromSqlValue(ColumnMetadata column, Object value) {
         if (value != null &&
+                column.getField().getType() == byte[].class) {
+            return value;
+        } else if (value != null &&
                 column.getField().getType().isArray()) {
             if (value instanceof PGobject) {
                 value = parseVector(((PGobject) value).getValue());
@@ -550,6 +553,8 @@ public class PostgreSQLDialect extends AbstractDialect {
             } else {
                 return "timestamp";
             }
+        } else if (fieldType == byte[].class) {
+            return "bytea";
         } else if (fieldType.isArray()) {
             Array arraryAnnotation;
 
@@ -618,6 +623,8 @@ public class PostgreSQLDialect extends AbstractDialect {
             } else {
                 return "timestamp";
             }
+        } else if (fieldType == byte[].class) {
+            return "bytea";
         } else if (fieldType.isArray()) {
             ArrayAnnotation arraryAnnotation;
 
@@ -668,6 +675,8 @@ public class PostgreSQLDialect extends AbstractDialect {
             return "character varying(" + (length <= 0 ? 255 : length) + ")";
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "boolean";
+        } else if (fieldType == byte.class || fieldType == Byte.class) {
+            return "smallint";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "int";
         } else if (fieldType == long.class || fieldType == Long.class) {

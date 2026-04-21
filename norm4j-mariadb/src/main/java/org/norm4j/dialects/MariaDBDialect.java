@@ -370,6 +370,8 @@ public class MariaDBDialect extends AbstractDialect {
             }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BOOLEAN";
+        } else if (fieldType == byte[].class) {
+            return "LONGBLOB";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "INT";
         } else if (fieldType == long.class || fieldType == Long.class) {
@@ -422,6 +424,8 @@ public class MariaDBDialect extends AbstractDialect {
             }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "BOOLEAN";
+        } else if (fieldType == byte[].class) {
+            return "LONGBLOB";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "INT";
         } else if (fieldType == long.class || fieldType == Long.class) {
