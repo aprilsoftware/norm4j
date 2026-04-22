@@ -372,6 +372,8 @@ public class OracleDialect extends AbstractDialect {
             }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "NUMBER(1)";
+        } else if (fieldType == byte[].class) {
+            return "BLOB";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "NUMBER(10)";
         } else if (fieldType == long.class || fieldType == Long.class) {
@@ -425,6 +427,8 @@ public class OracleDialect extends AbstractDialect {
             }
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return "NUMBER(1)";
+        } else if (fieldType == byte[].class) {
+            return "BLOB";
         } else if (fieldType == int.class || fieldType == Integer.class) {
             return "NUMBER(10)";
         } else if (fieldType == long.class || fieldType == Long.class) {
