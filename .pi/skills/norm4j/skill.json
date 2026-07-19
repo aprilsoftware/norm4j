@@ -1,0 +1,125 @@
+{
+    "name": "norm4j",
+    "version": "1.0.0",
+    "description": "Comprehensive support for norm4j - a lightweight SQL-centric alternative to JPA for Java applications",
+    "author": "Pi Coding Agent",
+    "homepage": "https://github.com/aprilsoftware/norm4j",
+    "keywords": ["java", "orm", "database", "sql", "jpa", "norm4j", "postgresql", "mariadb", "sqlserver", "oracle"],
+    "main": "commands.js",
+    "helpers": "helpers.js",
+    "documentation": "SKILL.md",
+    "examples": "examples.md",
+    "commands": {
+        "create-entity": {
+            "description": "Generate a basic entity class",
+            "options": [
+                {"name": "name", "alias": "n", "description": "Entity name", "required": true},
+                {"name": "package", "alias": "p", "description": "Java package", "required": true},
+                {"name": "tableName", "alias": "t", "description": "Table name (optional)"}
+            ]
+        },
+        "generate-ddl": {
+            "description": "Generate DDL for a schema",
+            "options": [
+                {"name": "package", "alias": "p", "description": "Java package to scan", "required": true},
+                {"name": "dialect", "alias": "d", "description": "Database dialect", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "create-migration": {
+            "description": "Create a new migration version",
+            "options": [
+                {"name": "version", "alias": "v", "description": "Version name", "required": true},
+                {"name": "description", "alias": "d", "description": "Version description", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "explain-query": {
+            "description": "Explain a norm4j query",
+            "options": [
+                {"name": "query", "alias": "q", "description": "norm4j query", "required": true},
+                {"name": "dialect", "alias": "d", "description": "Database dialect (optional)"}
+            ]
+        },
+        "validate-entity": {
+            "description": "Validate entity annotations",
+            "options": [
+                {"name": "file", "alias": "f", "description": "Java file to validate"},
+                {"name": "content", "alias": "c", "description": "Java content to validate"}
+            ]
+        },
+        "generate-dto": {
+            "description": "Generate a DTO class from an entity",
+            "options": [
+                {"name": "entity", "alias": "e", "description": "Entity class name", "required": true},
+                {"name": "package", "alias": "p", "description": "Target package", "required": true},
+                {"name": "fields", "alias": "f", "description": "Fields to include (comma-separated)"}
+            ]
+        },
+        "generate-mapper": {
+            "description": "Generate a RecordMapper configuration",
+            "options": [
+                {"name": "entity", "alias": "e", "description": "Entity class name", "required": true},
+                {"name": "dto", "alias": "d", "description": "DTO class name", "required": true},
+                {"name": "mappings", "alias": "m", "description": "Field mappings (format: source:target)"},
+                {"name": "joins", "alias": "j", "description": "Join configurations (format: target:entity:dto)"}
+            ]
+        },
+        "generate-config": {
+            "description": "Generate a basic norm4j configuration",
+            "options": [
+                {"name": "package", "alias": "p", "description": "Base package name", "required": true},
+                {"name": "dialect", "alias": "d", "description": "Database dialect", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "generate-test-base": {
+            "description": "Generate a test base class",
+            "options": [
+                {"name": "package", "alias": "p", "description": "Test package", "required": true},
+                {"name": "dialect", "alias": "d", "description": "Database dialect", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "generate-project-structure": {
+            "description": "Generate a basic norm4j project structure",
+            "options": [
+                {"name": "baseDir", "alias": "b", "description": "Base directory", "required": true},
+                {"name": "package", "alias": "p", "description": "Base package", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "generate-database-config": {
+            "description": "Generate database-specific configuration",
+            "options": [
+                {"name": "dialect", "alias": "d", "description": "Database dialect", "required": true},
+                {"name": "url", "alias": "u", "description": "JDBC URL", "required": true},
+                {"name": "username", "alias": "n", "description": "Database username", "required": true},
+                {"name": "password", "alias": "p", "description": "Database password", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "generate-maven-plugin-config": {
+            "description": "Generate Maven plugin configuration",
+            "options": [
+                {"name": "package", "alias": "p", "description": "Package to scan", "required": true},
+                {"name": "dialects", "alias": "d", "description": "Dialects to generate (comma-separated)", "required": true},
+                {"name": "version", "alias": "v", "description": "Schema version", "required": true},
+                {"name": "output", "alias": "o", "description": "Output file (optional)"}
+            ]
+        },
+        "validate-query": {
+            "description": "Validate a norm4j query",
+            "options": [
+                {"name": "query", "alias": "q", "description": "norm4j query", "required": true}
+            ]
+        }
+    },
+    "dependencies": [
+        "nodejs"
+    ],
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "license": "Apache-2.0"
+}
