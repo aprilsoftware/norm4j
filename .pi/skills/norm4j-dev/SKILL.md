@@ -1,6 +1,6 @@
 ---
 name: norm4j-dev
-description: Guidance for implementing application persistence with norm4j: entity annotations, MetadataManager/TableManager setup, CRUD, joins, query builders, native queries, RecordMapper, SchemaSynchronizer, Maven DDL generation, and Jakarta EE/test configuration.
+description: "Guidance for implementing application persistence with norm4j: entity annotations, MetadataManager/TableManager setup, CRUD, joins, query builders, native queries, RecordMapper, SchemaSynchronizer, Maven DDL generation, and Jakarta EE/test configuration."
 compatibility: Java 17 and Maven projects using org.norm4j artifacts.
 ---
 
